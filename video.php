@@ -157,11 +157,11 @@ $title = isset($_GET['title']) ? $_GET['title'] : 'Lecture Video';
       video.onplay = () => document.getElementById('playPause').textContent = '❚❚';
       video.onpause = () => document.getElementById('playPause').textContent = '►';
       video.ontimeupdate = () => {
-        document.getElementById('seek').value = video.duration ? (video.currentTime/video.duration)*100 : 0;
-        document.getElementById('currentTime').textContent = fmt(video.currentTime);
+        const displayedTime = video.currentTime - 14; const displayedDuration = video.duration - 14; const pct = (video.duration>14) ? (displayedTime>0 ? displayedTime : 0) / displayedDuration * 100 : 0; document.getElementById('seek').value = pct;
+        const displayedTime2 = video.currentTime - 14; document.getElementById('currentTime').textContent = fmt(displayedTime2 > 0 ? displayedTime2 : 0);
       };
-      video.onloadedmetadata = () => document.getElementById('duration').textContent = fmt(video.duration);
-      document.getElementById('seek').oninput = e => video.currentTime = (e.target.value/100)*video.duration;
+    video.onloadedmetadata = () => document.getElementById('duration').textContent = fmt(Math.max(0, video.duration - 14));
+      document.getElementById('seek').oninput = e => { const dd = video.duration - 14; video.currentTime = 14 + (e.target.value/100) * dd; };
       document.getElementById('mute').onclick = () => {
         video.muted = !video.muted;
         document.getElementById('mute').textContent = video.muted ? '🔇' : '🔊';
