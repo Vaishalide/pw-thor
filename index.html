@@ -3,28 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <script>
-   function getCookie(name) {
-   //  const value = document.cookie;
-  //    const parts = value.split("; ");
-  //    for (let i = 0; i < parts.length; i++) {
-  //         const [key, val] = parts[i].split("=");
-  //          if (key === name) return val;
-  //      }
-  //    return null;
-//  }
-
- //   if (!getCookie('login')) {
-        // Agar logged in nahi hain, toh generate key page par redirect karo
-   //    window.location.href = 'https://pwthor.site/generate-key.html';
- //   }
-</script>
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>PW THOR</title>
   <style>
     body { margin: 0; font-family: 'Poppins', sans-serif; background: #0e0f1b; color: white; }
@@ -62,7 +43,7 @@
 
   <!-- SEARCH BAR -->
   <div id="searchBarWrapper" style="padding: 1rem; text-align: center;">
-    <input id="searchInput" placeholder="Search batch by name…" />
+    <input id="searchInput" placeholder="Search batch by name…" autocomplete="off" />
   </div>
 
   <!-- LOADERS -->
@@ -78,9 +59,9 @@
   <script>
     let batchOffset = 0;
     const batchLimit = 10;
-    let allBatches = [];       // holds every batch from the API
+    let totalBatches = Infinity;
     let isLoading = false;
-    let inSearchMode = false;  // track whether the user is actively searching
+    let inSearchMode = false;
 
     const main = document.getElementById('main');
     const subjectsDiv = document.getElementById('subjects');
@@ -124,45 +105,39 @@
       main.appendChild(div);
     }
 
-    // Render the next “page” of batches (for infinite scroll)
-    function renderBatches() {
-      if (isLoading) return;
-      isLoading = true;
-
-      const end = batchOffset + batchLimit;
-      const slice = allBatches.slice(batchOffset, end);
-      slice.forEach(data => appendBatchCard(data));
-
-      batchOffset = end;
-      isLoading = false;
-      document.getElementById('batchLoader').classList.add('hidden');
-    }
-
-    // Load all batches from the API
+    // Fetch and render next page of batches
     async function loadBatches() {
+      if (batchOffset >= totalBatches || isLoading) return;
+      isLoading = true;
       document.getElementById('batchLoader').classList.remove('hidden');
-      const res = await fetch('https://pw-api-6d8fde1b7ef0.herokuapp.com/data');
-      const json = await res.json();
 
-      // Convert { key: val } into array of objects
-      allBatches = Object.entries(json.batches).map(([key, val]) => ({ key, ...val }));
+      try {
+        const res = await fetch(
+          `https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
+        );
+        const json = await res.json();
+        totalBatches = json.total;
 
-      // If search is empty, render first “page”:
-      if (!searchInput.value.trim()) {
-        renderBatches();
-      } else {
-        // if user typed before data arrived, run the search
-        handleSearchEvent();
+        json.batches.forEach(batchData => {
+          appendBatchCard(batchData);
+        });
+        batchOffset += batchLimit;
+      } catch (err) {
+        console.error('Error fetching batches page:', err);
+      } finally {
+        isLoading = false;
+        document.getElementById('batchLoader').classList.add('hidden');
       }
     }
 
+    // Load subjects for a batch
     async function loadSubjects(batchId) {
       document.getElementById('subjectLoader').classList.remove('hidden');
       showView('subjects');
       subjectsDiv.innerHTML = '';
 
-      const res = await fetch(`https://pw-api-6d8fde1b7ef0.herokuapp.com/data/batches/${batchId}/subjects`);
-      const subjects = await res.json();
+      const res = await fetch(`https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/${batchId}/subjects`);
+      const { subjects } = await res.json();
 
       document.getElementById('subjectLoader').classList.add('hidden');
       subjects.forEach(subject => {
@@ -177,20 +152,21 @@
       });
     }
 
+    // Load topics for a subject
     async function loadTopics(batchId, subjectId) {
       document.getElementById('topicLoader').classList.remove('hidden');
       showView('topics');
       topicsDiv.innerHTML = '';
 
-      const res = await fetch(`https://pw-api-6d8fde1b7ef0.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
-      const topics = await res.json();
+      const res = await fetch(`https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
+      const { topics } = await res.json();
 
       const topicButtonsContainer = document.createElement('div');
       topicButtonsContainer.className = 'grid';
       const topicContent = document.createElement('div');
       topicContent.className = 'section';
 
-      if (topics.length === 0) {
+      if (!topics.length) {
         topicButtonsContainer.innerHTML = `
           <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
             🚫 No lectures, notes, or DPPs are available for this subject.
@@ -261,17 +237,15 @@
       document.getElementById('topicLoader').classList.add('hidden');
     }
 
-    // ------------------------------
-    //   SEARCH & INFINITE SCROLL
-    // ------------------------------
-
+    // Clear main grid
     function clearMainGrid() {
       while (main.firstChild) {
         main.removeChild(main.firstChild);
       }
     }
 
-    function handleSearchEvent() {
+    // Handle search input
+    async function handleSearchEvent() {
       const term = searchInput.value.trim().toLowerCase();
 
       // If search box is empty, revert to infinite‐scroll mode:
@@ -279,69 +253,85 @@
         inSearchMode = false;
         clearMainGrid();
         batchOffset = 0;
-        renderBatches();
+        loadBatches();
         return;
       }
 
-      // Otherwise, filter allBatches by name:
       inSearchMode = true;
       clearMainGrid();
-      const matches = allBatches.filter(batch => batch.name.toLowerCase().includes(term));
+      document.getElementById('batchLoader').classList.remove('hidden');
 
-      if (matches.length === 0) {
-        main.innerHTML = `
-          <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-            🤷‍♂️ No batches found matching “${searchInput.value.trim()}”
-          </div>`;
-      } else {
-        matches.forEach(batchData => appendBatchCard(batchData));
+      try {
+        const res = await fetch(`https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/search?q=${encodeURIComponent(term)}`);
+        const json = await res.json(); // { results: [ { key, name, image }, … ] }
+        document.getElementById('batchLoader').classList.add('hidden');
+
+        if (!json.results.length) {
+          main.innerHTML = `
+            <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
+              🤷‍♂️ No batches found matching “${searchInput.value.trim()}”
+            </div>`;
+        } else {
+          json.results.forEach(batchData => {
+            appendBatchCard(batchData);
+          });
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+        document.getElementById('batchLoader').classList.add('hidden');
+        main.innerHTML = '<p style="color: red; text-align: center;">Error fetching search results.</p>';
       }
     }
 
-    // When the user scrolls near the bottom, load more only if not in search mode:
+    // Infinite scroll for pagination
     window.addEventListener('scroll', () => {
       if (currentView !== 'main' || isLoading || inSearchMode) return;
       if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
-        document.getElementById('batchLoader').classList.remove('hidden');
-        renderBatches();
+        loadBatches();
       }
     });
 
-    // Wire up the search input:
+    // Wire up search input
     searchInput.addEventListener('input', () => {
       handleSearchEvent();
     });
 
-    // Kick everything off:
-    loadBatches();
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBatches();
+    });
   </script>
 
-  <!-- Updated Popup -->
-<div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
-  <button onclick="document.getElementById('popup').style.display='none'" 
-    style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
-  <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
-  <p id="popupText" style="margin: 15px 0;"></p>
-  <a id="popupLink" href="#" target="_blank" 
-     style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
-     Join Telegram
-  </a>
-</div>
+  <!-- Popup logic (unchanged) -->
+  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
+    <button onclick="document.getElementById('popup').style.display='none'" 
+      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
+    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
+    <p id="popupText" style="margin: 15px 0;"></p>
+    <a id="popupLink" href="#" target="_blank" 
+       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
+       Join Telegram
+    </a>
+  </div>
 
-  <script>
-    fetch('https://pw-api-6d8fde1b7ef0.herokuapp.com/data')
-      .then(response => response.json())
-      .then(data => {
-        if (data.popup && data.popup.show) {
-          document.getElementById('popupImage').src = data.popup.image;
-          document.getElementById('popupText').textContent = data.popup.text;
-          document.getElementById('popupLink').href = data.popup.link;
-          document.getElementById('popup').style.display = 'block';
-        }
-      })
-      .catch(error => console.error('Error loading popup data:', error));
-  </script>
+  <!-- …existing HTML popup markup (id="popup", popupImage, popupText, popupLink) … -->
+
+<script>
+  // Put popup.json at the same level as your index.html (for instance)
+  fetch('/popup.json')
+    .then(res => res.json())
+    .then(popup => {
+      if (popup.show) {
+        document.getElementById('popupImage').src = popup.image;
+        document.getElementById('popupText').textContent = popup.text;
+        document.getElementById('popupLink').href = popup.link;
+        document.getElementById('popup').style.display = 'block';
+      }
+    })
+    .catch(err => console.error('Error loading popup data:', err));
+</script>
+
 
   <script>
     // Disable right-click and DevTools (unchanged)
