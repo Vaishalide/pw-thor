@@ -209,10 +209,10 @@
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
             const lecturesHtml = (topic.lectures || []).map(lecture => `
-              <div style="margin-bottom: 2rem;">
-                <a href="video.php?videoUrl=${encodeURIComponent(lecture.videoUrl)}&title=${encodeURIComponent(lecture.title)}">
+              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
+                <div style="cursor:pointer;" onclick="playVideo(\'${lecture.videoUrl}\', \'${lecture.title}\')">
                   <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
-                </a>
+                </div>
                 <div style="text-align:center;">${lecture.title}</div>
                 ${(lecture.notes || []).map(note => `
                   <div style="margin-top: 0.5rem;">
@@ -378,5 +378,31 @@
   <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
     <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
   </a>
+
+  <script>
+    function playVideo(videoUrl, title) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'player.php';
+      form.style.display = 'none';
+
+      const inputUrl = document.createElement('input');
+      inputUrl.type = 'hidden';
+      inputUrl.name = 'videoUrl';
+      inputUrl.value = videoUrl;
+      form.appendChild(inputUrl);
+
+      const inputTitle = document.createElement('input');
+      inputTitle.type = 'hidden';
+      inputTitle.name = 'title';
+      inputTitle.value = title;
+      form.appendChild(inputTitle);
+
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(() => document.body.removeChild(form), 1000);
+    }
+  </script>
+
 </body>
 </html>
