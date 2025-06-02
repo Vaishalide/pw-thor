@@ -7,20 +7,20 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script>
-  //  function getCookie(name) {
-     //   const value = document.cookie;
-     //   const parts = value.split("; ");
-     //   for (let i = 0; i < parts.length; i++) {
-      //      const [key, val] = parts[i].split("=");
-     ///       if (key === name) return val;
-     //   }
-    //    return null;
-  //  }
+    function getCookie(name) {
+        const value = document.cookie;
+        const parts = value.split("; ");
+        for (let i = 0; i < parts.length; i++) {
+            const [key, val] = parts[i].split("=");
+            if (key === name) return val;
+        }
+        return null;
+    }
 
-   // if (!getCookie('login')) {
+    if (!getCookie('login')) {
         // Agar logged in nahi hain, toh generate key page par redirect karo
-    //    window.location.href = 'https://pwthor.site/generate-key.html';
-  //  }
+        window.location.href = 'https://pwthor.site/generate-key.html';
+    }
 </script>
 <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
     disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
@@ -209,29 +209,21 @@
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
             const lecturesHtml = (topic.lectures || []).map(lecture => `
-    <div
-      class="card"
-      style="margin-bottom: 2rem; max-width: 400px; width: 100%; cursor: pointer; display: flex; flex-direction: column; align-items: center;"
-      onclick="playVideo('\${lecture.videoUrl}', '\${lecture.title}')"
-    >
-      <img
-        src="\${lecture.thumbnail}"
-        alt="\${lecture.title}"
-        style="width: 100%; border-radius: 10px; display: block;"
-      />
-      <div style="text-align: center; margin-top: 0.5rem;">\${lecture.title}</div>
-      \${(lecture.notes || []).map(note => `
-        <div style="margin-top: 0.5rem; text-align: center;">
-          <a href="\${note.fileUrl}" target="_blank" class="btn">\${note.title}</a>
-        </div>
-      `).join('')}
-      \${(lecture.dpps || []).map(dpp => `
-        <div style="margin-top: 0.5rem; text-align: center;">
-          <a href="\${dpp.fileUrl}" target="_blank" class="btn">\${dpp.title}</a>
-        </div>
-      `).join('')}
-    </div>
-`).join('');
+              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
+                <div style="cursor:pointer;" onclick="playVideo(\'${lecture.videoUrl}\', \'${lecture.title}\')">
+                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
+                </div>
+                <div style="text-align:center;">${lecture.title}</div>
+                ${(lecture.notes || []).map(note => `
+                  <div style="margin-top: 0.5rem;">
+                    <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+                  </div>`).join('')}
+                ${(lecture.dpps || []).map(dpp => `
+                  <div style="margin-top: 0.5rem;">
+                    <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+                  </div>`).join('')}
+              </div>
+            `).join('');
 
             const notesHtml = (topic.notes || []).map(note => `
               <div style="margin-top: 1rem;">
@@ -273,9 +265,10 @@
 
     // Handle search input
     async function handleSearchEvent() {
+      // 1. Grab the *current* value of the input, lower‐cased/trimmed
       const term = searchInput.value.trim().toLowerCase();
 
-      // If search box is empty, revert to infinite‐scroll mode:
+      // 2. If the box is now empty, switch back to “infinite scroll” mode:
       if (!term) {
         inSearchMode = false;
         clearMainGrid();
@@ -284,15 +277,33 @@
         return;
       }
 
+      // 3. Otherwise, we are in search mode. Clear out any older cards:
       inSearchMode = true;
       clearMainGrid();
       document.getElementById('batchLoader').classList.remove('hidden');
 
+      // 4. Capture this search‐term so we can detect stale responses:
+      const thisSearch = term;
+
       try {
-        const res = await fetch(`https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/search?q=${encodeURIComponent(term)}`);
+        // 5. Fetch from the server using the query
+        const res = await fetch(
+          `https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
+        );
         const json = await res.json(); // { results: [ { key, name, image }, … ] }
+
+        // Right after we get a response, hide the loader.
         document.getElementById('batchLoader').classList.add('hidden');
 
+        // 6. If the user has already changed the input since we fired off this request,
+        //    we should do nothing (i.e. don’t append outdated cards).
+        const currentTerm = searchInput.value.trim().toLowerCase();
+        if (currentTerm !== thisSearch) {
+          // The input no longer matches; drop these results.
+          return;
+        }
+
+        // 7. Now that we know the term is still valid, render:
         if (!json.results.length) {
           main.innerHTML = `
             <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
@@ -391,7 +402,7 @@
     function playVideo(videoUrl, title) {
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'try.php';
+      form.action = 'player.php';
       form.style.display = 'none';
 
       const inputUrl = document.createElement('input');
