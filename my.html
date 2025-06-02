@@ -7,17 +7,17 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script>
-  //  function getCookie(name) {
-   //     const value = document.cookie;
-   //     const parts = value.split("; ");
-   ///     for (let i = 0; i < parts.length; i++) {
-  //          const [key, val] = parts[i].split("=");
-    //        if (key === name) return val;
-    //    }
+    function getCookie(name) {
+     //   const value = document.cookie;
+     //   const parts = value.split("; ");
+     //   for (let i = 0; i < parts.length; i++) {
+      //      const [key, val] = parts[i].split("=");
+     ///       if (key === name) return val;
+     //   }
     //    return null;
- //   }
+  //  }
 
-  //  if (!getCookie('login')) {
+   // if (!getCookie('login')) {
         // Agar logged in nahi hain, toh generate key page par redirect karo
     //    window.location.href = 'https://pwthor.site/generate-key.html';
   //  }
@@ -209,21 +209,29 @@
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
             const lecturesHtml = (topic.lectures || []).map(lecture => `
-              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
-                <div style="cursor:pointer;" onclick="playVideo(\'${lecture.videoUrl}\', \'${lecture.title}\')">
-                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
-                </div>
-                <div style="text-align:center;">${lecture.title}</div>
-                ${(lecture.notes || []).map(note => `
-                  <div style="margin-top: 0.5rem;">
-                    <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
-                  </div>`).join('')}
-                ${(lecture.dpps || []).map(dpp => `
-                  <div style="margin-top: 0.5rem;">
-                    <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
-                  </div>`).join('')}
-              </div>
-            `).join('');
+    <div
+      class="card"
+      style="margin-bottom: 2rem; max-width: 400px; width: 100%; cursor: pointer; display: flex; flex-direction: column; align-items: center;"
+      onclick="playVideo('\${lecture.videoUrl}', '\${lecture.title}')"
+    >
+      <img
+        src="\${lecture.thumbnail}"
+        alt="\${lecture.title}"
+        style="width: 100%; border-radius: 10px; display: block;"
+      />
+      <div style="text-align: center; margin-top: 0.5rem;">\${lecture.title}</div>
+      \${(lecture.notes || []).map(note => `
+        <div style="margin-top: 0.5rem; text-align: center;">
+          <a href="\${note.fileUrl}" target="_blank" class="btn">\${note.title}</a>
+        </div>
+      `).join('')}
+      \${(lecture.dpps || []).map(dpp => `
+        <div style="margin-top: 0.5rem; text-align: center;">
+          <a href="\${dpp.fileUrl}" target="_blank" class="btn">\${dpp.title}</a>
+        </div>
+      `).join('')}
+    </div>
+`).join('');
 
             const notesHtml = (topic.notes || []).map(note => `
               <div style="margin-top: 1rem;">
