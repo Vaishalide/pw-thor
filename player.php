@@ -26,21 +26,24 @@ $escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
  <script>
-  //  function getCookie(name) {
-  //      const value = document.cookie;
-   //     const parts = value.split("; ");
-    //    for (let i = 0; i < parts.length; i++) {
-    //        const [key, val] = parts[i].split("=");
-    //        if (key === name) return val;
-    //    }
-    //    return null;
-  //  }
+    function getCookie(name) {
+        const value = document.cookie;
+        const parts = value.split("; ");
+        for (let i = 0; i < parts.length; i++) {
+            const [key, val] = parts[i].split("=");
+            if (key === name) return val;
+        }
+        return null;
+    }
 
-//    if (!getCookie('login')) {
+    if (!getCookie('login')) {
         // Agar logged in nahi hain, toh generate key page par redirect karo
-   //     window.location.href = 'https://pwthor.site/generate-key.html';
-   // }
+        window.location.href = 'https://pwthor.site/generate-key.html';
+    }
 </script>
+<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <title><?php echo htmlspecialchars($title); ?></title>
   <!-- HLS.js -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
