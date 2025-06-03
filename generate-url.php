@@ -2,7 +2,7 @@
 // API key aur destination URL define kar lete hain
 $apiKey = 'e70587d6251735344ef79f7b1a50df6ab6bcada5';
 $destinationUrl = 'https://pwthor.site/login-success.html';
-$alias = 'pw_thor'; // Optional alias
+$alias = ''; // Optional alias
 
 // API URL ko prepare karte hain
 $apiUrl = "https://linkcents.com/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
