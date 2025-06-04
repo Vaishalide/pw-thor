@@ -6,26 +6,46 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-
-  <!-- Force a visible scrollbar on desktop/laptop browsers -->
+  <script>
+ //   function getCookie(name) {
+ //     const value = document.cookie;
+//      const parts = value.split("; ");
+//      for (let i = 0; i < parts.length; i++) {
+ //       const [key, val] = parts[i].split("=");
+ //       if (key === name) return val;
+ //     }
+//      return null;
+//    }
+//    if (!getCookie('login')) {
+//      window.location.href = 'https://pwthor.site/generate-key.html';
+ //   }
+  </script>
+  <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+          disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>PW THOR</title>
   <style>
-    html { overflow-y: scroll; }
-
+    /* Body & Base Text */
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: #0e0f1b;
-      color: white;
+      background: #ffffff;
+      color: #000000;
     }
+
+    /* Header */
     .header {
-      background: #11132a;
-      color: #ffc107;
+      background: #ffffff;
+      color: #000000;
       font-size: 1.8rem;
       text-transform: uppercase;
       padding: 1rem;
       text-align: center;
       font-weight: 600;
+      border-bottom: 1px solid #e0e0e0;
     }
+
+    /* Grid Container */
     .grid {
       display: flex;
       flex-wrap: wrap;
@@ -33,17 +53,22 @@
       padding: 1rem;
       justify-content: center;
     }
+
+    /* Individual Cards */
     .card {
-      background: #1e2036;
+      background: #f9f9f9;
       padding: 1rem;
       border-radius: 10px;
       width: 250px;
       cursor: pointer;
       transition: 0.3s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid #e0e0e0;
     }
     .card:hover {
-      background: #2a2e4b;
-      transform: translateY(-5px);
+      background: #ffffff;
+      transform: translateY(-3px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .card img {
       width: 100%;
@@ -53,92 +78,84 @@
       margin-top: 0.5rem;
       font-weight: bold;
       text-align: center;
+      color: #000000;
     }
+
+    /* Section Wrapper */
     .section {
       padding: 1rem;
     }
+
+    /* Buttons */
     .btn {
-      background: linear-gradient(90deg, #ffc107, #ff9800);
-      color: #111;
+      background: #ffffff;
+      color: #000000;
       font-weight: 600;
       padding: 0.6rem 1.2rem;
       border-radius: 6px;
       text-decoration: none;
+      border: 2px solid #000000;
+      display: inline-block;
+      transition: background 0.2s, color 0.2s;
     }
     .btn:hover {
-      transform: scale(1.05);
+      background: #000000;
+      color: #ffffff;
+      transform: scale(1.02);
     }
+
+    /* Hidden Utility Class */
     .hidden {
       display: none;
     }
+
+    /* Inputs */
     input {
-      background: #15162b;
-      color: white;
-      border: 1px solid #3a3d5c;
+      background: #ffffff;
+      color: #000000;
+      border: 1px solid #ababab;
       padding: 0.6rem 1rem;
       font-size: 1rem;
       border-radius: 8px;
       width: 80%;
       max-width: 400px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
     }
+
+    /* Loaders (Black border with transparent interior) */
     .loader {
-      border: 6px solid rgba(255, 255, 255, 0.1);
-      border-top: 6px solid #ffc107;
+      border: 6px solid rgba(0, 0, 0, 0.1);
+      border-top: 6px solid #000000;
       border-radius: 50%;
       width: 60px;
       height: 60px;
       animation: spin 0.8s ease-in-out infinite;
       margin: 2rem auto;
-      box-shadow: 0 0 15px #ffc10788;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     @keyframes spin {
-      0% { transform: rotate(0deg); }
+      0%   { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    /* Ensure that .grid containers can expand to fit new cards */
-    #main, #subjects { min-height: 100px; }
   </style>
-
-  <script>
-    // Commented out cookie check (unchanged from original)
-    function getCookie(name) {
-      // (original code commented)
-    }
-
-    // Disable DevTools / copying (unchanged)
-  </script>
-
-  <script disable-devtool-auto="true"
-          src="https://cdn.jsdelivr.net/npm/disable-devtool"
-          clear-log="true"
-          disable-select="true"
-          disable-copy="true"
-          disable-cut="true"
-          disable-paste="true"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-  <title>PW THOR</title>
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- Logo + Title -->
   <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem;">
     <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="PW THOR Logo" style="height: 60px;" />
-    <h1 style="color: #ffc107; font-size: 2rem; margin: 0;">PW THOR</h1>
+    <h1 style="color: #000000; font-size: 2rem; margin: 0;">PW THOR</h1>
   </div>
 
-  <!-- Back Button (hidden on main view) -->
-  <div class="hidden" id="backBtn"
-       style="padding: 1rem; cursor: pointer; color: gold; font-size: 1.2rem;">
-    ← Back
-  </div>
+  <!-- Back Button -->
+  <div class="hidden" id="backBtn" style="padding: 1rem; cursor: pointer; color: #000000; font-size: 1.2rem;">← Back</div>
 
   <!-- SEARCH BAR -->
   <div id="searchBarWrapper" style="padding: 1rem; text-align: center;">
-    <input id="searchInput" placeholder="Search batch by name…" />
+    <input id="searchInput" placeholder="Search batch by name…" autocomplete="off" />
   </div>
 
-  <!-- LOADERS (hidden by default) -->
+  <!-- LOADERS -->
   <div id="batchLoader" class="loader hidden"></div>
   <div id="subjectLoader" class="loader hidden"></div>
   <div id="topicLoader" class="loader hidden"></div>
@@ -149,12 +166,11 @@
   <div class="section hidden" id="topics"></div>
 
   <script>
-    // State variables
     let batchOffset = 0;
-    const batchLimit = 10;          // How many batches to load at once
-    let allBatches = [];            // Will hold all batch objects
-    let isLoading = false;          // Prevent double-loads
-    let inSearchMode = false;       // If the user is searching by name
+    const batchLimit = 10;
+    let totalBatches = Infinity;
+    let isLoading = false;
+    let inSearchMode = false;
 
     const main = document.getElementById('main');
     const subjectsDiv = document.getElementById('subjects');
@@ -164,15 +180,13 @@
     const searchInput = document.getElementById('searchInput');
 
     let currentView = 'main';
-    const prevState = [];
+    let prevState = [];
 
     function showView(view) {
-      // Hide everything first
       main.classList.add('hidden');
       subjectsDiv.classList.add('hidden');
       topicsDiv.classList.add('hidden');
-      // Show or hide the search bar
-      searchBarWrapper.style.display = (view === 'main') ? '' : 'none';
+      searchBarWrapper.style.display = view === 'main' ? '' : 'none';
       backBtn.classList.toggle('hidden', view === 'main');
       currentView = view;
       if (view === 'main') main.classList.remove('hidden');
@@ -185,7 +199,7 @@
       if (lastView) showView(lastView);
     };
 
-    // Append a single batch card into #main
+    // Append a single batch card to #main
     function appendBatchCard(batchData) {
       const div = document.createElement('div');
       div.className = 'card';
@@ -200,275 +214,235 @@
       main.appendChild(div);
     }
 
-    // Render the next “page” of batches (infinite scroll)
-    function renderBatches() {
-      if (isLoading) return;
-      isLoading = true;
-
-      const end = batchOffset + batchLimit;
-      const slice = allBatches.slice(batchOffset, end);
-      slice.forEach(data => appendBatchCard(data));
-
-      batchOffset = end;
-      isLoading = false;
-      document.getElementById('batchLoader').classList.add('hidden');
-    }
-
-    // Fetch all batches just once, then render first batchLimit items
+    // Fetch and render next page of batches
     async function loadBatches() {
+      if (batchOffset >= totalBatches || isLoading) return;
+      isLoading = true;
       document.getElementById('batchLoader').classList.remove('hidden');
 
       try {
-        const res = await fetch('https://pw-api-6d8fde1b7ef0.herokuapp.com/data');
+        const res = await fetch(
+          `https://pw-api-75332756c41b.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
+        );
         const json = await res.json();
+        totalBatches = json.total;
 
-        // Convert { key: val } into array of objects
-        allBatches = Object.entries(json.batches).map(([key, val]) => ({ key, ...val }));
-
-        // If search box is empty, render first “page”
-        if (!searchInput.value.trim()) {
-          renderBatches();
-        } else {
-          // In case the user typed before data arrived
-          handleSearchEvent();
-        }
+        json.batches.forEach(batchData => {
+          appendBatchCard(batchData);
+        });
+        batchOffset += batchLimit;
       } catch (err) {
-        console.error('Error loading batches:', err);
+        console.error('Error fetching batches page:', err);
+      } finally {
+        isLoading = false;
         document.getElementById('batchLoader').classList.add('hidden');
-        main.innerHTML = `
-          <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-            ❌ Failed to load batches. Please try again later.
-          </div>
-        `;
       }
     }
 
+    // Load subjects for a batch
     async function loadSubjects(batchId) {
       document.getElementById('subjectLoader').classList.remove('hidden');
       showView('subjects');
       subjectsDiv.innerHTML = '';
 
-      try {
-        const res = await fetch(`https://pw-api-6d8fde1b7ef0.herokuapp.com/data/batches/${batchId}/subjects`);
-        const subjects = await res.json();
-        document.getElementById('subjectLoader').classList.add('hidden');
+      const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/data/batches/${batchId}/subjects`);
+      const { subjects } = await res.json();
 
-        subjects.forEach(subject => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.innerHTML = `<div class="card-title">${subject.name}</div>`;
-          div.onclick = () => {
-            prevState.push(currentView);
-            loadTopics(batchId, subject.key);
-          };
-          subjectsDiv.appendChild(div);
-        });
-      } catch (err) {
-        console.error('Error loading subjects:', err);
-        document.getElementById('subjectLoader').classList.add('hidden');
-        subjectsDiv.innerHTML = `
-          <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-            ❌ Failed to load subjects. Please try again later.
-          </div>
-        `;
-      }
+      document.getElementById('subjectLoader').classList.add('hidden');
+      subjects.forEach(subject => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<div class="card-title">${subject.name}</div>`;
+        div.onclick = () => {
+          prevState.push(currentView);
+          loadTopics(batchId, subject.key);
+        };
+        subjectsDiv.appendChild(div);
+      });
     }
 
+    // Load topics for a subject
     async function loadTopics(batchId, subjectId) {
       document.getElementById('topicLoader').classList.remove('hidden');
       showView('topics');
       topicsDiv.innerHTML = '';
 
-      try {
-        const res = await fetch(`https://pw-api-6d8fde1b7ef0.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
-        const topics = await res.json();
-        document.getElementById('topicLoader').classList.add('hidden');
+      const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
+      const { topics } = await res.json();
 
-        const topicButtonsContainer = document.createElement('div');
-        topicButtonsContainer.className = 'grid';
-        const topicContent = document.createElement('div');
-        topicContent.className = 'section';
+      const topicButtonsContainer = document.createElement('div');
+      topicButtonsContainer.className = 'grid';
+      const topicContent = document.createElement('div');
+      topicContent.className = 'section';
 
-        if (topics.length === 0) {
-          topicButtonsContainer.innerHTML = `
-            <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-              🚫 No lectures, notes, or DPPs are available for this subject.
-            </div>`;
-        } else {
-          topics.forEach(topic => {
-            const button = document.createElement('div');
-            button.className = 'card';
-            button.innerHTML = `<div class="card-title">${topic.name}</div>`;
-            button.onclick = () => {
-              topicButtonsContainer.style.display = 'none';
+      if (!topics.length) {
+        topicButtonsContainer.innerHTML = `
+          <div style="color: #000000; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
+            🚫 No lectures, notes, or DPPs are available for this subject.
+          </div>`;
+      } else {
+        topics.forEach(topic => {
+          const button = document.createElement('div');
+          button.className = 'card';
+          button.innerHTML = `<div class="card-title">${topic.name}</div>`;
+          button.onclick = () => {
+            topicButtonsContainer.style.display = 'none';
 
-              // Tabs (Lectures / Notes / DPPs)
-              const tabs = `
-                <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
-                  <button class="btn" onclick="switchTab('lectures')">Lectures</button>
-                  <button class="btn" onclick="switchTab('notes')">Notes</button>
-                  <button class="btn" onclick="switchTab('dpps')">DPPs</button>
+            const tabs = `
+              <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                <button class="btn" onclick="switchTab('lectures')">Lectures</button>
+                <button class="btn" onclick="switchTab('notes')">Notes</button>
+                <button class="btn" onclick="switchTab('dpps')">DPPs</button>
+              </div>
+            `;
+
+            topicContent.innerHTML = `<h2 style="color: #000000;">${topic.name}</h2>` + tabs;
+
+            const lecturesHtml = (topic.lectures || []).map(lecture => `
+              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
+                <div style="cursor:pointer;" onclick="playVideo('${lecture.videoUrl}', '${lecture.title}')">
+                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
                 </div>
-              `;
+                <div style="text-align:center; color: #000000;">${lecture.title}</div>
+                ${(lecture.notes || []).map(note => `
+                  <div style="margin-top: 0.5rem;">
+                    <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+                  </div>`).join('')}
+                ${(lecture.dpps || []).map(dpp => `
+                  <div style="margin-top: 0.5rem;">
+                    <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+                  </div>`).join('')}
+              </div>
+            `).join('');
 
-              topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
+            const notesHtml = (topic.notes || []).map(note => `
+              <div style="margin-top: 1rem;">
+                <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+              </div>`).join('');
 
-              const lecturesHtml = (topic.lectures || []).map(lecture => `
-                <div style="margin-bottom: 2rem;">
-                  <a href="video.php?videoUrl=${encodeURIComponent(lecture.videoUrl)}&title=${encodeURIComponent(lecture.title)}">
-                    <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
-                  </a>
-                  <div style="text-align:center;">${lecture.title}</div>
-                  ${(lecture.notes || []).map(note => `
-                    <div style="margin-top: 0.5rem;">
-                      <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
-                    </div>`).join('')}
-                  ${(lecture.dpps || []).map(dpp => `
-                    <div style="margin-top: 0.5rem;">
-                      <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
-                    </div>`).join('')}
-                </div>
-              `).join('');
+            const dppsHtml = (topic.dpps || []).map(dpp => `
+              <div style="margin-top: 1rem;">
+                <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+              </div>`).join('');
 
-              const notesHtml = (topic.notes || []).map(note => `
-                <div style="margin-top: 1rem;">
-                  <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
-                </div>`).join('');
+            topicContent.innerHTML += `
+              <div id="lecturesTab">${lecturesHtml}</div>
+              <div id="notesTab" style="display:none;">${notesHtml}</div>
+              <div id="dppsTab" style="display:none;">${dppsHtml}</div>
+            `;
 
-              const dppsHtml = (topic.dpps || []).map(dpp => `
-                <div style="margin-top: 1rem;">
-                  <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
-                </div>`).join('');
-
-              topicContent.innerHTML += `
-                <div id="lecturesTab">${lecturesHtml}</div>
-                <div id="notesTab" style="display:none;">${notesHtml}</div>
-                <div id="dppsTab" style="display:none;">${dppsHtml}</div>
-              `;
-
-              window.switchTab = function(tabName) {
-                document.getElementById('lecturesTab').style.display = tabName === 'lectures' ? 'block' : 'none';
-                document.getElementById('notesTab').style.display = tabName === 'notes' ? 'block' : 'none';
-                document.getElementById('dppsTab').style.display = tabName === 'dpps' ? 'block' : 'none';
-              };
+            window.switchTab = function(tabName) {
+              document.getElementById('lecturesTab').style.display = tabName === 'lectures' ? 'block' : 'none';
+              document.getElementById('notesTab').style.display = tabName === 'notes' ? 'block' : 'none';
+              document.getElementById('dppsTab').style.display = tabName === 'dpps' ? 'block' : 'none';
             };
-            topicButtonsContainer.appendChild(button);
-          });
-        }
-
-        topicsDiv.appendChild(topicButtonsContainer);
-        topicsDiv.appendChild(topicContent);
-      } catch (err) {
-        console.error('Error loading topics:', err);
-        document.getElementById('topicLoader').classList.add('hidden');
-        topicsDiv.innerHTML = `
-          <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-            ❌ Failed to load topics. Please try again later.
-          </div>
-        `;
+          };
+          topicButtonsContainer.appendChild(button);
+        });
       }
+
+      topicsDiv.appendChild(topicButtonsContainer);
+      topicsDiv.appendChild(topicContent);
+      document.getElementById('topicLoader').classList.add('hidden');
     }
 
-    // ------------------------------
-    //   SEARCH & INFINITE SCROLL
-    // ------------------------------
-
+    // Clear main grid
     function clearMainGrid() {
       while (main.firstChild) {
         main.removeChild(main.firstChild);
       }
     }
 
-    function handleSearchEvent() {
+    // Handle search input
+    async function handleSearchEvent() {
       const term = searchInput.value.trim().toLowerCase();
-
-      // If search box is empty, revert to infinite-scroll mode:
       if (!term) {
         inSearchMode = false;
         clearMainGrid();
         batchOffset = 0;
-        renderBatches();
+        loadBatches();
         return;
       }
 
-      // Otherwise, filter allBatches by name:
       inSearchMode = true;
       clearMainGrid();
-      const matches = allBatches.filter(batch => batch.name.toLowerCase().includes(term));
+      document.getElementById('batchLoader').classList.remove('hidden');
+      const thisSearch = term;
 
-      if (matches.length === 0) {
-        main.innerHTML = `
-          <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-            🤷‍♂️ No batches found matching “${searchInput.value.trim()}”
-          </div>`;
-      } else {
-        matches.forEach(batchData => appendBatchCard(batchData));
+      try {
+        const res = await fetch(
+          `https://pw-api-75332756c41b.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
+        );
+        const json = await res.json();
+        document.getElementById('batchLoader').classList.add('hidden');
+
+        const currentTerm = searchInput.value.trim().toLowerCase();
+        if (currentTerm !== thisSearch) return;
+
+        if (!json.results.length) {
+          main.innerHTML = `
+            <div style="color: #000000; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
+              🤷‍♂️ No batches found matching “${searchInput.value.trim()}”
+            </div>`;
+        } else {
+          json.results.forEach(batchData => {
+            appendBatchCard(batchData);
+          });
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+        document.getElementById('batchLoader').classList.add('hidden');
+        main.innerHTML = '<p style="color: red; text-align: center;">Error fetching search results.</p>';
       }
     }
 
-    // When the user scrolls near the bottom, load more only if not in search mode:
+    // Infinite scroll for pagination
     window.addEventListener('scroll', () => {
       if (currentView !== 'main' || isLoading || inSearchMode) return;
-      const scrollPosition = window.innerHeight + window.scrollY;
-      const pageBottom = document.body.offsetHeight;
-      if (scrollPosition >= pageBottom - 300) {
-        document.getElementById('batchLoader').classList.remove('hidden');
-        renderBatches();
+      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
+        loadBatches();
       }
     });
 
-    // Search input listener
+    // Wire up search input
     searchInput.addEventListener('input', () => {
       handleSearchEvent();
     });
 
-    // Kick everything off on page load
-    loadBatches();
+    // Initial load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBatches();
+    });
   </script>
 
-  <!-- POPUP (unchanged) -->
-  <div id="popup" style="
-       display: none;
-       position: fixed;
-       top: 50%;
-       left: 50%;
-       transform: translate(-50%, -50%);
-       background: #1e2036;
-       color: white;
-       padding: 20px;
-       box-shadow: 0 0 20px #ffc10766;
-       z-index: 9999;
-       width: 320px;
-       border-radius: 12px;
-       text-align: center;
-     ">
+  <!-- Popup logic -->
+  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #f9f9f9; color: #000000; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.1); z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
     <button onclick="document.getElementById('popup').style.display='none'"
-            style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">
-      &times;
-    </button>
+      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: #000000;">&times;</button>
     <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
-    <p id="popupText" style="margin: 15px 0;"></p>
+    <p id="popupText" style="margin: 15px 0; color: #000000;"></p>
     <a id="popupLink" href="#" target="_blank"
-       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
+       style="display: inline-block; padding: 10px 15px; background-color: #ffffff; color: #000000; font-weight: bold; text-decoration: none; border: 2px solid #000000; border-radius: 5px;">
        Join Telegram
     </a>
   </div>
 
   <script>
-    fetch('https://pw-api-6d8fde1b7ef0.herokuapp.com/data')
-      .then(response => response.json())
-      .then(data => {
-        if (data.popup && data.popup.show) {
-          document.getElementById('popupImage').src = data.popup.image;
-          document.getElementById('popupText').textContent = data.popup.text;
-          document.getElementById('popupLink').href = data.popup.link;
+    fetch('/popup.json')
+      .then(res => res.json())
+      .then(popup => {
+        if (popup.show) {
+          document.getElementById('popupImage').src = popup.image;
+          document.getElementById('popupText').textContent = popup.text;
+          document.getElementById('popupLink').href = popup.link;
           document.getElementById('popup').style.display = 'block';
         }
       })
-      .catch(error => console.error('Error loading popup data:', error));
+      .catch(err => console.error('Error loading popup data:', err));
   </script>
 
-  <!-- Disable right-click and DevTools (unchanged) -->
+  <!-- Disable right-click + DevTools -->
   <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('keydown', function (event) {
@@ -491,10 +465,35 @@
     })();
   </script>
 
-  <a href="https://t.me/pwthor_support" target="_blank"
-     style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+  <!-- Telegram Support Button -->
+  <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
   </a>
+
+  <script>
+    function playVideo(videoUrl, title) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'player.php';
+      form.style.display = 'none';
+
+      const inputUrl = document.createElement('input');
+      inputUrl.type = 'hidden';
+      inputUrl.name = 'videoUrl';
+      inputUrl.value = videoUrl;
+      form.appendChild(inputUrl);
+
+      const inputTitle = document.createElement('input');
+      inputTitle.type = 'hidden';
+      inputTitle.name = 'title';
+      inputTitle.value = title;
+      form.appendChild(inputTitle);
+
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(() => document.body.removeChild(form), 1000);
+    }
+  </script>
 
 </body>
 </html>
