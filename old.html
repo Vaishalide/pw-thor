@@ -7,20 +7,20 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <script>
-  //  function getCookie(name) {
-//      const value = document.cookie;
- //     const parts = value.split("; ");
-  //    for (let i = 0; i < parts.length; i++) {
-   //     const [key, val] = parts[i].split("=");
-   //     if (key === name) return val;
-   ///   }
-  //    return null;
- //   }
+    function getCookie(name) {
+      const value = document.cookie;
+      const parts = value.split("; ");
+      for (let i = 0; i < parts.length; i++) {
+        const [key, val] = parts[i].split("=");
+        if (key === name) return val;
+      }
+      return null;
+    }
 
-///    if (!getCookie('login')) {
+    if (!getCookie('login')) {
       // Agar logged in nahi hain, toh generate key page par redirect karo
- //     window.location.href = 'https://pwthor.site/generate-key.html';
- //   }
+      window.location.href = 'https://pwthor.site/generate-key.html';
+    }
   </script>
   <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
     disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
@@ -50,12 +50,12 @@
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    /* Favorite heart icon styles */
+    /* Favorite heart icon styles (larger) */
     .heart-icon {
       position: absolute;
       top: 10px;
       right: 10px;
-      font-size: 20px;
+      font-size: 28px;
       color: white;
       cursor: pointer;
       z-index: 10;
@@ -82,6 +82,14 @@
     <input id="searchInput" placeholder="Search batch by name…" autocomplete="off" />
   </div>
 
+  <!-- FAVORITES BUTTON -->
+  <div style="text-align: center; padding-bottom: 0.5rem;">
+    <button id="favBtn" class="btn">My Favorite Batches</button>
+  </div>
+
+  <!-- FAVORITES CONTAINER (hidden by default) -->
+  <div class="grid hidden" id="favContainer"></div>
+
   <!-- LOADERS -->
   <div id="batchLoader" class="loader hidden"></div>
   <div id="subjectLoader" class="loader hidden"></div>
@@ -89,13 +97,6 @@
 
   <!-- MAIN CONTAINERS -->
   <div class="grid" id="main"></div>
-
-  <!-- FAVORITE BATCHES SECTION -->
-  <div class="section" id="favorites">
-    <h2 style="color: gold; text-align: center;">❤️ Favorite Batches</h2>
-    <div class="grid" id="favGrid"></div>
-  </div>
-
   <div class="grid hidden" id="subjects"></div>
   <div class="section hidden" id="topics"></div>
 
@@ -112,6 +113,8 @@
     const backBtn = document.getElementById('backBtn');
     const searchBarWrapper = document.getElementById('searchBarWrapper');
     const searchInput = document.getElementById('searchInput');
+    const favBtn = document.getElementById('favBtn');
+    const favContainer = document.getElementById('favContainer');
 
     let currentView = 'main';
     let prevState = [];
@@ -120,6 +123,7 @@
       main.classList.add('hidden');
       subjectsDiv.classList.add('hidden');
       topicsDiv.classList.add('hidden');
+      favContainer.classList.add('hidden');
       searchBarWrapper.style.display = view === 'main' ? '' : 'none';
       backBtn.classList.toggle('hidden', view === 'main');
       currentView = view;
@@ -131,6 +135,16 @@
     backBtn.onclick = () => {
       const lastView = prevState.pop();
       if (lastView) showView(lastView);
+    };
+
+    // Toggle favorites container visibility
+    favBtn.onclick = () => {
+      if (favContainer.classList.contains('hidden')) {
+        renderFavoriteSection();
+        favContainer.classList.remove('hidden');
+      } else {
+        favContainer.classList.add('hidden');
+      }
     };
 
     // Append a single batch card to #main, with favorite heart
@@ -361,7 +375,6 @@
     // Initial load
     document.addEventListener('DOMContentLoaded', () => {
       loadBatches();
-      renderFavoriteSection(); // show favorites on load
     });
   </script>
 
@@ -379,12 +392,14 @@
         localStorage.removeItem(`fav-data-${key}`);
       }
 
-      renderFavoriteSection(); // Re-render fav section on toggle
+      // If favorites are visible, re-render
+      if (!favContainer.classList.contains('hidden')) {
+        renderFavoriteSection();
+      }
     }
 
     function renderFavoriteSection() {
-      const favGrid = document.getElementById('favGrid');
-      favGrid.innerHTML = '';
+      favContainer.innerHTML = '';
 
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('fav-data-')) {
@@ -411,7 +426,7 @@
       };
 
       wrapper.appendChild(div);
-      document.getElementById('favGrid').appendChild(wrapper);
+      favContainer.appendChild(wrapper);
     }
   </script>
 
@@ -427,8 +442,6 @@
        Join Telegram
     </a>
   </div>
-
-  <!-- …existing HTML popup markup (id="popup", popupImage, popupText, popupLink) … -->
 
   <script>
     fetch('/popup.json')
