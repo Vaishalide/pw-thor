@@ -7,20 +7,20 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <script>
-    function getCookie(name) {
-        const value = document.cookie;
-        const parts = value.split("; ");
-        for (let i = 0; i < parts.length; i++) {
-            const [key, val] = parts[i].split("=");
-            if (key === name) return val;
-        }
-        return null;
-    }
+   // function getCookie(name) {
+    //   const value = document.cookie;
+    //    const parts = value.split("; ");
+    //  for (let i = 0; i < parts.length; i++) {
+    //        const [key, val] = parts[i].split("=");
+     //       if (key === name) return val;
+     ///   }
+    //    return null;
+// }
 
-    if (!getCookie('login')) {
+///    if (!getCookie('login')) {
         // Agar logged in nahi hain, toh generate key page par redirect karo
-        window.location.href = 'https://pwthor.site/generate-key.html';
-    }
+//        window.location.href = 'https://pwthor.site/generate-key.html';
+//    }
 </script>
 <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
     disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
@@ -132,7 +132,7 @@
 
       try {
         const res = await fetch(
-          `https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
+          `https://testing-453c50579f45.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
         );
         const json = await res.json();
         totalBatches = json.total;
@@ -155,7 +155,7 @@
       showView('subjects');
       subjectsDiv.innerHTML = '';
 
-      const res = await fetch(`https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/${batchId}/subjects`);
+      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects`);
       const { subjects } = await res.json();
 
       document.getElementById('subjectLoader').classList.add('hidden');
@@ -177,7 +177,7 @@
       showView('topics');
       topicsDiv.innerHTML = '';
 
-      const res = await fetch(`https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
+      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
       const { topics } = await res.json();
 
       const topicButtonsContainer = document.createElement('div');
@@ -288,7 +288,7 @@
       try {
         // 5. Fetch from the server using the query
         const res = await fetch(
-          `https://pw-new-6e1a4a5971ce.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
+          `https://testing-453c50579f45.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
         );
         const json = await res.json(); // { results: [ { key, name, image }, … ] }
 
@@ -402,7 +402,7 @@
     function playVideo(videoUrl, title) {
       const form = document.createElement('form');
       form.method = 'POST';
-      form.action = 'player.php';
+      form.action = 'try.php';
       form.style.display = 'none';
 
       const inputUrl = document.createElement('input');
