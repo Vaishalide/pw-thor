@@ -1,49 +1,13 @@
 <?php
-// Determine video URL and title from POST (preferred) or fallback to GET (optional).
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $videoUrl = isset($_POST['videoUrl']) ? $_POST['videoUrl'] : '';
-    $title    = isset($_POST['title'])    ? $_POST['title']    : '';
-} else {
-    // Fallback only if someone tries to hit video.php directly with query parameters.
-    // If you don’t want any GET‐based fallback, you can remove this entire else block.
-    $videoUrl = isset($_GET['videoUrl']) ? $_GET['videoUrl'] : '';
-    $title    = isset($_GET['title'])    ? $_GET['title']    : '';
-}
-
-if (empty($videoUrl)) {
-    // No video URL provided—redirect back to index or show an error.
-    header('Location: index.html');
-    exit;
-}
-
-// Safely escape for embedding in HTML/JS
-$escapedVideoUrl = addslashes($videoUrl);
-$escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+// Retrieve video URL and title from query parameters
+$videoUrl = isset($_GET['videoUrl']) ? $_GET['videoUrl'] : '';
+$title = isset($_GET['title']) ? $_GET['title'] : 'Lecture Video';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
- <script>
-    function getCookie(name) {
-        const value = document.cookie;
-        const parts = value.split("; ");
-        for (let i = 0; i < parts.length; i++) {
-            const [key, val] = parts[i].split("=");
-            if (key === name) return val;
-        }
-        return null;
-    }
-
-    if (!getCookie('login')) {
-        // Agar logged in nahi hain, toh generate key page par redirect karo
-        window.location.href = 'https://pwthor.site/generate-key.html';
-    }
-</script>
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <title><?php echo htmlspecialchars($title); ?></title>
   <!-- HLS.js -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -134,10 +98,10 @@ $escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
         window.hls = new Hls({ capLevelToPlayerSize:true });
         window.hls.loadSource(url);
         window.hls.attachMedia(video);
-        window.hls.on(Hls.Events.MANIFEST_PARSED, () => { video.currentTime = 7; video.play(); });
+        window.hls.on(Hls.Events.MANIFEST_PARSED, () => { video.currentTime = 14; video.play(); });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = url;
-        video.addEventListener('loadedmetadata', () => { video.currentTime = 7; video.play(); });
+        video.addEventListener('loadedmetadata', () => { video.currentTime = 14; video.play(); });
       }
     }
 
