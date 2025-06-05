@@ -71,7 +71,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
 }
 video {
   max-width: 100%;
-  max-height: 80vh; /* limits video height to 80% of viewport */
+  max-height: 90vh; /* limits video height to 80% of viewport */
   object-fit: contain;
   background: #000;
 }
