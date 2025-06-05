@@ -169,36 +169,30 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       border: 1px solid var(--accent);
       border-radius: 4px;
       display: none;
-      font-size: 0.9em;
-      z-index: 10;
+      font-size: 0.95em;
+      z-index: 20;
       padding: 8px;
-      width: 140px;
+      width: 160px;
     }
     .settings-panel.active {
       display: block;
     }
-    .settings-panel strong {
+    .settings-panel label {
       display: block;
-      margin: 8px 0 4px 0;
+      margin: 6px 0 2px 0;
       color: var(--accent);
-      font-size: 0.95em;
+      font-size: 0. nine five em;
     }
-    .settings-panel button {
-      background: none;
-      border: 1px solid var(--fg);
-      color: var(--fg);
-      padding: 6px;
-      margin: 4px 0;
-      cursor: pointer;
-      border-radius: 4px;
-      font-size: 0.9em;
+    .settings-panel select {
       width: 100%;
-      text-align: left;
-    }
-    .settings-panel button.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--bg);
+      padding: 4px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--fg);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 0. nine five em;
+      outline: none;
     }
   </style>
 </head>
@@ -233,31 +227,32 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
 
     <!-- Settings panel for Quality & Speed -->
     <div class="settings-panel" id="settingsPanel">
-      <strong>Quality</strong>
-      <div id="levels"></div>
-      <strong>Speed</strong>
-      <div id="speeds"></div>
+      <label for="qualitySelect">Quality</label>
+      <select id="qualitySelect">
+        <option value="<?php echo htmlspecialchars($video720); ?>">Auto (720p)</option>
+        <option value="<?php echo htmlspecialchars($video720); ?>">720p</option>
+        <option value="<?php echo htmlspecialchars($video480); ?>">480p</option>
+        <option value="<?php echo htmlspecialchars($video360); ?>">360p</option>
+        <option value="<?php echo htmlspecialchars($video240); ?>">240p</option>
+      </select>
+
+      <label for="speedSelect">Playback Speed</label>
+      <select id="speedSelect">
+        <option value="0.5">0.5×</option>
+        <option value="1" selected>1×</option>
+        <option value="1.5">1.5×</option>
+        <option value="2">2×</option>
+      </select>
     </div>
   </div>
 
   <script>
-    // Map of labels → URLs for each quality (Auto maps to 720p by default)
-    const qualityMap = {
-      "Auto": "<?php echo htmlspecialchars($video720); ?>",
-      "720p": "<?php echo htmlspecialchars($video720); ?>",
-      "480p": "<?php echo htmlspecialchars($video480); ?>",
-      "360p": "<?php echo htmlspecialchars($video360); ?>",
-      "240p": "<?php echo htmlspecialchars($video240); ?>"
-    };
-    const speedOptions = [0.5, 1, 1.5, 2]; // playback speeds
-
-    const video       = document.getElementById('video');
-    const player      = document.getElementById('player');
-    const controls    = document.getElementById('controls');
-    const levels      = document.getElementById('levels');
-    const speedsPanel = document.getElementById('speeds');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const themeToggle = document.getElementById('themeToggle');
+    // Retrieve DOM elements
+    const video         = document.getElementById('video');
+    const player        = document.getElementById('player');
+    const controls      = document.getElementById('controls');
+    const settingsBtn   = document.getElementById('settingsBtn');
+    const themeToggle   = document.getElementById('themeToggle');
     const fullscreenBtn = document.getElementById('fullscreen');
     const playPauseBtn  = document.getElementById('playPause');
     const muteBtn       = document.getElementById('mute');
@@ -266,8 +261,9 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
     const currentTimeEl = document.getElementById('currentTime');
     const durationEl    = document.getElementById('duration');
     const settingsPanel = document.getElementById('settingsPanel');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const speedSelect   = document.getElementById('speedSelect');
 
-    let currentUrl = qualityMap["Auto"];
     let hideControlsTimeout;
     let hlsInstance;
 
@@ -278,25 +274,18 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       return `${m}:${s}`;
     }
 
-    // Show controls when user interacts, then hide after a short delay
+    // Show controls when user interacts, then hide after 3 seconds (unless settings open)
     function showControls() {
       controls.classList.remove('hide');
       clearTimeout(hideControlsTimeout);
       hideControlsTimeout = setTimeout(() => {
-        controls.classList.add('hide');
-      }, 4000);
+        if (!settingsPanel.classList.contains('active')) {
+          controls.classList.add('hide');
+        }
+      }, 3000);
     }
 
-    // Initialize player: load stream, build UI, wire events
-    function initPlayer() {
-      loadStream(currentUrl);
-      buildQualityButtons();
-      buildSpeedButtons();
-      setupEventListeners();
-      showControls();
-    }
-
-    // Load an HLS stream (or direct if supported natively)
+    // Load HLS stream (or native if supported)
     function loadStream(url) {
       if (hlsInstance) {
         hlsInstance.destroy();
@@ -317,56 +306,26 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       }
     }
 
-    // Build Quality buttons inside the #levels container
-    function buildQualityButtons() {
-      levels.innerHTML = '';
-      Object.keys(qualityMap).forEach(label => {
-        const btn = document.createElement('button');
-        btn.textContent = label;
-        btn.dataset.url = qualityMap[label];
-        btn.onclick = () => {
-          currentUrl = btn.dataset.url;
-          loadStream(currentUrl);
-          highlightActiveQuality();
-        };
-        levels.appendChild(btn);
-      });
-      highlightActiveQuality();
+    // Initialize player: load default stream and set up events
+    function initPlayer() {
+      loadStream(qualitySelect.value);
+      video.playbackRate = parseFloat(speedSelect.value);
+      setupEventListeners();
+      showControls();
     }
 
-    // Highlight the active quality button
-    function highlightActiveQuality() {
-      Array.from(levels.children).forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.url === currentUrl);
-      });
-    }
+    // Update quality when user changes select
+    qualitySelect.onchange = function(e) {
+      loadStream(e.target.value);
+      video.play();
+    };
 
-    // Build Speed buttons inside the #speeds container
-    function buildSpeedButtons() {
-      speedsPanel.innerHTML = '';
-      speedOptions.forEach(s => {
-        const btn = document.createElement('button');
-        btn.textContent = s + 'x';
-        btn.dataset.rate = s;
-        btn.onclick = () => {
-          video.playbackRate = s;
-          highlightActiveSpeed();
-        };
-        speedsPanel.appendChild(btn);
-      });
-      // Default speed is 1x
-      video.playbackRate = 1;
-      highlightActiveSpeed();
-    }
+    // Update playback speed when changed
+    speedSelect.onchange = function(e) {
+      video.playbackRate = parseFloat(e.target.value);
+    };
 
-    // Highlight the active speed button
-    function highlightActiveSpeed() {
-      Array.from(speedsPanel.children).forEach(btn => {
-        btn.classList.toggle('active', parseFloat(btn.dataset.rate) === video.playbackRate);
-      });
-    }
-
-    // Set up all event listeners for controls
+    // Set up event listeners for controls
     function setupEventListeners() {
       // Show controls on mouse or touch
       player.addEventListener('mousemove', showControls);
@@ -380,7 +339,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       video.onplay  = () => playPauseBtn.textContent = '❚❚';
       video.onpause = () => playPauseBtn.textContent = '►';
 
-      // Update time display & seek slider as video plays
+      // Update time display & seek slider
       video.ontimeupdate = () => {
         const current = video.currentTime;
         const total   = video.duration || 0;
@@ -392,7 +351,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
         durationEl.textContent = formatTime(video.duration || 0);
       };
 
-      // Seek slider input
+      // Seek input
       seekSlider.oninput = e => {
         const total = video.duration || 0;
         const targetTime = (e.target.value / 100) * total;
@@ -412,7 +371,8 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       };
 
       // Fullscreen toggle + orientation lock on mobile
-      fullscreenBtn.onclick = () => {
+      fullscreenBtn.onclick = (e) => {
+        e.stopPropagation();
         if (document.fullscreenElement) {
           document.exitFullscreen();
         } else {
@@ -421,7 +381,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       };
       document.addEventListener('fullscreenchange', () => {
         if (document.fullscreenElement) {
-          // Attempt landscape lock on mobile
           if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('landscape').catch(() => {});
           }
@@ -432,10 +391,11 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
         }
       });
 
-      // Settings button toggles panel
+      // Settings button toggles panel visibility
       settingsBtn.onclick = (e) => {
         e.stopPropagation();
         settingsPanel.classList.toggle('active');
+        showControls(); // keep controls visible when settings open
       };
       // Hide settings panel if clicking outside
       document.addEventListener('click', e => {
@@ -445,14 +405,15 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       });
 
       // Theme toggle (dark / light)
-      themeToggle.onclick = () => {
+      themeToggle.onclick = (e) => {
+        e.stopPropagation();
         const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
         document.body.dataset.theme = next;
         themeToggle.textContent = next === 'dark' ? '🌙' : '☀️';
       };
     }
 
-    // Start everything once DOM is ready
+    // Start once DOM is ready
     document.addEventListener('DOMContentLoaded', () => {
       initPlayer();
     });
