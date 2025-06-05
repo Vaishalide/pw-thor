@@ -353,16 +353,16 @@
             const lecturesHtml = (topic.lectures || []).map(lecture => `
               <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
                 <div style="cursor:pointer;"
-                    // (fixed template)
-onclick="showQualityModal(
-   '${lecture.videoUrl}',
-   '${lecture.videoUrl1}',
-   '${lecture.videoUrl2}',
-   '${lecture.videoUrl3}',
-   '${lecture.title}'
-)"
+                
+                   onclick="showQualityModal(
+              '${lecture.videoUrl}',
+               '${lecture.videoUrl1}',
+              '${lecture.videoUrl2}',
+             '${lecture.videoUrl3}',
+               '${lecture.title}'
+                 )"
 
-                  <img src="${lecture.thumbnail}"
+                  <img src='${lecture.thumbnail}'
                        style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
                 </div>
                 <div style="text-align:center;">${lecture.title}</div>
