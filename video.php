@@ -1,16 +1,15 @@
 <?php
-// Retrieve quality video URLs and title from query string
-$video720 = isset($_GET['videoUrl'])  ? $_GET['videoUrl']  : '';
-$video480 = isset($_GET['videoUrl1']) ? $_GET['videoUrl1'] : '';
-$video360 = isset($_GET['videoUrl2']) ? $_GET['videoUrl2'] : '';
-$video240 = isset($_GET['videoUrl3']) ? $_GET['videoUrl3'] : '';
-$title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
+$video720 = $_GET['videoUrl']  ?? '';
+$video480 = $_GET['videoUrl1'] ?? '';
+$video360 = $_GET['videoUrl2'] ?? '';
+$video240 = $_GET['videoUrl3'] ?? '';
+$title    = $_GET['title']     ?? 'Video Player';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title><?php echo htmlspecialchars($title); ?></title>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
@@ -18,7 +17,6 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
       --bg: #000;
       --fg: #fff;
       --accent: #2f8eed;
-      --seek-bg: #444;
     }
 
     * {
@@ -28,18 +26,60 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
     }
 
     html, body {
-      width: 100%;
       height: 100%;
       background: var(--bg);
-      overflow: hidden;
+      color: var(--fg);
       font-family: Arial, sans-serif;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .back-btn {
+      color: var(--fg);
+      text-decoration: none;
+      font-size: 18px;
+      background: rgba(255,255,255,0.1);
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--fg);
+    }
+
+    .top-quality {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+    }
+
+    .top-quality select {
+      background: var(--bg);
+      color: var(--fg);
+      border: 1px solid var(--accent);
+      padding: 5px;
+      border-radius: 4px;
     }
 
     .player {
       width: 100vw;
       height: 100vh;
       position: relative;
-      background: #000;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -50,24 +90,6 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
       height: 100%;
       object-fit: contain;
       background: #000;
-    }
-
-    .top-quality {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 4px;
-      border-radius: 4px;
-    }
-
-    .top-quality select {
-      background: var(--bg);
-      color: var(--fg);
-      border: 1px solid var(--accent);
-      border-radius: 4px;
-      padding: 4px;
     }
 
     .controls {
@@ -106,7 +128,7 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
     .seek {
       width: 100%;
       height: 8px;
-      background: var(--seek-bg);
+      background: #444;
       border-radius: 4px;
       -webkit-appearance: none;
       appearance: none;
@@ -134,13 +156,35 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
       font-size: 0.9em;
       min-width: 40px;
     }
+
+    .playback-speed {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px;
+      border-radius: 6px;
+    }
+
+    .playback-speed select {
+      background: var(--bg);
+      color: var(--fg);
+      border: 1px solid var(--accent);
+      padding: 4px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
   <div class="player" id="player">
-    <video id="video" autoplay playsinline webkit-playsinline></video>
+    <!-- Top Controls -->
+    <div class="header">
+      <a href="javascript:history.back()" class="back-btn">← Back</a>
+      <div class="title"><?php echo htmlspecialchars($title); ?></div>
+    </div>
 
-    <!-- Quality Selector -->
+    <!-- Quality Select -->
     <div class="top-quality">
       <select id="topQualitySelect">
         <option value="<?php echo htmlspecialchars($video720); ?>">720p</option>
@@ -149,6 +193,9 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
         <option value="<?php echo htmlspecialchars($video240); ?>">240p</option>
       </select>
     </div>
+
+    <!-- Video Element -->
+    <video id="video" autoplay playsinline webkit-playsinline></video>
 
     <!-- Controls -->
     <div class="controls" id="controls">
@@ -162,12 +209,23 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
         <span id="duration" class="time">0:00</span>
       </div>
     </div>
+
+    <!-- Playback Speed -->
+    <div class="playback-speed">
+      <label for="speed">Speed:</label>
+      <select id="speed">
+        <option value="0.5">0.5x</option>
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+    </div>
   </div>
 
   <script>
     const video = document.getElementById("video");
-    const player = document.getElementById("player");
-    const controls = document.getElementById("controls");
     const playPause = document.getElementById("playPause");
     const muteBtn = document.getElementById("mute");
     const volumeSlider = document.getElementById("volume");
@@ -176,6 +234,7 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
     const currentTimeElem = document.getElementById("currentTime");
     const durationElem = document.getElementById("duration");
     const topQualitySelect = document.getElementById("topQualitySelect");
+    const speedSelect = document.getElementById("speed");
 
     let hlsInstance = null;
 
@@ -192,33 +251,15 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
       } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = url;
       } else {
-        alert("Your browser does not support HLS");
+        alert("HLS not supported in this browser.");
       }
+
       video.play();
     }
 
     topQualitySelect.onchange = () => {
       loadStream(topQualitySelect.value);
     };
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    }
-
-    video.addEventListener("loadedmetadata", () => {
-      durationElem.textContent = formatTime(video.duration);
-    });
-
-    video.addEventListener("timeupdate", () => {
-      currentTimeElem.textContent = formatTime(video.currentTime);
-      seekBar.value = (video.currentTime / video.duration) * 100;
-    });
-
-    seekBar.addEventListener("input", () => {
-      video.currentTime = (seekBar.value / 100) * video.duration;
-    });
 
     playPause.onclick = () => {
       if (video.paused) {
@@ -245,11 +286,34 @@ $title    = isset($_GET['title'])     ? $_GET['title']     : 'Video Player';
 
     fullscreenBtn.onclick = () => {
       if (!document.fullscreenElement) {
-        player.requestFullscreen();
+        document.documentElement.requestFullscreen();
       } else {
         document.exitFullscreen();
       }
     };
+
+    seekBar.addEventListener("input", () => {
+      video.currentTime = (seekBar.value / 100) * video.duration;
+    });
+
+    video.addEventListener("timeupdate", () => {
+      currentTimeElem.textContent = formatTime(video.currentTime);
+      seekBar.value = (video.currentTime / video.duration) * 100;
+    });
+
+    video.addEventListener("loadedmetadata", () => {
+      durationElem.textContent = formatTime(video.duration);
+    });
+
+    speedSelect.onchange = () => {
+      video.playbackRate = parseFloat(speedSelect.value);
+    };
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
 
     document.addEventListener("DOMContentLoaded", () => {
       loadStream(topQualitySelect.value);
