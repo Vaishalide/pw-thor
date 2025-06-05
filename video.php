@@ -27,12 +27,12 @@ $title    = $_GET['title']     ?? 'Video Player';
     }
 
     html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--fg);
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Arial, sans-serif;
+  overflow: auto; /* allows vertical and horizontal scroll if needed */
+}
 
     /* Header (Back button + Title) */
     .header {
