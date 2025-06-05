@@ -9,14 +9,14 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
   <title><?php echo htmlspecialchars($title); ?></title>
   <!-- HLS.js for streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
   <style>
-    /* Color‐theme variables */
+    /* Color-theme variables */
     :root {
       --bg: #111;
       --fg: #fff;
@@ -31,8 +31,12 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
     }
 
     /* Reset & layout */
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
+      padding: 0;
+    }
+    body {
       background: var(--bg);
       color: var(--fg);
       font-family: Arial, sans-serif;
@@ -72,6 +76,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       width: 100%;
       height: 100%;
       object-fit: contain;
+      background: #000;
     }
     /* Fullscreen adjustments */
     .player:-webkit-full-screen video,
@@ -166,25 +171,29 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       display: none;
       font-size: 0.9em;
       z-index: 10;
-      padding: 6px;
+      padding: 8px;
+      width: 140px;
     }
     .settings-panel.active {
       display: block;
     }
     .settings-panel strong {
       display: block;
-      margin: 4px 0 2px 0;
+      margin: 8px 0 4px 0;
       color: var(--accent);
+      font-size: 0.95em;
     }
     .settings-panel button {
       background: none;
       border: 1px solid var(--fg);
       color: var(--fg);
-      padding: 4px 8px;
-      margin: 4px 2px 0 2px;
+      padding: 6px;
+      margin: 4px 0;
       cursor: pointer;
-      border-radius: 3px;
+      border-radius: 4px;
       font-size: 0.9em;
+      width: 100%;
+      text-align: left;
     }
     .settings-panel button.active {
       background: var(--accent);
@@ -232,7 +241,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
   </div>
 
   <script>
-    // Map of labels → URLs for each quality
+    // Map of labels → URLs for each quality (Auto maps to 720p by default)
     const qualityMap = {
       "Auto": "<?php echo htmlspecialchars($video720); ?>",
       "720p": "<?php echo htmlspecialchars($video720); ?>",
@@ -293,6 +302,10 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
         hlsInstance.destroy();
         hlsInstance = null;
       }
+      if (!url) {
+        console.error('Stream URL missing.');
+        return;
+      }
       if (Hls.isSupported()) {
         hlsInstance = new Hls();
         hlsInstance.loadSource(url);
@@ -341,6 +354,8 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
         };
         speedsPanel.appendChild(btn);
       });
+      // Default speed is 1x
+      video.playbackRate = 1;
       highlightActiveSpeed();
     }
 
@@ -418,7 +433,8 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       });
 
       // Settings button toggles panel
-      settingsBtn.onclick = () => {
+      settingsBtn.onclick = (e) => {
+        e.stopPropagation();
         settingsPanel.classList.toggle('active');
       };
       // Hide settings panel if clicking outside
