@@ -85,6 +85,8 @@
       padding: 0.6rem 1.2rem;
       border-radius: 6px;
       text-decoration: none;
+      margin: 0.3rem;
+      cursor: pointer;
     }
     .btn:hover {
       transform: scale(1.05);
@@ -120,6 +122,48 @@
         transform: rotate(360deg);
       }
     }
+    /* Modal overlay */
+    #qualityModalOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    /* Modal box */
+    #qualityModal {
+      background: #1e2036;
+      padding: 1.5rem;
+      border-radius: 10px;
+      width: 320px;
+      max-width: 90%;
+      position: relative;
+      text-align: center;
+      box-shadow: 0 0 20px #ffc10766;
+    }
+    /* Close button */
+    #qualityModal .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+    /* Quality buttons container */
+    #qualityButtons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -150,6 +194,17 @@
   <div class="grid hidden" id="subjects"></div>
   <div class="section hidden" id="topics"></div>
 
+  <!-- QUALITY SELECTION MODAL -->
+  <div id="qualityModalOverlay">
+    <div id="qualityModal">
+      <button class="close-btn" onclick="hideQualityModal()">&times;</button>
+      <h3 style="margin: 0;">Select Quality</h3>
+      <div id="qualityButtons">
+        <!-- Buttons will be injected here -->
+      </div>
+    </div>
+  </div>
+
   <script>
     let batchOffset = 0;
     const batchLimit = 10;
@@ -166,6 +221,14 @@
 
     let currentView = 'main';
     let prevState = [];
+
+    // References for modal
+    const qualityModalOverlay = document.getElementById('qualityModalOverlay');
+    const qualityButtonsContainer = document.getElementById('qualityButtons');
+
+    // Variables to hold the URLs and title when modal is open
+    let modalUrlMap = {};
+    let modalTitle = '';
 
     function showView(view) {
       main.classList.add('hidden');
@@ -287,7 +350,7 @@
             const lecturesHtml = (topic.lectures || []).map(lecture => `
               <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
                 <div style="cursor:pointer;"
-                     onclick="showQualityOptions('${lecture.videoUrl}', '${lecture.videoUrl1}', '${lecture.videoUrl2}', '${lecture.videoUrl3}', '${lecture.title}')">
+                     onclick="showQualityModal('${lecture.videoUrl}', '${lecture.videoUrl1}', '${lecture.videoUrl2}', '${lecture.videoUrl3}', '${lecture.title}')">
                   <img src="${lecture.thumbnail}"
                        style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
                 </div>
@@ -343,10 +406,7 @@
 
     // Handle search input
     async function handleSearchEvent() {
-      // 1. Grab the *current* value of the input, lower‐cased/trimmed
       const term = searchInput.value.trim().toLowerCase();
-
-      // 2. If the box is now empty, switch back to “infinite scroll” mode:
       if (!term) {
         inSearchMode = false;
         clearMainGrid();
@@ -354,34 +414,19 @@
         loadBatches();
         return;
       }
-
-      // 3. Otherwise, we are in search mode. Clear out any older cards:
       inSearchMode = true;
       clearMainGrid();
       document.getElementById('batchLoader').classList.remove('hidden');
-
-      // 4. Capture this search‐term so we can detect stale responses:
       const thisSearch = term;
 
       try {
-        // 5. Fetch from the server using the query
         const res = await fetch(
           `https://testing-453c50579f45.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
         );
-        const json = await res.json(); // { results: [ { key, name, image }, … ] }
-
-        // Right after we get a response, hide the loader.
+        const json = await res.json();
         document.getElementById('batchLoader').classList.add('hidden');
-
-        // 6. If the user has already changed the input since we fired off this request,
-        //    we should do nothing (i.e. don’t append outdated cards).
         const currentTerm = searchInput.value.trim().toLowerCase();
-        if (currentTerm !== thisSearch) {
-          // The input no longer matches; drop these results.
-          return;
-        }
-
-        // 7. Now that we know the term is still valid, render:
+        if (currentTerm !== thisSearch) return;
         if (!json.results.length) {
           main.innerHTML = `
             <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
@@ -418,41 +463,42 @@
     });
 
 
+    // ---------------------------------
+    // SHOW/HIDE QUALITY SELECTION MODAL
+    // ---------------------------------
+    function showQualityModal(url720, url480, url360, url240, title) {
+      // Store in modalUrlMap
+      modalUrlMap = {
+        '720': url720,
+        '480': url480,
+        '360': url360,
+        '240': url240
+      };
+      modalTitle = title;
 
-    // -------------------------------
-    // NEW: showQualityOptions(...)  
-    // -------------------------------
-    // This function prompts the user for a quality (720, 480, 360, or 240).
-    // After the user types one of those values, it calls playVideo(...) with the corresponding URL.
-    function showQualityOptions(url720, url480, url360, url240, title) {
-      const choice = prompt(
-        "Select video quality:\n" +
-        "Type one of: 720, 480, 360, 240",
-        "720"
-      );
+      // Clear any existing buttons
+      qualityButtonsContainer.innerHTML = '';
 
-      if (!choice) return; // user pressed Cancel
+      // Create four buttons
+      ['720', '480', '360', '240'].forEach(quality => {
+        const btn = document.createElement('button');
+        btn.className = 'btn';
+        btn.textContent = quality + 'p';
+        btn.onclick = () => {
+          playVideo(modalUrlMap[quality], modalTitle);
+          hideQualityModal();
+        };
+        qualityButtonsContainer.appendChild(btn);
+      });
 
-      let selectedUrl;
-      switch (choice.trim()) {
-        case '720':
-          selectedUrl = url720;
-          break;
-        case '480':
-          selectedUrl = url480;
-          break;
-        case '360':
-          selectedUrl = url360;
-          break;
-        case '240':
-          selectedUrl = url240;
-          break;
-        default:
-          alert('Invalid choice. Please type exactly 720, 480, 360, or 240.');
-          return;
-      }
+      // Show modal
+      qualityModalOverlay.style.display = 'flex';
+    }
 
-      playVideo(selectedUrl, title);
+    function hideQualityModal() {
+      qualityModalOverlay.style.display = 'none';
+      modalUrlMap = {};
+      modalTitle = '';
     }
 
     // Existing playVideo(...) remains unchanged
