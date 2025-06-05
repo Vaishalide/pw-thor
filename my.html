@@ -223,7 +223,8 @@
 
   return `
     <div style="margin-bottom: 2rem;">
-      <a href="video.php?videoUrl=${encodeURIComponent(lecture.videoUrl)}&title=${encodeURIComponent(lecture.title)}">
+      <a href="video.php?videoUrl=${encodeURIComponent(lecture.videoUrl)}&videoUrl1=${encodeURIComponent(lecture.videoUrl1)}&videoUrl2=${encodeURIComponent(lecture.videoUrl2)}&videoUrl3=${encodeURIComponent(lecture.videoUrl3)}&title=${encodeURIComponent(lecture.title)}">
+
         <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
       </a>
       <div style="text-align:center;">${lecture.title}</div>
