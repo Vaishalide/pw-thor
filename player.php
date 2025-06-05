@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 if (empty($videoUrl)) {
     // No video URL provided—redirect back to index or show an error.
-    header('Location: my.html');
+    header('Location: index.html');
     exit;
 }
 
