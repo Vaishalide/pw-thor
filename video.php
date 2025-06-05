@@ -15,7 +15,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
   <!-- HLS.js for streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
-    /* Color‐theme variables */
+    /* Color-theme variables */
     :root {
       --bg: #111;
       --fg: #fff;
@@ -34,15 +34,14 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       margin: 0;
       padding: 0;
     }
-    html, body {
-      height: 100%;
-    }
     body {
       background: var(--bg);
       color: var(--fg);
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
     .header {
       background: #1a1b2f;
@@ -70,7 +69,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
     }
     video {
       width: 100%;
@@ -96,7 +94,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       padding: 6px;
       gap: 6px;
       transition: opacity 0.3s;
-      opacity: 1; /* Always show on load */
     }
     .controls.hide {
       opacity: 0;
@@ -171,7 +168,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       font-size: 0.95em;
       z-index: 20;
       padding: 8px;
-      width: 180px;
+      width: 160px;
     }
     .settings-panel.active {
       display: block;
@@ -204,11 +201,10 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
 
   <!-- Video player container -->
   <div class="player" id="player">
-    <!-- Added native controls attribute so it appears if JS fails -->
-    <video id="video" controls playsinline webkit-playsinline></video>
+    <video id="video" playsinline webkit-playsinline autoplay muted></video>
 
     <!-- Controls bar: play/pause, mute, volume, settings, theme, fullscreen, seek -->
-    <div class="controls" id="controls">
+    <div class="controls hide" id="controls">
       <button id="playPause" class="btn">►</button>
       <button id="mute" class="btn">🔊</button>
       <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1">
