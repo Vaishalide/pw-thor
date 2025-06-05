@@ -3,52 +3,123 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <script>
-   // function getCookie(name) {
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script>
+    // function getCookie(name) {
     //   const value = document.cookie;
-    //    const parts = value.split("; ");
-    //  for (let i = 0; i < parts.length; i++) {
-    //        const [key, val] = parts[i].split("=");
-     //       if (key === name) return val;
-     ///   }
-    //    return null;
-// }
+    //   const parts = value.split("; ");
+    //   for (let i = 0; i < parts.length; i++) {
+    //     const [key, val] = parts[i].split("=");
+    //     if (key === name) return val;
+    //   }
+    //   return null;
+    // }
 
-///    if (!getCookie('login')) {
-        // Agar logged in nahi hain, toh generate key page par redirect karo
-//        window.location.href = 'https://pwthor.site/generate-key.html';
-//    }
-</script>
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    // if (!getCookie('login')) {
+    //   // Agar logged in nahi hain, toh generate key page par redirect karo
+    //   window.location.href = 'https://pwthor.site/generate-key.html';
+    // }
+  </script>
+  <script disable-devtool-auto="true"
+          src="https://cdn.jsdelivr.net/npm/disable-devtool"
+          clear-log="true"
+          disable-select="true"
+          disable-copy="true"
+          disable-cut="true"
+          disable-paste="true"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <title>PW THOR</title>
   <style>
-    body { margin: 0; font-family: 'Poppins', sans-serif; background: #0e0f1b; color: white; }
-    .header { background: #11132a; color: #ffc107; font-size: 1.8rem; text-transform: uppercase; padding: 1rem; text-align: center; font-weight: 600; }
-    .grid { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1rem; justify-content: center; }
-    .card { background: #1e2036; padding: 1rem; border-radius: 10px; width: 250px; cursor: pointer; transition: 0.3s; }
-    .card:hover { background: #2a2e4b; transform: translateY(-5px); }
-    .card img { width: 100%; border-radius: 10px; }
-    .card-title { margin-top: 0.5rem; font-weight: bold; text-align: center; }
-    .section { padding: 1rem; }
-    .btn { background: linear-gradient(90deg, #ffc107, #ff9800); color: #111; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; }
-    .btn:hover { transform: scale(1.05); }
-    .hidden { display: none; }
-    input { background: #15162b; color: white; border: 1px solid #3a3d5c; padding: 0.6rem 1rem; font-size: 1rem; border-radius: 8px; width: 80%; max-width: 400px; }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: #0e0f1b;
+      color: white;
+    }
+    .header {
+      background: #11132a;
+      color: #ffc107;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem;
+      justify-content: center;
+    }
+    .card {
+      background: #1e2036;
+      padding: 1rem;
+      border-radius: 10px;
+      width: 250px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .card:hover {
+      background: #2a2e4b;
+      transform: translateY(-5px);
+    }
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .card-title {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .section {
+      padding: 1rem;
+    }
+    .btn {
+      background: linear-gradient(90deg, #ffc107, #ff9800);
+      color: #111;
+      font-weight: 600;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    .btn:hover {
+      transform: scale(1.05);
+    }
+    .hidden {
+      display: none;
+    }
+    input {
+      background: #15162b;
+      color: white;
+      border: 1px solid #3a3d5c;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 400px;
+    }
     .loader {
       border: 6px solid rgba(255, 255, 255, 0.1);
       border-top: 6px solid #ffc107;
       border-radius: 50%;
-      width: 60px; height: 60px;
+      width: 60px;
+      height: 60px;
       animation: spin 0.8s ease-in-out infinite;
       margin: 2rem auto;
       box-shadow: 0 0 15px #ffc10788;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 <body>
@@ -58,7 +129,11 @@
     <h1 style="color: #ffc107; font-size: 2rem; margin: 0;">PW THOR</h1>
   </div>
 
-  <div class="hidden" id="backBtn" style="padding: 1rem; cursor: pointer; color: gold; font-size: 1.2rem;">← Back</div>
+  <div id="backBtn"
+       class="hidden"
+       style="padding: 1rem; cursor: pointer; color: gold; font-size: 1.2rem;">
+    ← Back
+  </div>
 
   <!-- SEARCH BAR -->
   <div id="searchBarWrapper" style="padding: 1rem; text-align: center;">
@@ -208,10 +283,13 @@
 
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
+            // Build lectures HTML with four video‐URL fields per lecture:
             const lecturesHtml = (topic.lectures || []).map(lecture => `
               <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
-                <div style="cursor:pointer;" onclick="playVideo(\'${lecture.videoUrl}\', \'${lecture.title}\')">
-                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
+                <div style="cursor:pointer;"
+                     onclick="showQualityOptions('${lecture.videoUrl}', '${lecture.videoUrl1}', '${lecture.videoUrl2}', '${lecture.videoUrl3}', '${lecture.title}')">
+                  <img src="${lecture.thumbnail}"
+                       style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
                 </div>
                 <div style="text-align:center;">${lecture.title}</div>
                 ${(lecture.notes || []).map(note => `
@@ -338,38 +416,102 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadBatches();
     });
+
+
+
+    // -------------------------------
+    // NEW: showQualityOptions(...)  
+    // -------------------------------
+    // This function prompts the user for a quality (720, 480, 360, or 240).
+    // After the user types one of those values, it calls playVideo(...) with the corresponding URL.
+    function showQualityOptions(url720, url480, url360, url240, title) {
+      const choice = prompt(
+        "Select video quality:\n" +
+        "Type one of: 720, 480, 360, 240",
+        "720"
+      );
+
+      if (!choice) return; // user pressed Cancel
+
+      let selectedUrl;
+      switch (choice.trim()) {
+        case '720':
+          selectedUrl = url720;
+          break;
+        case '480':
+          selectedUrl = url480;
+          break;
+        case '360':
+          selectedUrl = url360;
+          break;
+        case '240':
+          selectedUrl = url240;
+          break;
+        default:
+          alert('Invalid choice. Please type exactly 720, 480, 360, or 240.');
+          return;
+      }
+
+      playVideo(selectedUrl, title);
+    }
+
+    // Existing playVideo(...) remains unchanged
+    function playVideo(videoUrl, title) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = 'try.php';
+      form.style.display = 'none';
+
+      const inputUrl = document.createElement('input');
+      inputUrl.type = 'hidden';
+      inputUrl.name = 'videoUrl';
+      inputUrl.value = videoUrl;
+      form.appendChild(inputUrl);
+
+      const inputTitle = document.createElement('input');
+      inputTitle.type = 'hidden';
+      inputTitle.name = 'title';
+      inputTitle.value = title;
+      form.appendChild(inputTitle);
+
+      document.body.appendChild(form);
+      form.submit();
+      setTimeout(() => document.body.removeChild(form), 1000);
+    }
   </script>
 
   <!-- Popup logic (unchanged) -->
-  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
-    <button onclick="document.getElementById('popup').style.display='none'" 
-      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
+  <div id="popup"
+       style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+              background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
+    <button onclick="document.getElementById('popup').style.display='none'"
+            style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">
+      &times;
+    </button>
     <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
     <p id="popupText" style="margin: 15px 0;"></p>
-    <a id="popupLink" href="#" target="_blank" 
+    <a id="popupLink"
+       href="#"
+       target="_blank"
        style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
-       Join Telegram
+      Join Telegram
     </a>
   </div>
 
-  <!-- …existing HTML popup markup (id="popup", popupImage, popupText, popupLink) … -->
-
-<script>
-  // Put popup.json at the same level as your index.html (for instance)
-  fetch('/popup.json')
-    .then(res => res.json())
-    .then(popup => {
-      if (popup.show) {
-        document.getElementById('popupImage').src = popup.image;
-        document.getElementById('popupText').textContent = popup.text;
-        document.getElementById('popupLink').href = popup.link;
-        document.getElementById('popup').style.display = 'block';
-      }
-    })
-    .catch(err => console.error('Error loading popup data:', err));
-</script>
-
+  <!-- Fetch popup.json (unchanged) -->
+  <script>
+    fetch('/popup.json')
+      .then(res => res.json())
+      .then(popup => {
+        if (popup.show) {
+          document.getElementById('popupImage').src = popup.image;
+          document.getElementById('popupText').textContent = popup.text;
+          document.getElementById('popupLink').href = popup.link;
+          document.getElementById('popup').style.display = 'block';
+        }
+      })
+      .catch(err => console.error('Error loading popup data:', err));
+  </script>
 
   <script>
     // Disable right-click and DevTools (unchanged)
@@ -394,34 +536,13 @@
     })();
   </script>
 
-  <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+  <a href="https://t.me/pwthor_support"
+     target="_blank"
+     style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <img src="download.png"
+         alt="Telegram Support"
+         style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
   </a>
-
-  <script>
-    function playVideo(videoUrl, title) {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'try.php';
-      form.style.display = 'none';
-
-      const inputUrl = document.createElement('input');
-      inputUrl.type = 'hidden';
-      inputUrl.name = 'videoUrl';
-      inputUrl.value = videoUrl;
-      form.appendChild(inputUrl);
-
-      const inputTitle = document.createElement('input');
-      inputTitle.type = 'hidden';
-      inputTitle.name = 'title';
-      inputTitle.value = title;
-      form.appendChild(inputTitle);
-
-      document.body.appendChild(form);
-      form.submit();
-      setTimeout(() => document.body.removeChild(form), 1000);
-    }
-  </script>
 
 </body>
 </html>
