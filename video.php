@@ -114,10 +114,10 @@ $title = isset($_GET['title']) ? $_GET['title'] : 'Lecture Video';
         window.hls = new Hls({ capLevelToPlayerSize:true });
         window.hls.loadSource(url);
         window.hls.attachMedia(video);
-        window.hls.on(Hls.Events.MANIFEST_PARSED, () => { video.currentTime = 14; video.play(); });
+        window.hls.on(Hls.Events.MANIFEST_PARSED, () => { video.currentTime = 0; video.play(); });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = url;
-        video.addEventListener('loadedmetadata', () => { video.currentTime = 14; video.play(); });
+        video.addEventListener('loadedmetadata', () => { video.currentTime = 0; video.play(); });
       }
     }
 
