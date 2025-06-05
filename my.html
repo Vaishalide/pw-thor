@@ -3,170 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script>
+    function getCookie(name) {
+       const value = document.cookie;
+        const parts = value.split("; ");
+      for (let i = 0; i < parts.length; i++) {
+           const [key, val] = parts[i].split("=");
+            if (key === name) return val;
+        }
+        return null;
+ }
 
-  <script>
-    // function getCookie(name) {
-    //   const value = document.cookie;
-    //   const parts = value.split("; ");
-    //   for (let i = 0; i < parts.length; i++) {
-    //     const [key, val] = parts[i].split("=");
-    //     if (key === name) return val;
-    //   }
-    //   return null;
-    // }
-
-    // if (!getCookie('login')) {
-    //   // Agar logged in nahi hain, toh generate key page par redirect karo
-    //   window.location.href = 'https://pwthor.site/generate-key.html';
-    // }
-  </script>
-
-  <script disable-devtool-auto="true"
-          src="https://cdn.jsdelivr.net/npm/disable-devtool"
-          clear-log="true"
-          disable-select="true"
-          disable-copy="true"
-          disable-cut="true"
-          disable-paste="true"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
+    if (!getCookie('login')) {
+        // Agar logged in nahi hain, toh generate key page par redirect karo
+        window.location.href = 'https://pwthor.site/generate-key.html';
+    }
+</script>
+<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <title>PW THOR</title>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-      background: #0e0f1b;
-      color: white;
-    }
-    .header {
-      background: #11132a;
-      color: #ffc107;
-      font-size: 1.8rem;
-      text-transform: uppercase;
-      padding: 1rem;
-      text-align: center;
-      font-weight: 600;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
-      justify-content: center;
-    }
-    .card {
-      background: #1e2036;
-      padding: 1rem;
-      border-radius: 10px;
-      width: 250px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .card:hover {
-      background: #2a2e4b;
-      transform: translateY(-5px);
-    }
-    .card img {
-      width: 100%;
-      border-radius: 10px;
-    }
-    .card-title {
-      margin-top: 0.5rem;
-      font-weight: bold;
-      text-align: center;
-    }
-    .section {
-      padding: 1rem;
-    }
-    .btn {
-      background: linear-gradient(90deg, #ffc107, #ff9800);
-      color: #111;
-      font-weight: 600;
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
-      text-decoration: none;
-      margin: 0.3rem;
-      cursor: pointer;
-    }
-    .btn:hover {
-      transform: scale(1.05);
-    }
-    .hidden {
-      display: none;
-    }
-    input {
-      background: #15162b;
-      color: white;
-      border: 1px solid #3a3d5c;
-      padding: 0.6rem 1rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      width: 80%;
-      max-width: 400px;
-    }
+    body { margin: 0; font-family: 'Poppins', sans-serif; background: #0e0f1b; color: white; }
+    .header { background: #11132a; color: #ffc107; font-size: 1.8rem; text-transform: uppercase; padding: 1rem; text-align: center; font-weight: 600; }
+    .grid { display: flex; flex-wrap: wrap; gap: 1rem; padding: 1rem; justify-content: center; }
+    .card { background: #1e2036; padding: 1rem; border-radius: 10px; width: 250px; cursor: pointer; transition: 0.3s; }
+    .card:hover { background: #2a2e4b; transform: translateY(-5px); }
+    .card img { width: 100%; border-radius: 10px; }
+    .card-title { margin-top: 0.5rem; font-weight: bold; text-align: center; }
+    .section { padding: 1rem; }
+    .btn { background: linear-gradient(90deg, #ffc107, #ff9800); color: #111; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 6px; text-decoration: none; }
+    .btn:hover { transform: scale(1.05); }
+    .hidden { display: none; }
+    input { background: #15162b; color: white; border: 1px solid #3a3d5c; padding: 0.6rem 1rem; font-size: 1rem; border-radius: 8px; width: 80%; max-width: 400px; }
     .loader {
       border: 6px solid rgba(255, 255, 255, 0.1);
       border-top: 6px solid #ffc107;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      width: 60px; height: 60px;
       animation: spin 0.8s ease-in-out infinite;
       margin: 2rem auto;
       box-shadow: 0 0 15px #ffc10788;
     }
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-    /* Modal overlay */
-    #qualityModalOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    /* Modal box */
-    #qualityModal {
-      background: #1e2036;
-      padding: 1.5rem;
-      border-radius: 10px;
-      width: 320px;
-      max-width: 90%;
-      position: relative;
-      text-align: center;
-      box-shadow: 0 0 20px #ffc10766;
-    }
-    /* Close button */
-    #qualityModal .close-btn {
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      background: transparent;
-      border: none;
-      font-size: 20px;
-      color: white;
-      cursor: pointer;
-    }
-    /* Quality buttons container */
-    #qualityButtons {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -176,11 +58,7 @@
     <h1 style="color: #ffc107; font-size: 2rem; margin: 0;">PW THOR</h1>
   </div>
 
-  <div id="backBtn"
-       class="hidden"
-       style="padding: 1rem; cursor: pointer; color: gold; font-size: 1.2rem;">
-    ← Back
-  </div>
+  <div class="hidden" id="backBtn" style="padding: 1rem; cursor: pointer; color: gold; font-size: 1.2rem;">← Back</div>
 
   <!-- SEARCH BAR -->
   <div id="searchBarWrapper" style="padding: 1rem; text-align: center;">
@@ -196,17 +74,6 @@
   <div class="grid" id="main"></div>
   <div class="grid hidden" id="subjects"></div>
   <div class="section hidden" id="topics"></div>
-
-  <!-- QUALITY SELECTION MODAL -->
-  <div id="qualityModalOverlay">
-    <div id="qualityModal">
-      <button class="close-btn" onclick="hideQualityModal()">&times;</button>
-      <h3 style="margin: 0;">Select Quality</h3>
-      <div id="qualityButtons">
-        <!-- Buttons will be injected here -->
-      </div>
-    </div>
-  </div>
 
   <script>
     let batchOffset = 0;
@@ -224,14 +91,6 @@
 
     let currentView = 'main';
     let prevState = [];
-
-    // References for modal
-    const qualityModalOverlay = document.getElementById('qualityModalOverlay');
-    const qualityButtonsContainer = document.getElementById('qualityButtons');
-
-    // Variables to hold the URLs and title when modal is open
-    let modalUrlMap = {};
-    let modalTitle = '';
 
     function showView(view) {
       main.classList.add('hidden');
@@ -273,7 +132,7 @@
 
       try {
         const res = await fetch(
-          `https://testing-453c50579f45.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
+          `https://pw-api-75332756c41b.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
         );
         const json = await res.json();
         totalBatches = json.total;
@@ -296,7 +155,7 @@
       showView('subjects');
       subjectsDiv.innerHTML = '';
 
-      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects`);
+      const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/data/batches/${batchId}/subjects`);
       const { subjects } = await res.json();
 
       document.getElementById('subjectLoader').classList.add('hidden');
@@ -318,7 +177,7 @@
       showView('topics');
       topicsDiv.innerHTML = '';
 
-      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
+      const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
       const { topics } = await res.json();
 
       const topicButtonsContainer = document.createElement('div');
@@ -349,20 +208,11 @@
 
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
-            // Build lectures HTML with four video‐URL fields per lecture:
             const lecturesHtml = (topic.lectures || []).map(lecture => `
               <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
-                  <div style="cursor:pointer;"
-           onclick="showQualityModal(
-            '${lecture.videoUrl}',
-             '${lecture.videoUrl1}',
-            '${lecture.videoUrl2}',
-             '${lecture.videoUrl3}',
-            '${lecture.title}'
-           )">
-        <img src='${lecture.thumbnail}'
-             style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
-      </div>
+                <div style="cursor:pointer;" onclick="playVideo(\'${lecture.videoUrl}\', \'${lecture.title}\')">
+                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
+                </div>
                 <div style="text-align:center;">${lecture.title}</div>
                 ${(lecture.notes || []).map(note => `
                   <div style="margin-top: 0.5rem;">
@@ -415,7 +265,10 @@
 
     // Handle search input
     async function handleSearchEvent() {
+      // 1. Grab the *current* value of the input, lower‐cased/trimmed
       const term = searchInput.value.trim().toLowerCase();
+
+      // 2. If the box is now empty, switch back to “infinite scroll” mode:
       if (!term) {
         inSearchMode = false;
         clearMainGrid();
@@ -423,19 +276,34 @@
         loadBatches();
         return;
       }
+
+      // 3. Otherwise, we are in search mode. Clear out any older cards:
       inSearchMode = true;
       clearMainGrid();
       document.getElementById('batchLoader').classList.remove('hidden');
+
+      // 4. Capture this search‐term so we can detect stale responses:
       const thisSearch = term;
 
       try {
+        // 5. Fetch from the server using the query
         const res = await fetch(
-          `https://testing-453c50579f45.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
+          `https://pw-api-75332756c41b.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
         );
-        const json = await res.json();
+        const json = await res.json(); // { results: [ { key, name, image }, … ] }
+
+        // Right after we get a response, hide the loader.
         document.getElementById('batchLoader').classList.add('hidden');
+
+        // 6. If the user has already changed the input since we fired off this request,
+        //    we should do nothing (i.e. don’t append outdated cards).
         const currentTerm = searchInput.value.trim().toLowerCase();
-        if (currentTerm !== thisSearch) return;
+        if (currentTerm !== thisSearch) {
+          // The input no longer matches; drop these results.
+          return;
+        }
+
+        // 7. Now that we know the term is still valid, render:
         if (!json.results.length) {
           main.innerHTML = `
             <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
@@ -470,86 +338,38 @@
     document.addEventListener('DOMContentLoaded', () => {
       loadBatches();
     });
-
-
-    // ---------------------------------
-    // SHOW/HIDE QUALITY SELECTION MODAL
-    // ---------------------------------
-    function showQualityModal(url720, url480, url360, url240, title) {
-      // Store in modalUrlMap
-      modalUrlMap = {
-        '720': url720,
-        '480': url480,
-        '360': url360,
-        '240': url240
-      };
-      modalTitle = title;
-
-      // Clear any existing buttons
-      qualityButtonsContainer.innerHTML = '';
-
-      // Create four buttons
-      ['720', '480', '360', '240'].forEach(quality => {
-        const btn = document.createElement('button');
-        btn.className = 'btn';
-        btn.textContent = quality + 'p';
-        btn.onclick = () => {
-          playVideo(modalUrlMap[quality], modalTitle);
-          hideQualityModal();
-        };
-        qualityButtonsContainer.appendChild(btn);
-      });
-
-      // Show modal
-      qualityModalOverlay.style.display = 'flex';
-    }
-
-    function hideQualityModal() {
-      qualityModalOverlay.style.display = 'none';
-      modalUrlMap = {};
-      modalTitle = '';
-    }
-
-    // Existing playVideo(...) remains unchanged
-    function playVideo(videoUrl, title) {
-  const encodedUrl = encodeURIComponent(videoUrl);
-  const encodedTitle = encodeURIComponent(title);
-  window.location.href = `try.php?videoUrl=${encodedUrl}&title=${encodedTitle}`;
-}
-
+  </script>
 
   <!-- Popup logic (unchanged) -->
-  <div id="popup"
-       style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-              background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
-    <button onclick="document.getElementById('popup').style.display='none'"
-            style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">
-      &times;
-    </button>
+  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
+    <button onclick="document.getElementById('popup').style.display='none'" 
+      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
     <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
     <p id="popupText" style="margin: 15px 0;"></p>
-    <a id="popupLink"
-       href="#"
-       target="_blank"
+    <a id="popupLink" href="#" target="_blank" 
        style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
-      Join Telegram
+       Join Telegram
     </a>
   </div>
 
-  <!-- Fetch popup.json (unchanged) -->
-  <script>
-    fetch('/popup.json')
-      .then(res => res.json())
-      .then(popup => {
-        if (popup.show) {
-          document.getElementById('popupImage').src = popup.image;
-          document.getElementById('popupText').textContent = popup.text;
-          document.getElementById('popupLink').href = popup.link;
-          document.getElementById('popup').style.display = 'block';
-        }
-      })
-      .catch(err => console.error('Error loading popup data:', err));
-  </script>
+  <!-- …existing HTML popup markup (id="popup", popupImage, popupText, popupLink) … -->
+
+<script>
+  // Put popup.json at the same level as your index.html (for instance)
+  fetch('/popup.json')
+    .then(res => res.json())
+    .then(popup => {
+      if (popup.show) {
+        document.getElementById('popupImage').src = popup.image;
+        document.getElementById('popupText').textContent = popup.text;
+        document.getElementById('popupLink').href = popup.link;
+        document.getElementById('popup').style.display = 'block';
+      }
+    })
+    .catch(err => console.error('Error loading popup data:', err));
+</script>
+
 
   <script>
     // Disable right-click and DevTools (unchanged)
@@ -574,13 +394,18 @@
     })();
   </script>
 
-  <a href="https://t.me/pwthor_support"
-     target="_blank"
-     style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <img src="download.png"
-         alt="Telegram Support"
-         style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+  <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
   </a>
+
+  <script>
+    function playVideo(videoUrl, title) {
+  const encodedUrl = encodeURIComponent(videoUrl);
+  const encodedTitle = encodeURIComponent(title);
+  window.location.href = `try.php?videoUrl=${encodedUrl}&title=${encodedTitle}`;
+}
+
+  </script>
 
 </body>
 </html>
