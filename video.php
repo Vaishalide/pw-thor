@@ -14,33 +14,183 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
   <title><?php echo htmlspecialchars($title); ?></title>
   <!-- HLS.js for streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  
-<style>
-body, html {
-  margin: 0;
-  padding: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: Arial, sans-serif;
-  height: 100%;
-  width: 100%;
-}
-
-.video-wrapper {
-  width: 100%;
-  max-width: 100%;
-  aspect-ratio: 16 / 9;
-  background: black;
-}
-
-video {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background-color: black;
-}
-</style>
-
+  <style>
+    /* Color-theme variables */
+    :root {
+      --bg: #111;
+      --fg: #fff;
+      --accent: #2f8eed;
+      --seek-bg: #444;
+    }
+    [data-theme="light"] {
+      --bg: #f9f9f9;
+      --fg: #111;
+      --accent: #0066cc;
+      --seek-bg: #ccc;
+    }
+    /* Reset & layout */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .header {
+      background: #1a1b2f;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      color: gold;
+      flex-shrink: 0;
+    }
+    .back {
+      color: gold;
+      text-decoration: none;
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+    .title {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    /* Player container */
+    .player {
+      position: relative;
+      flex: 1;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+    /* Fullscreen adjustments */
+    .player:-webkit-full-screen video,
+    .player:fullscreen video {
+      width: 100vw;
+      height: 100vh;
+    }
+    /* Controls bar */
+    .controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      padding: 6px;
+      gap: 6px;
+      transition: opacity 0.3s;
+    }
+    .controls.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .btn {
+      background: none;
+      border: none;
+      color: var(--fg);
+      font-size: 1.2em;
+      padding: 4px;
+      cursor: pointer;
+    }
+    .seek-container {
+      flex: 1 1 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .time {
+      font-size: 0.75em;
+      width: 40px;
+      text-align: center;
+    }
+    .seek,
+    .volume {
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .seek {
+      flex: 1;
+    }
+    .seek::-webkit-slider-runnable-track {
+      height: 6px;
+      background: var(--seek-bg);
+      border-radius: 3px;
+    }
+    .seek::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: -3px;
+    }
+    .volume {
+      width: 70px;
+    }
+    .volume::-webkit-slider-runnable-track {
+      height: 4px;
+      background: var(--seek-bg);
+      border-radius: 2px;
+    }
+    .volume::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: -3px;
+    }
+    /* Settings panel (Quality & Speed) */
+    .settings-panel {
+      position: absolute;
+      bottom: calc(100% + 6px);
+      right: 10px;
+      background: var(--bg);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      display: none;
+      font-size: 0.95em;
+      z-index: 20;
+      padding: 8px;
+      width: 160px;
+    }
+    .settings-panel.active {
+      display: block;
+    }
+    .settings-panel label {
+      display: block;
+      margin: 6px 0 2px 0;
+      color: var(--accent);
+      font-size: 0.95em;
+    }
+    .settings-panel select {
+      width: 100%;
+      padding: 4px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--fg);
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 0.95em;
+      outline: none;
+    }
+  </style>
 </head>
 <body data-theme="dark">
   <!-- Header with Back link and Title -->
@@ -51,8 +201,7 @@ video {
 
   <!-- Video player container -->
   <div class="player" id="player">
-    <div class="video-wrapper">
-  <video id="video" controls playsinline></video></div>
+    <video id="video" playsinline webkit-playsinline autoplay muted></video>
 
     <!-- Controls bar: play/pause, mute, volume, settings, theme, fullscreen, seek -->
     <div class="controls hide" id="controls">
