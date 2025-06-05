@@ -5,7 +5,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $title    = isset($_POST['title'])    ? $_POST['title']    : '';
 } else {
     // Fallback only if someone tries to hit video.php directly with query parameters.
-    // If you don’t want any GET‐based fallback, you can remove this entire else block.
+    // If you don’t want any GET-based fallback, you can remove this entire else block.
     $videoUrl = isset($_GET['videoUrl']) ? $_GET['videoUrl'] : '';
     $title    = isset($_GET['title'])    ? $_GET['title']    : '';
 }
@@ -15,140 +15,127 @@ if (empty($videoUrl)) {
     header('Location: my.html');
     exit;
 }
-
-// Safely escape for embedding in HTML/JS
-$escapedVideoUrl = addslashes($videoUrl);
-$escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
- <script>
-    function getCookie(name) {
-   //     const value = document.cookie;
-    //    const parts = value.split("; ");
-   //     for (let i = 0; i < parts.length; i++) {
-    //        const [key, val] = parts[i].split("=");
-    //        if (key === name) return val;
-    ///    }
-   //     return null;
-  //  }
-
-  //  if (!getCookie('login')) {
-        // Agar logged in nahi hain, toh generate key page par redirect karo
-    //    window.location.href = 'https://pwthor.site/generate-key.html';
-  //  }
-</script>
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <title><?php echo htmlspecialchars($title); ?></title>
-  <!-- HLS.js -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><?php echo htmlspecialchars($title ?: 'Video Player'); ?></title>
   <style>
-    :root { --bg: #111; --fg: #fff; --accent: #2f8eed; --seek-bg: #444; }
-    [data-theme="light"] { --bg: #f9f9f9; --fg: #111; --accent: #0066cc; --seek-bg: #ccc; }
-    body { margin:0; background:var(--bg); color:var(--fg); font-family:'Segoe UI',sans-serif; display:flex; flex-direction:column; height:100vh; }
-    .header { background:#1a1b2f; padding:1rem; display:flex; align-items:center; color:gold; }
-    .back { color:gold; text-decoration:none; font-size:1.5rem; margin-right:1rem; }
-    .player { position:relative; flex:1; background:#000; display:flex; justify-content:center; align-items:center; overflow:hidden; }
-    video { width:100%; height:100%; object-fit:contain; }
-    .player:-webkit-full-screen video, .player:fullscreen video { width:100vw; height:100vh; }
-    .controls { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.6); display:flex; flex-wrap:wrap; align-items:center; padding:4px; gap:4px; transition:opacity .3s; }
-    .controls.hide { opacity:0; pointer-events:none; }
-    .btn { background:none; border:none; color:var(--fg); font-size:1.2em; padding:4px; cursor:pointer; }
-    .seek-container { flex:1 1 100%; display:flex; align-items:center; gap:4px; }
-    .time { font-size:.75em; width:34px; text-align:center; }
-    .seek, .volume { -webkit-appearance:none; background:transparent; }
-    .seek { flex:1; }
-    .seek::-webkit-slider-runnable-track { height:6px; background:var(--seek-bg); border-radius:3px; }
-    .seek::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; background:var(--accent); border-radius:50%; margin-top:-4px; }
-    .volume { width:70px; }
-    .volume::-webkit-slider-runnable-track { height:4px; background:var(--seek-bg); border-radius:2px; }
-    .volume::-webkit-slider-thumb { -webkit-appearance:none; width:10px; height:10px; background:var(--accent); border-radius:50%; margin-top:-3px; }
-    .settings-panel { position:absolute; bottom:calc(100% + 4px); right:4px; background:rgba(0,0,0,0.8); color:var(--fg); padding:4px; border-radius:4px; display:none; font-size:.75em; z-index:10; }
-    .settings-panel.active { display:block; }
-    .settings-panel button { background:none; border:1px solid var(--fg); color:inherit; padding:2px 4px; margin:2px 1px; cursor:pointer; border-radius:3px; }
+    /* Basic Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; background: #000; color: #fff; font-family: sans-serif; }
+    #player { position: relative; width: 100%; max-width: 800px; margin: 20px auto; background: #111; }
+    video { width: 100%; height: auto; background: #000; }
+    #controls {
+      position: absolute; bottom: 0; left: 0; width: 100%;
+      display: flex; flex-wrap: wrap; align-items: center;
+      background: rgba(0,0,0,0.6); padding: 8px;
+    }
+    #controls button, #controls input[type="range"] {
+      margin-right: 8px; background: none; border: none; color: #fff; font-size: 16px; cursor: pointer;
+    }
+    #controls input[type="range"] { width: 100px; }
+    #levels button, #speedsContainer button {
+      margin-right: 4px; padding: 4px 8px; background: #222; border: 1px solid #444; border-radius: 4px; color: #fff; cursor: pointer;
+    }
+    #levels button.active, #speedsContainer button.active {
+      background: #fff; color: #000; border-color: #888;
+    }
+    #settingsBtn { margin-left: auto; }
+    #settingsPanel {
+      position: absolute; top: 40px; right: 20px;
+      background: #222; padding: 10px; border: 1px solid #444; border-radius: 4px;
+      display: none; z-index: 10;
+    }
+    #settingsPanel.active { display: block; }
+    #themeToggle { margin-top: 8px; cursor: pointer; }
   </style>
+  <!-- HLS.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body data-theme="dark">
-  <div class="header">
-    <a class="back" href="javascript:history.back()">←</a>
-    <div><?php echo htmlspecialchars($title); ?></div>
-  </div>
-  <div class="player" id="player">
-    <video id="video" playsinline webkit-playsinline></video>
-    <div class="controls hide" id="controls">
-      <button id="playPause" class="btn">►</button>
-      <button id="mute" class="btn">🔊</button>
-      <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1">
-      <button id="settingsBtn" class="btn">⚙️</button>
-      <button id="themeToggle" class="btn">🌙</button>
-      <button id="fullscreen" class="btn">⛶</button>
-      <div class="seek-container">
-        <span id="currentTime" class="time">0:00</span>
-        <input id="seek" type="range" class="seek" min="0" max="100" value="0">
-        <span id="duration" class="time">0:00</span>
+  <div id="player">
+    <video id="video" controls muted autoplay></video>
+    <div id="controls">
+      <button id="playPause">❚❚</button>
+      <div>
+        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
       </div>
-      <div id="settingsPanel" class="settings-panel">
-        <div><strong>Quality</strong></div>
-        <div id="levels"></div>
-          <div><strong>Speed</strong></div>
-          <div id="speeds"></div>
-      </div>
+      <input type="range" id="seek" min="0" max="100" value="0" />
+      <button id="mute">🔇</button>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="1" />
+      <button id="fullscreen">⛶</button>
+      <div id="levels" style="display: flex; align-items: center; margin-left: 16px;"></div>
+      <div id="speedsContainer" style="display: flex; align-items: center; margin-left: 16px;"></div>
+      <button id="settingsBtn">⚙️</button>
+    </div>
+    <div id="settingsPanel">
+      <div id="themeToggle">☀️</div>
     </div>
   </div>
+
   <script>
-    const originalUrl = "<?php echo htmlspecialchars($videoUrl); ?>";
+    // Grab PHP-generated URL and title
+    const originalUrl = "<?php echo htmlspecialchars($videoUrl); ?>"; 
     let currentUrl = originalUrl;
     const qualities = [144, 360, 480, 720];
-    const video = document.getElementById('video');
-    const controls = document.getElementById('controls');
-    const player = document.getElementById('player');
-    const levels = document.getElementById('levels');
     const speeds = [0.5, 1, 1.5, 2];
-    const speedsContainer = document.getElementById('speeds');
-    let hideTimeout;
+    const video = document.getElementById('video');
+    const levels = document.getElementById('levels');
+    const speedsContainer = document.getElementById('speedsContainer');
+    const playPause = document.getElementById('playPause');
 
-    function showControls() {
-      controls.classList.remove('hide');
-      clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(() => controls.classList.add('hide'), 4000);
-    }
-    document.addEventListener('DOMContentLoaded', () => { initPlayer(); showControls(); });
-    player.addEventListener('mousemove', showControls);
-    player.addEventListener('touchstart', showControls);
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initPlayer();
+    });
 
     function initPlayer() {
       loadStream(currentUrl);
       buildLevels();
-            buildSpeeds();
+      buildSpeeds();
       setupEvents();
     }
 
     function loadStream(url) {
       if (Hls.isSupported()) {
         if (window.hls) window.hls.destroy();
-        window.hls = new Hls({ capLevelToPlayerSize:true });
+        window.hls = new Hls({ capLevelToPlayerSize: true });
         window.hls.loadSource(url);
         window.hls.attachMedia(video);
-        window.hls.on(Hls.Events.MANIFEST_PARSED, () => { video.currentTime = 14; video.play(); });
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = url;
-        video.addEventListener('loadedmetadata', () => { video.currentTime = 14; video.play(); });
       }
+      video.play();
     }
 
+    // ===== Updated buildLevels =====
     function buildLevels() {
       levels.innerHTML = '';
-      // Auto (original) link
+      // Auto (master) still points to the proxy root
       addLevelButton('Auto', originalUrl);
       qualities.forEach(q => {
-        addLevelButton(q + 'p', originalUrl.replace(/\/(\d+)\/main\.m3u8$/, '/' + q + '/main.m3u8'));
+        // Build “https://…/video/⟨token⟩/⟨q⟩/main.m3u8”
+        const qualityUrl = originalUrl + '/' + q + '/main.m3u8';
+        addLevelButton(q + 'p', qualityUrl);
       });
       highlightActive();
+    }
+
+    // ===== Updated highlightActive =====
+    function highlightActive() {
+      Array.from(levels.children).forEach(btn => {
+        const label = btn.textContent;
+        if (label === 'Auto') {
+          btn.classList.toggle('active', currentUrl === originalUrl);
+        } else {
+          // e.g. “480p” → detect “/480/main.m3u8”
+          const qStr = label.replace('p', '');
+          btn.classList.toggle('active', currentUrl.includes('/' + qStr + '/main.m3u8'));
+        }
+      });
     }
 
     function buildSpeeds() {
@@ -168,7 +155,6 @@ $escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
       });
     }
 
-
     function addLevelButton(label, url) {
       const btn = document.createElement('button');
       btn.textContent = label;
@@ -182,22 +168,27 @@ $escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
       highlightActive();
     }
 
-    function highlightActive() {
-      Array.from(levels.children).forEach(btn => {
-        btn.classList.toggle('active', btn.textContent !== 'Auto' ? currentUrl.includes('/' + btn.textContent.replace('p','') + '/main.m3u8') : currentUrl === originalUrl);
-      });
-    }
-
     function setupEvents() {
-      document.getElementById('playPause').onclick = () => video.paused ? video.play() : video.pause();
-      video.onplay = () => document.getElementById('playPause').textContent = '❚❚';
-      video.onpause = () => document.getElementById('playPause').textContent = '►';
+      // Play / Pause
+      playPause.onclick = () => video.paused ? video.play() : video.pause();
+      video.onplay = () => playPause.textContent = '❚❚';
+      video.onpause = () => playPause.textContent = '►';
+
+      // Time update
       video.ontimeupdate = () => {
-        const displayedTime = video.currentTime - 14; const displayedDuration = video.duration - 14; const pct = (video.duration>14) ? (displayedTime>0 ? displayedTime : 0) / displayedDuration * 100 : 0; document.getElementById('seek').value = pct;
-        const displayedTime2 = video.currentTime - 14; document.getElementById('currentTime').textContent = fmt(displayedTime2 > 0 ? displayedTime2 : 0);
+        const displayedTime = Math.max(0, video.currentTime);
+        const durationTime = Math.max(0, video.duration);
+        document.getElementById('currentTime').textContent = fmt(displayedTime);
+        document.getElementById('duration').textContent = fmt(durationTime);
+        const pct = durationTime > 0 ? (displayedTime / durationTime) * 100 : 0;
+        document.getElementById('seek').value = pct;
       };
-    video.onloadedmetadata = () => document.getElementById('duration').textContent = fmt(Math.max(0, video.duration - 14));
-      document.getElementById('seek').oninput = e => { const dd = video.duration - 14; video.currentTime = 14 + (e.target.value/100) * dd; };
+      document.getElementById('seek').oninput = e => {
+        const durationTime = Math.max(0, video.duration);
+        video.currentTime = (e.target.value / 100) * durationTime;
+      };
+
+      // Mute / Volume
       document.getElementById('mute').onclick = () => {
         video.muted = !video.muted;
         document.getElementById('mute').textContent = video.muted ? '🔇' : '🔊';
@@ -206,23 +197,47 @@ $escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
         video.volume = e.target.value;
         video.muted = e.target.value == 0;
       };
-      document.getElementById('fullscreen').onclick = () => document.fullscreenElement ? document.exitFullscreen() : player.requestFullscreen();
+
+      // Fullscreen
+      document.getElementById('fullscreen').onclick = () => {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.getElementById('player').requestFullscreen();
+        }
+      };
       document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
-        if (!document.fullscreenElement && screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+        if (document.fullscreenElement && screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+        if (!document.fullscreenElement && screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
       });
-      document.getElementById('settingsBtn').onclick = () => document.getElementById('settingsPanel').classList.toggle('active');
+
+      // Settings panel toggle
+      document.getElementById('settingsBtn').onclick = () => {
+        document.getElementById('settingsPanel').classList.toggle('active');
+      };
       document.addEventListener('click', e => {
-        if (!document.getElementById('settingsPanel').contains(e.target) && e.target.id !== 'settingsBtn') document.getElementById('settingsPanel').classList.remove('active');
+        if (document.getElementById('settingsPanel').classList.contains('active') &&
+            !document.getElementById('settingsPanel').contains(e.target) &&
+            e.target.id !== 'settingsBtn') {
+          document.getElementById('settingsPanel').classList.remove('active');
+        }
       });
       document.getElementById('themeToggle').onclick = () => {
-        const next = document.body.dataset.theme==='dark'?'light':'dark';
+        const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
         document.body.dataset.theme = next;
-        document.getElementById('themeToggle').textContent = next==='dark'?'🌙':'☀️';
+        document.getElementById('themeToggle').textContent = next === 'dark' ? '🌙' : '☀️';
       };
     }
 
-    function fmt(s) { const m=Math.floor(s/60), sec=Math.floor(s%60).toString().padStart(2,'0'); return m+':'+sec; }
+    function fmt(s) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60).toString().padStart(2, '0');
+      return m + ':' + sec;
+    }
   </script>
 </body>
 </html>
