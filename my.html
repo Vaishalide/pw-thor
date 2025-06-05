@@ -208,22 +208,31 @@
 
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
-            const lecturesHtml = (topic.lectures || []).map(lecture => `
-              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
-                <div style="cursor:pointer;" onclick="playVideo(\'${lecture.videoUrl}\', \'${lecture.title}\')">
-                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
-                </div>
-                <div style="text-align:center;">${lecture.title}</div>
-                ${(lecture.notes || []).map(note => `
-                  <div style="margin-top: 0.5rem;">
-                    <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
-                  </div>`).join('')}
-                ${(lecture.dpps || []).map(dpp => `
-                  <div style="margin-top: 0.5rem;">
-                    <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
-                  </div>`).join('')}
-              </div>
-            `).join('');
+            const lecturesHtml = (topic.lectures || []).map(lecture => {
+  const lectureNotes = (lecture.notes || []).map(note => `
+    <div style="margin-top: 0.5rem;">
+      <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+    </div>
+  `).join('');
+
+  const lectureDpps = (lecture.dpps || []).map(dpp => `
+    <div style="margin-top: 0.5rem;">
+      <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+    </div>
+  `).join('');
+
+  return `
+    <div style="margin-bottom: 2rem;">
+      <a href="video.php?videoUrl=${encodeURIComponent(lecture.videoUrl)}&title=${encodeURIComponent(lecture.title)}">
+        <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
+      </a>
+      <div style="text-align:center;">${lecture.title}</div>
+      ${lectureNotes}
+      ${lectureDpps}
+    </div>
+  `;
+}).join('');
+
 
             const notesHtml = (topic.notes || []).map(note => `
               <div style="margin-top: 1rem;">
