@@ -1,110 +1,110 @@
 <?php
-// ------------------------------
-// video_player.php
-// ------------------------------
-//
-// A complete PHP/HTML/CSS/JS file that displays an HLS‐powered video
-// with fully custom controls (no native browser controls).
-// Simply replace the placeholder URLs below with your actual HLS stream URLs.
-// ------------------------------
+// Determine video URLs and title from POST (preferred) or fallback to GET (optional).
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $video720 = isset($_POST['videoUrl'])  ? $_POST['videoUrl']  : '';
+    $video480 = isset($_POST['videoUrl1']) ? $_POST['videoUrl1'] : '';
+    $video360 = isset($_POST['videoUrl2']) ? $_POST['videoUrl2'] : '';
+    $video240 = isset($_POST['videoUrl3']) ? $_POST['videoUrl3'] : '';
+    $title    = isset($_POST['title'])     ? $_POST['title']     : '';
+} else {
+    // Fallback only if someone tries to hit player.php directly with query parameters.
+    $video720 = isset($_GET['videoUrl'])  ? $_GET['videoUrl']  : '';
+    $video480 = isset($_GET['videoUrl1']) ? $_GET['videoUrl1'] : '';
+    $video360 = isset($_GET['videoUrl2']) ? $_GET['videoUrl2'] : '';
+    $video240 = isset($_GET['videoUrl3']) ? $_GET['videoUrl3'] : '';
+    $title    = isset($_GET['title'])     ? $_GET['title']     : 'Lecture Video';
+}
 
-/**
- * CONFIGURE THESE VARIABLES:
- * -------------------------
- * - $title:       The title of the video (displayed in the header).
- * - $video720:    URL to your 720p HLS playlist (e.g., “.m3u8” file).
- * - $video480:    URL to your 480p HLS playlist.
- * - $video360:    URL to your 360p HLS playlist.
- * - $video240:    URL to your 240p HLS playlist.
- *
- * If you are pulling these from a database or GET parameters, adjust as needed.
- */
-$title     = "My Sample Video";  
-$video720  = "https://example.com/path/to/stream_720p.m3u8";
-$video480  = "https://example.com/path/to/stream_480p.m3u8";
-$video360  = "https://example.com/path/to/stream_360p.m3u8";
-$video240  = "https://example.com/path/to/stream_240p.m3u8";
+if (empty($video720)) {
+    // No primary (720p) video URL provided—redirect back to index or show an error.
+    header('Location: index.html');
+    exit;
+}
+
+// Safely escape for embedding in HTML/JS
+$escapedTitle  = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
+$escaped720    = htmlspecialchars($video720, ENT_QUOTES, 'UTF-8');
+$escaped480    = htmlspecialchars($video480, ENT_QUOTES, 'UTF-8');
+$escaped360    = htmlspecialchars($video360, ENT_QUOTES, 'UTF-8');
+$escaped240    = htmlspecialchars($video240, ENT_QUOTES, 'UTF-8');
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta 
-    name="viewport" 
-    content="width=device-width, initial-scale=1, user-scalable=no" 
-  />
-  <title><?php echo htmlspecialchars($title); ?></title>
-
-  <!-- HLS.js for playing .m3u8 streams in browsers that don’t support native HLS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title><?php echo $escapedTitle; ?></title>
+  <!-- HLS.js for streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
   <style>
-    /* === COLOR & THEME VARIABLES === */
+    /* Color-theme variables */
     :root {
-      --bg:        #111;    /* dark background */
-      --fg:        #fff;    /* light foreground */
-      --accent:    #2f8eed; /* blue accent */
-      --seek-bg:   #444;    /* scrub‐bar background */
+      --bg: #111;
+      --fg: #fff;
+      --accent: #2f8eed;
+      --seek-bg: #444;
     }
     [data-theme="light"] {
-      --bg:      #f9f9f9;
-      --fg:      #111;
-      --accent:  #0066cc;
+      --bg: #f9f9f9;
+      --fg: #111;
+      --accent: #0066cc;
       --seek-bg: #ccc;
     }
-
-    /* === RESET & LAYOUT === */
+    /* Reset & layout */
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      font-family: sans-serif;
-      color: var(--fg);
     }
     body {
       background: var(--bg);
+      color: var(--fg);
+      font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
-
-    /* === HEADER === */
     .header {
+      background: #1a1b2f;
+      padding: 1rem;
       display: flex;
       align-items: center;
-      padding: 10px;
-      background: var(--bg);
-      border-bottom: 1px solid var(--fg);
+      color: gold;
+      flex-shrink: 0;
     }
-    .header .back {
-      color: var(--fg);
+    .back {
+      color: gold;
       text-decoration: none;
-      margin-right: 15px;
-      font-size: 1.2em;
+      font-size: 1.5rem;
+      margin-right: 1rem;
     }
-    .header .title {
-      font-size: 1.2em;
-      flex: 1;
+    .title {
+      font-size: 1.2rem;
+      font-weight: bold;
     }
-
-    /* === VIDEO PLAYER CONTAINER === */
+    /* Player container */
     .player {
       position: relative;
       flex: 1;
+      background: #000;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: black;
     }
-    .player video {
+    video {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      background: black;
+      background: #000;
     }
-
-    /* === CUSTOM CONTROLS BAR === */
+    /* Fullscreen adjustments */
+    .player:-webkit-full-screen video,
+    .player:fullscreen video {
+      width: 100vw;
+      height: 100vh;
+    }
+    /* Controls bar */
     .controls {
       position: absolute;
       bottom: 0;
@@ -121,448 +121,327 @@ $video240  = "https://example.com/path/to/stream_240p.m3u8";
       opacity: 0;
       pointer-events: none;
     }
-    /* FORCE-SHOW on hover so desktop always sees them */
-    .player:hover .controls {
-      opacity: 1 !important;
-      pointer-events: all !important;
-    }
-
-    /* === BUTTON & INPUT STYLING === */
     .btn {
       background: none;
       border: none;
       color: var(--fg);
       font-size: 1.2em;
+      padding: 4px;
       cursor: pointer;
-      padding: 4px 6px;
-      transition: color 0.2s;
     }
-    .btn:hover {
-      color: var(--accent);
+    .seek-container {
+      flex: 1 1 100%;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
+    .time {
+      font-size: 0.75em;
+      width: 40px;
+      text-align: center;
+    }
+    .seek,
     .volume {
-      width: 100px;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
     }
-    /* Seek bar (range input) styling */
     .seek {
       flex: 1;
-      appearance: none;
+    }
+    .seek::-webkit-slider-runnable-track {
+      height: 6px;
+      background: var(--seek-bg);
+      border-radius: 3px;
+    }
+    .seek::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: -3px;
+    }
+    .volume {
+      width: 70px;
+    }
+    .volume::-webkit-slider-runnable-track {
       height: 4px;
       background: var(--seek-bg);
       border-radius: 2px;
-      margin: 0 8px;
-      cursor: pointer;
     }
-    .seek::-webkit-slider-thumb {
-      appearance: none;
-      width: 12px;
-      height: 12px;
+    .volume::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 10px;
+      height: 10px;
       background: var(--accent);
       border-radius: 50%;
-      cursor: pointer;
+      margin-top: -3px;
     }
-    .seek::-moz-range-thumb {
-      width: 12px;
-      height: 12px;
-      background: var(--accent);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    /* === SETTINGS PANEL === */
+    /* Settings panel (Quality & Speed) */
     .settings-panel {
       position: absolute;
-      top: 60px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.9);
-      border: 1px solid var(--fg);
-      padding: 12px;
+      bottom: calc(100% + 6px);
+      right: 10px;
+      background: var(--bg);
+      border: 1px solid var(--accent);
       border-radius: 4px;
       display: none;
-      flex-direction: column;
-      gap: 8px;
-      z-index: 100;
+      font-size: 0.95em;
+      z-index: 20;
+      padding: 8px;
+      width: 160px;
     }
     .settings-panel.active {
-      display: flex;
+      display: block;
     }
     .settings-panel label {
-      display: flex;
-      flex-direction: column;
-      font-size: 0.9em;
-      gap: 4px;
+      display: block;
+      margin: 6px 0 2px 0;
+      color: var(--accent);
+      font-size: 0.95em;
     }
     .settings-panel select {
+      width: 100%;
       padding: 4px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--fg);
       background: var(--bg);
       color: var(--fg);
-      border: 1px solid var(--fg);
-      border-radius: 3px;
-    }
-    .settings-panel .close-btn {
-      align-self: flex-end;
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      padding: 6px 10px;
-      font-size: 0.9em;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    .settings-panel .close-btn:hover {
-      background: #287ac9;
+      font-size: 0.95em;
+      outline: none;
     }
   </style>
 </head>
-
 <body data-theme="dark">
-  <!-- === HEADER BAR === -->
+  <!-- Header with Back link and Title -->
   <div class="header">
     <a class="back" href="javascript:history.back()">← Back</a>
-    <div class="title"><?php echo htmlspecialchars($title); ?></div>
-    <!-- (Optional theme toggle)
-    <button id="themeToggle" class="btn">☀️</button>
-    -->
+    <div class="title"><?php echo $escapedTitle; ?></div>
   </div>
 
-  <!-- === PLAYER AREA === -->
+  <!-- Video player container -->
   <div class="player" id="player">
-    <!-- NO native “controls” attribute here! -->
-    <video
-      id="video"
-      playsinline
-      webkit-playsinline
-      autoplay
-      muted
-    ></video>
+    <video id="video" playsinline webkit-playsinline autoplay muted></video>
 
-    <!-- START WITH “hide” so JS can fade them in/out after hover or mousemove -->
+    <!-- Controls bar: play/pause, mute, volume, settings, theme, fullscreen, seek -->
     <div class="controls hide" id="controls">
-      <!-- Play / Pause -->
       <button id="playPause" class="btn">►</button>
-
-      <!-- Mute / Unmute -->
       <button id="mute" class="btn">🔊</button>
-
-      <!-- Volume Slider -->
-      <input
-        id="volume"
-        type="range"
-        class="volume"
-        min="0"
-        max="1"
-        step="0.01"
-        value="1"
-      />
-
-      <!-- Seek Bar -->
-      <input
-        id="seekBar"
-        type="range"
-        class="seek"
-        min="0"
-        max="100"
-        value="0"
-      />
-
-      <!-- Current Time / Duration Display -->
-      <span id="timeDisplay" style="font-size: 0.9em; margin-left: 4px; width: 60px; text-align: right;">
-        00:00 / 00:00
-      </span>
-
-      <!-- Settings Button -->
+      <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1">
       <button id="settingsBtn" class="btn">⚙️</button>
-
-      <!-- Fullscreen Button -->
-      <button id="fullscreenBtn" class="btn">⛶</button>
+      <button id="themeToggle" class="btn">🌙</button>
+      <button id="fullscreen" class="btn">⛶</button>
+      <div class="seek-container">
+        <span id="currentTime" class="time">0:00</span>
+        <input id="seek" type="range" class="seek" min="0" max="100" value="0">
+        <span id="duration" class="time">0:00</span>
+      </div>
     </div>
-  </div>
 
-  <!-- === SETTINGS PANEL (hidden until clicking the “⚙️” button) === -->
-  <div class="settings-panel" id="settingsPanel">
-    <label>
-      Quality:
+    <!-- Settings panel for Quality & Speed -->
+    <div class="settings-panel" id="settingsPanel">
+      <label for="qualitySelect">Quality</label>
       <select id="qualitySelect">
-        <option value="<?php echo htmlspecialchars($video720); ?>">720p</option>
-        <option value="<?php echo htmlspecialchars($video480); ?>">480p</option>
-        <option value="<?php echo htmlspecialchars($video360); ?>">360p</option>
-        <option value="<?php echo htmlspecialchars($video240); ?>">240p</option>
+        <?php if (!empty($escaped720)): ?>
+          <option value="<?php echo $escaped720; ?>">Auto (720p)</option>
+          <option value="<?php echo $escaped720; ?>">720p</option>
+        <?php endif; ?>
+        <?php if (!empty($escaped480)): ?>
+          <option value="<?php echo $escaped480; ?>">480p</option>
+        <?php endif; ?>
+        <?php if (!empty($escaped360)): ?>
+          <option value="<?php echo $escaped360; ?>">360p</option>
+        <?php endif; ?>
+        <?php if (!empty($escaped240)): ?>
+          <option value="<?php echo $escaped240; ?>">240p</option>
+        <?php endif; ?>
       </select>
-    </label>
 
-    <label>
-      Speed:
+      <label for="speedSelect">Playback Speed</label>
       <select id="speedSelect">
         <option value="0.5">0.5×</option>
         <option value="1" selected>1×</option>
         <option value="1.5">1.5×</option>
         <option value="2">2×</option>
       </select>
-    </label>
-
-    <button id="closeSettings" class="close-btn">Close</button>
+    </div>
   </div>
 
-  <!-- === JAVASCRIPT FOR CONTROLS & HLS LOADING === -->
   <script>
-    // Grab elements by ID
-    const player          = document.getElementById("player");
-    const video           = document.getElementById("video");
-    const controls        = document.getElementById("controls");
-    const playPauseBtn    = document.getElementById("playPause");
-    const muteBtn         = document.getElementById("mute");
-    const volumeSlider    = document.getElementById("volume");
-    const seekBar         = document.getElementById("seekBar");
-    const timeDisplay     = document.getElementById("timeDisplay");
-    const settingsBtn     = document.getElementById("settingsBtn");
-    const settingsPanel   = document.getElementById("settingsPanel");
-    const closeSettings   = document.getElementById("closeSettings");
-    const qualitySelect   = document.getElementById("qualitySelect");
-    const speedSelect     = document.getElementById("speedSelect");
-    const fullscreenBtn   = document.getElementById("fullscreenBtn");
+    // Retrieve DOM elements
+    const video         = document.getElementById('video');
+    const player        = document.getElementById('player');
+    const controls      = document.getElementById('controls');
+    const settingsBtn   = document.getElementById('settingsBtn');
+    const themeToggle   = document.getElementById('themeToggle');
+    const fullscreenBtn = document.getElementById('fullscreen');
+    const playPauseBtn  = document.getElementById('playPause');
+    const muteBtn       = document.getElementById('mute');
+    const volumeSlider  = document.getElementById('volume');
+    const seekSlider    = document.getElementById('seek');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl    = document.getElementById('duration');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const speedSelect   = document.getElementById('speedSelect');
 
-    let hideControlsTimeout = null;
-    let hlsInstance        = null;
-    let isSeeking          = false;
+    let hideControlsTimeout;
+    let hlsInstance;
 
-    /**
-     * formatTime(seconds)
-     * Converts a time in seconds to "MM:SS" format (e.g., 125 → "02:05").
-     */
+    // Utility: format seconds → "M:SS"
     function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return (
-        String(mins).padStart(2, "0") +
-        ":" +
-        String(secs).padStart(2, "0")
-      );
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
     }
 
-    /**
-     * updateTimeDisplay()
-     * Updates the timeDisplay text and the seek bar’s position.
-     */
-    function updateTimeDisplay() {
-      const current = video.currentTime;
-      const duration = video.duration || 0;
-      timeDisplay.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
-
-      if (!isSeeking) {
-        // Update the seek bar only when not actively dragging
-        const percent = (current / duration) * 100;
-        seekBar.value = isNaN(percent) ? 0 : percent;
-      }
-    }
-
-    /**
-     * showControls()
-     * Removes “hide” from the controls container, then sets a timeout
-     * to re‐add “hide” after 3 seconds (unless settings panel is open).
-     */
+    // Show controls when user interacts, then hide after 3 seconds (unless settings open)
     function showControls() {
-      controls.classList.remove("hide");
+      controls.classList.remove('hide');
       clearTimeout(hideControlsTimeout);
-
       hideControlsTimeout = setTimeout(() => {
-        const isSettingsOpen = settingsPanel.classList.contains("active");
-        if (!isSettingsOpen) {
-          controls.classList.add("hide");
+        if (!settingsPanel.classList.contains('active')) {
+          controls.classList.add('hide');
         }
       }, 3000);
     }
 
-    /**
-     * loadStream(url)
-     * Destroys any previous Hls instance, then uses Hls.js to load a new stream URL.
-     */
+    // Load HLS stream (or native if supported)
     function loadStream(url) {
       if (hlsInstance) {
         hlsInstance.destroy();
         hlsInstance = null;
       }
-      if (!url) return;
-
+      if (!url) {
+        console.error('Stream URL missing.');
+        return;
+      }
       if (Hls.isSupported()) {
         hlsInstance = new Hls();
         hlsInstance.loadSource(url);
         hlsInstance.attachMedia(video);
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        // Native HLS playback (Safari)
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = url;
       } else {
-        console.error("HLS not supported in this browser.");
+        console.error('HLS not supported in this browser');
       }
       video.play();
     }
 
-    /**
-     * togglePlayPause()
-     * Starts or pauses the video, updating the play/pause button’s icon.
-     */
-    function togglePlayPause() {
-      if (video.paused) {
-        video.play();
-      } else {
-        video.pause();
-      }
-    }
-
-    /**
-     * toggleMute()
-     * Mutes/unmutes the video and updates the mute button’s icon.
-     */
-    function toggleMute() {
-      video.muted = !video.muted;
-      muteBtn.textContent = video.muted ? "🔇" : "🔊";
-    }
-
-    /**
-     * openSettings()
-     * Shows the settings panel and keeps the controls visible.
-     */
-    function openSettings() {
-      settingsPanel.classList.add("active");
-      controls.classList.remove("hide");
-      clearTimeout(hideControlsTimeout);
-    }
-
-    /**
-     * closeSettingsPanel()
-     * Hides the settings panel and restarts the control‐hide timeout.
-     */
-    function closeSettingsPanel() {
-      settingsPanel.classList.remove("active");
-      showControls();
-    }
-
-    /**
-     * toggleFullScreen()
-     * Puts the .player container into fullscreen (if supported).
-     */
-    function toggleFullScreen() {
-      if (!document.fullscreenElement) {
-        if (player.requestFullscreen) {
-          player.requestFullscreen();
-        } else if (player.webkitRequestFullscreen) {
-          player.webkitRequestFullscreen();
-        } else if (player.msRequestFullscreen) {
-          player.msRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-      }
-    }
-
-    /**
-     * initialize()
-     * Called on DOMContentLoaded. Sets up event listeners, loads initial stream,
-     * and shows controls once.
-     */
-    function initialize() {
-      // 1. Load the default quality from the <select> element:
-      loadStream(qualitySelect.value);
-
-      // 2. Set initial playbackRate:
-      video.playbackRate = parseFloat(speedSelect.value);
-
-      // 3. Show controls once immediately:
-      showControls();
-
-      // 4. Event Listeners for showing/hiding controls:
-      player.addEventListener("mousemove", showControls);
-      player.addEventListener("touchstart", showControls);
-
-      // 5. Play / Pause:
-      playPauseBtn.addEventListener("click", togglePlayPause);
-      video.addEventListener("play", () => {
-        playPauseBtn.textContent = "❚❚";
-      });
-      video.addEventListener("pause", () => {
-        playPauseBtn.textContent = "►";
-      });
-
-      // 6. Mute / Unmute:
-      muteBtn.addEventListener("click", toggleMute);
-
-      // 7. Volume Slider:
-      volumeSlider.addEventListener("input", (e) => {
-        video.volume = parseFloat(e.target.value);
-      });
-
-      // 8. Seek Bar:  
-      //    - When user starts dragging
-      seekBar.addEventListener("mousedown", () => {
-        isSeeking = true;
-      });
-      seekBar.addEventListener("touchstart", () => {
-        isSeeking = true;
-      });
-      //    - While dragging
-      seekBar.addEventListener("input", (e) => {
-        const percent = parseFloat(e.target.value);
-        const newTime = (percent / 100) * video.duration;
-        video.currentTime = isNaN(newTime) ? 0 : newTime;
-      });
-      //    - When user releases mouse/touch
-      seekBar.addEventListener("mouseup", () => {
-        isSeeking = false;
-      });
-      seekBar.addEventListener("touchend", () => {
-        isSeeking = false;
-      });
-      //    - Update seek bar & time display as video plays
-      video.addEventListener("timeupdate", updateTimeDisplay);
-      video.addEventListener("loadedmetadata", updateTimeDisplay);
-
-      // 9. Quality Change:
-      qualitySelect.addEventListener("change", () => {
-        // Remember current playback position
-        const currentTime = video.currentTime;
+    // Initialize player: load default stream and set up events
+    function initPlayer() {
+      if (qualitySelect.options.length) {
         loadStream(qualitySelect.value);
-        // After stream loads, restore time after a tiny delay
-        video.addEventListener(
-          "loadedmetadata",
-          function restoreTime() {
-            video.currentTime = currentTime;
-            video.removeEventListener("loadedmetadata", restoreTime);
-          }
-        );
-      });
-
-      // 10. Playback Speed Change:
-      speedSelect.addEventListener("change", () => {
-        video.playbackRate = parseFloat(speedSelect.value);
-      });
-
-      // 11. Settings Panel Toggle:
-      settingsBtn.addEventListener("click", openSettings);
-      closeSettings.addEventListener("click", closeSettingsPanel);
-
-      // 12. Fullscreen Toggle:
-      fullscreenBtn.addEventListener("click", toggleFullScreen);
-
-      // 13. Hide settings when clicking outside
-      document.addEventListener("click", (e) => {
-        if (
-          settingsPanel.classList.contains("active") &&
-          !settingsPanel.contains(e.target) &&
-          e.target !== settingsBtn
-        ) {
-          closeSettingsPanel();
-        }
-      });
+      }
+      video.playbackRate = parseFloat(speedSelect.value);
+      setupEventListeners();
+      showControls();
     }
 
-    // Wait until the DOM is fully loaded
-    document.addEventListener("DOMContentLoaded", initialize);
+    // Update quality when user changes select
+    qualitySelect.onchange = function(e) {
+      loadStream(e.target.value);
+    };
+
+    // Update playback speed when changed
+    speedSelect.onchange = function(e) {
+      video.playbackRate = parseFloat(e.target.value);
+    };
+
+    // Set up event listeners for controls
+    function setupEventListeners() {
+      // Show controls on mouse or touch
+      player.addEventListener('mousemove', showControls);
+      player.addEventListener('touchstart', showControls);
+
+      // Play / Pause toggle
+      playPauseBtn.onclick = () => {
+        if (video.paused) video.play();
+        else video.pause();
+      };
+      video.onplay  = () => playPauseBtn.textContent = '❚❚';
+      video.onpause = () => playPauseBtn.textContent = '►';
+
+      // Update time display & seek slider
+      video.ontimeupdate = () => {
+        const current = video.currentTime;
+        const total   = video.duration || 0;
+        const pct     = total ? (current / total) * 100 : 0;
+        seekSlider.value = pct;
+        currentTimeEl.textContent = formatTime(current);
+      };
+      video.onloadedmetadata = () => {
+        durationEl.textContent = formatTime(video.duration || 0);
+      };
+
+      // Seek input
+      seekSlider.oninput = e => {
+        const total = video.duration || 0;
+        const targetTime = (e.target.value / 100) * total;
+        video.currentTime = targetTime;
+      };
+
+      // Mute / Unmute toggle
+      muteBtn.onclick = () => {
+        video.muted = !video.muted;
+        muteBtn.textContent = video.muted ? '🔇' : '🔊';
+      };
+
+      // Volume slider
+      volumeSlider.oninput = e => {
+        video.volume = e.target.value;
+        video.muted = (e.target.value == 0);
+      };
+
+      // Fullscreen toggle + orientation lock on mobile
+      fullscreenBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          player.requestFullscreen();
+        }
+      };
+      document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+          if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        } else {
+          if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+        }
+      });
+
+      // Settings button toggles panel visibility
+      settingsBtn.onclick = (e) => {
+        e.stopPropagation();
+        settingsPanel.classList.toggle('active');
+        showControls(); // keep controls visible when settings open
+      };
+      // Hide settings panel if clicking outside
+      document.addEventListener('click', e => {
+        if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+          settingsPanel.classList.remove('active');
+        }
+      });
+
+      // Theme toggle (dark / light)
+      themeToggle.onclick = (e) => {
+        e.stopPropagation();
+        const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.body.dataset.theme = next;
+        themeToggle.textContent = next === 'dark' ? '🌙' : '☀️';
+      };
+    }
+
+    // Start once DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      initPlayer();
+    });
   </script>
 </body>
 </html>
