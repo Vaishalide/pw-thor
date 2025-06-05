@@ -132,7 +132,7 @@
 
       try {
         const res = await fetch(
-          `https://pw-api-75332756c41b.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
+          `https://testing-453c50579f45.herokuapp.com/data/batches?limit=${batchLimit}&offset=${batchOffset}`
         );
         const json = await res.json();
         totalBatches = json.total;
@@ -155,7 +155,7 @@
       showView('subjects');
       subjectsDiv.innerHTML = '';
 
-      const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/data/batches/${batchId}/subjects`);
+      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects`);
       const { subjects } = await res.json();
 
       document.getElementById('subjectLoader').classList.add('hidden');
@@ -177,7 +177,7 @@
       showView('topics');
       topicsDiv.innerHTML = '';
 
-      const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
+      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
       const { topics } = await res.json();
 
       const topicButtonsContainer = document.createElement('div');
@@ -297,7 +297,7 @@
       try {
         // 5. Fetch from the server using the query
         const res = await fetch(
-          `https://pw-api-75332756c41b.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
+          `https://testing-453c50579f45.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
         );
         const json = await res.json(); // { results: [ { key, name, image }, … ] }
 
@@ -411,7 +411,7 @@
     function playVideo(videoUrl, title) {
   const encodedUrl = encodeURIComponent(videoUrl);
   const encodedTitle = encodeURIComponent(title);
-  window.location.href = `try.php?videoUrl=${encodedUrl}&title=${encodedTitle}`;
+  window.location.href = `video.php?videoUrl=${encodedUrl}&title=${encodedTitle}`;
 }
 
   </script>
