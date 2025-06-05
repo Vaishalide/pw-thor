@@ -15,6 +15,33 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
   <!-- HLS.js for streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: Arial, sans-serif;
+      height: 100%;
+      width: 100%;
+    }
+
+    .video-container {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      overflow: hidden;
+    }
+
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain;
+    }
+
     /* Color-theme variables */
     :root {
       --bg: #111;
@@ -201,7 +228,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
 
   <!-- Video player container -->
   <div class="player" id="player">
-    <video id="video" playsinline webkit-playsinline autoplay muted></video>
+    <div class="video-container"><video id="video" playsinline webkit-playsinline autoplay muted></video></div>
 
     <!-- Controls bar: play/pause, mute, volume, settings, theme, fullscreen, seek -->
     <div class="controls hide" id="controls">
