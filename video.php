@@ -14,7 +14,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
   <title><?php echo htmlspecialchars($title); ?></title>
   <!-- HLS.js for streaming -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
   <style>
     /* Color-theme variables */
     :root {
@@ -29,7 +28,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       --accent: #0066cc;
       --seek-bg: #ccc;
     }
-
     /* Reset & layout */
     * {
       box-sizing: border-box;
@@ -43,6 +41,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       display: flex;
       flex-direction: column;
       height: 100vh;
+      overflow: hidden;
     }
     .header {
       background: #1a1b2f;
@@ -50,6 +49,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       display: flex;
       align-items: center;
       color: gold;
+      flex-shrink: 0;
     }
     .back {
       color: gold;
@@ -61,7 +61,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       font-size: 1.2rem;
       font-weight: bold;
     }
-
     /* Player container */
     .player {
       position: relative;
@@ -70,7 +69,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
     }
     video {
       width: 100%;
@@ -84,7 +82,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       width: 100vw;
       height: 100vh;
     }
-
     /* Controls bar */
     .controls {
       position: absolute;
@@ -159,7 +156,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       border-radius: 50%;
       margin-top: -3px;
     }
-
     /* Settings panel (Quality & Speed) */
     .settings-panel {
       position: absolute;
@@ -181,7 +177,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       display: block;
       margin: 6px 0 2px 0;
       color: var(--accent);
-      font-size: 0. nine five em;
+      font-size: 0.95em;
     }
     .settings-panel select {
       width: 100%;
@@ -191,13 +187,12 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       border: 1px solid var(--fg);
       background: var(--bg);
       color: var(--fg);
-      font-size: 0. nine five em;
+      font-size: 0.95em;
       outline: none;
     }
   </style>
 </head>
 <body data-theme="dark">
-
   <!-- Header with Back link and Title -->
   <div class="header">
     <a class="back" href="javascript:history.back()">← Back</a>
@@ -213,11 +208,9 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       <button id="playPause" class="btn">►</button>
       <button id="mute" class="btn">🔊</button>
       <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1">
-
       <button id="settingsBtn" class="btn">⚙️</button>
       <button id="themeToggle" class="btn">🌙</button>
       <button id="fullscreen" class="btn">⛶</button>
-
       <div class="seek-container">
         <span id="currentTime" class="time">0:00</span>
         <input id="seek" type="range" class="seek" min="0" max="100" value="0">
@@ -304,6 +297,7 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
       } else {
         console.error('HLS not supported in this browser');
       }
+      video.play();
     }
 
     // Initialize player: load default stream and set up events
@@ -317,7 +311,6 @@ $title   = isset($_GET['title'])      ? $_GET['title']      : 'Lecture Video';
     // Update quality when user changes select
     qualitySelect.onchange = function(e) {
       loadStream(e.target.value);
-      video.play();
     };
 
     // Update playback speed when changed
