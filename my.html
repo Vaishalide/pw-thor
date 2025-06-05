@@ -41,6 +41,15 @@
       background: #0e0f1b;
       color: white;
     }
+    .header {
+      background: #11132a;
+      color: #ffc107;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 600;
+    }
     .grid {
       display: flex;
       flex-wrap: wrap;
@@ -162,15 +171,11 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem;">
-    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png"
-         alt="PW THOR Logo"
-         style="height: 60px;" />
+    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="PW THOR Logo" style="height: 60px;" />
     <h1 style="color: #ffc107; font-size: 2rem; margin: 0;">PW THOR</h1>
   </div>
 
-  <!-- BACK BUTTON -->
   <div id="backBtn"
        class="hidden"
        style="padding: 1rem; cursor: pointer; color: gold; font-size: 1.2rem;">
@@ -204,30 +209,30 @@
   </div>
 
   <script>
-    /********* STATE VARIABLES *********/
     let batchOffset = 0;
     const batchLimit = 10;
     let totalBatches = Infinity;
     let isLoading = false;
     let inSearchMode = false;
 
-    const main       = document.getElementById('main');
+    const main = document.getElementById('main');
     const subjectsDiv = document.getElementById('subjects');
-    const topicsDiv   = document.getElementById('topics');
-    const backBtn     = document.getElementById('backBtn');
+    const topicsDiv = document.getElementById('topics');
+    const backBtn = document.getElementById('backBtn');
     const searchBarWrapper = document.getElementById('searchBarWrapper');
     const searchInput = document.getElementById('searchInput');
 
     let currentView = 'main';
-    let prevState   = [];
+    let prevState = [];
 
-    // Modal references
-    const qualityModalOverlay   = document.getElementById('qualityModalOverlay');
+    // References for modal
+    const qualityModalOverlay = document.getElementById('qualityModalOverlay');
     const qualityButtonsContainer = document.getElementById('qualityButtons');
-    let modalUrlMap  = {};    // { '720': url, '480': url, '360': url, '240': url }
-    let modalTitle   = '';
 
-    /********* VIEW MANAGEMENT *********/
+    // Variables to hold the URLs and title when modal is open
+    let modalUrlMap = {};
+    let modalTitle = '';
+
     function showView(view) {
       main.classList.add('hidden');
       subjectsDiv.classList.add('hidden');
@@ -235,7 +240,6 @@
       searchBarWrapper.style.display = view === 'main' ? '' : 'none';
       backBtn.classList.toggle('hidden', view === 'main');
       currentView = view;
-
       if (view === 'main') main.classList.remove('hidden');
       else if (view === 'subjects') subjectsDiv.classList.remove('hidden');
       else if (view === 'topics') topicsDiv.classList.remove('hidden');
@@ -246,7 +250,6 @@
       if (lastView) showView(lastView);
     };
 
-    /********* BATCHES *********/
     // Append a single batch card to #main
     function appendBatchCard(batchData) {
       const div = document.createElement('div');
@@ -255,10 +258,10 @@
         <img src="${batchData.image}" alt="${batchData.name}">
         <div class="card-title">${batchData.name}</div>
       `;
-      div.addEventListener('click', () => {
+      div.onclick = () => {
         prevState.push(currentView);
         loadSubjects(batchData.key);
-      });
+      };
       main.appendChild(div);
     }
 
@@ -275,216 +278,136 @@
         const json = await res.json();
         totalBatches = json.total;
 
-        json.batches.forEach(batchData => appendBatchCard(batchData));
+        json.batches.forEach(batchData => {
+          appendBatchCard(batchData);
+        });
         batchOffset += batchLimit;
       } catch (err) {
-        console.error('Error fetching batches:', err);
+        console.error('Error fetching batches page:', err);
       } finally {
         isLoading = false;
         document.getElementById('batchLoader').classList.add('hidden');
       }
     }
 
-    /********* SUBJECTS *********/
+    // Load subjects for a batch
     async function loadSubjects(batchId) {
       document.getElementById('subjectLoader').classList.remove('hidden');
       showView('subjects');
       subjectsDiv.innerHTML = '';
 
-      try {
-        const res = await fetch(
-          `https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects`
-        );
-        const { subjects } = await res.json();
+      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects`);
+      const { subjects } = await res.json();
 
-        subjects.forEach(subject => {
-          const div = document.createElement('div');
-          div.className = 'card';
-          div.innerHTML = `<div class="card-title">${subject.name}</div>`;
-          div.addEventListener('click', () => {
-            prevState.push(currentView);
-            loadTopics(batchId, subject.key);
-          });
-          subjectsDiv.appendChild(div);
-        });
-      } catch (err) {
-        console.error('Error fetching subjects:', err);
-      } finally {
-        document.getElementById('subjectLoader').classList.add('hidden');
-      }
+      document.getElementById('subjectLoader').classList.add('hidden');
+      subjects.forEach(subject => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `<div class="card-title">${subject.name}</div>`;
+        div.onclick = () => {
+          prevState.push(currentView);
+          loadTopics(batchId, subject.key);
+        };
+        subjectsDiv.appendChild(div);
+      });
     }
 
-    /********* TOPICS & LECTURES *********/
+    // Load topics for a subject
     async function loadTopics(batchId, subjectId) {
       document.getElementById('topicLoader').classList.remove('hidden');
       showView('topics');
       topicsDiv.innerHTML = '';
 
-      try {
-        const res = await fetch(
-          `https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`
-        );
-        const { topics } = await res.json();
+      const res = await fetch(`https://testing-453c50579f45.herokuapp.com/data/batches/${batchId}/subjects/${subjectId}/topics`);
+      const { topics } = await res.json();
 
-        const topicButtonsContainer = document.createElement('div');
-        topicButtonsContainer.className = 'grid';
-        const topicContent = document.createElement('div');
-        topicContent.className = 'section';
+      const topicButtonsContainer = document.createElement('div');
+      topicButtonsContainer.className = 'grid';
+      const topicContent = document.createElement('div');
+      topicContent.className = 'section';
 
-        if (!topics.length) {
-          topicButtonsContainer.innerHTML = `
-            <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
-              🚫 No lectures, notes, or DPPs are available for this subject.
-            </div>`;
-        } else {
-          topics.forEach(topic => {
-            const button = document.createElement('div');
-            button.className = 'card';
-            button.innerHTML = `<div class="card-title">${topic.name}</div>`;
-            button.addEventListener('click', () => {
-              // Hide the topic buttons
-              topicButtonsContainer.style.display = 'none';
+      if (!topics.length) {
+        topicButtonsContainer.innerHTML = `
+          <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
+            🚫 No lectures, notes, or DPPs are available for this subject.
+          </div>`;
+      } else {
+        topics.forEach(topic => {
+          const button = document.createElement('div');
+          button.className = 'card';
+          button.innerHTML = `<div class="card-title">${topic.name}</div>`;
+          button.onclick = () => {
+            topicButtonsContainer.style.display = 'none';
 
-              // Build tab buttons (Lectures / Notes / DPPs)
-              const tabsHtml = `
-                <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
-                  <button class="btn" onclick="switchTab('lectures')">Lectures</button>
-                  <button class="btn" onclick="switchTab('notes')">Notes</button>
-                  <button class="btn" onclick="switchTab('dpps')">DPPs</button>
+            const tabs = `
+              <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                <button class="btn" onclick="switchTab('lectures')">Lectures</button>
+                <button class="btn" onclick="switchTab('notes')">Notes</button>
+                <button class="btn" onclick="switchTab('dpps')">DPPs</button>
+              </div>
+            `;
+
+            topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
+
+            // Build lectures HTML with four video‐URL fields per lecture:
+            const lecturesHtml = (topic.lectures || []).map(lecture => `
+              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
+                <div style="cursor:pointer;"
+                     onclick='showQualityModal("${lecture.videoUrl}", "${lecture.videoUrl1}", "${lecture.videoUrl2}", "${lecture.videoUrl3}", "${lecture.title}")'>
+                  <img src="${lecture.thumbnail}"
+                       style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
                 </div>
-              `;
-              topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabsHtml;
+                <div style="text-align:center;">${lecture.title}</div>
+                ${(lecture.notes || []).map(note => `
+                  <div style="margin-top: 0.5rem;">
+                    <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+                  </div>`).join('')}
+                ${(lecture.dpps || []).map(dpp => `
+                  <div style="margin-top: 0.5rem;">
+                    <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+                  </div>`).join('')}
+              </div>
+            `).join('');
 
-              // —–– LECTURES TAB ––—
-              const lecturesContainer = document.createElement('div');
-              lecturesContainer.id = 'lecturesTab';
+            const notesHtml = (topic.notes || []).map(note => `
+              <div style="margin-top: 1rem;">
+                <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+              </div>`).join('');
 
-              (topic.lectures || []).forEach(lecture => {
-                // Outer wrapper
-                const lectureDiv = document.createElement('div');
-                lectureDiv.style.cssText = 'margin-bottom:2rem; display:flex; flex-direction:column; align-items:center;';
+            const dppsHtml = (topic.dpps || []).map(dpp => `
+              <div style="margin-top: 1rem;">
+                <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+              </div>`).join('');
 
-                // Thumbnail wrapper
-                const thumbWrapper = document.createElement('div');
-                thumbWrapper.style.cursor = 'pointer';
+            topicContent.innerHTML += `
+              <div id="lecturesTab">${lecturesHtml}</div>
+              <div id="notesTab" style="display:none;">${notesHtml}</div>
+              <div id="dppsTab" style="display:none;">${dppsHtml}</div>
+            `;
 
-                // The <img> element
-                const img = document.createElement('img');
-                img.src = lecture.thumbnail;
-                img.style.cssText = 'width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;';
-                thumbWrapper.appendChild(img);
-
-                // Bind click listener (no inline HTML)
-                thumbWrapper.addEventListener('click', () => {
-                  showQualityModal(
-                    lecture.videoUrl,
-                    lecture.videoUrl1,
-                    lecture.videoUrl2,
-                    lecture.videoUrl3,
-                    lecture.title
-                  );
-                });
-
-                // Title text
-                const titleDiv = document.createElement('div');
-                titleDiv.style.textAlign = 'center';
-                titleDiv.textContent = lecture.title;
-
-                lectureDiv.appendChild(thumbWrapper);
-                lectureDiv.appendChild(titleDiv);
-
-                // Append notes for this lecture, if any
-                (lecture.notes || []).forEach(note => {
-                  const noteWrapper = document.createElement('div');
-                  noteWrapper.style.marginTop = '0.5rem';
-                  const a = document.createElement('a');
-                  a.className = 'btn';
-                  a.href = note.fileUrl;
-                  a.target = '_blank';
-                  a.textContent = note.title;
-                  noteWrapper.appendChild(a);
-                  lectureDiv.appendChild(noteWrapper);
-                });
-
-                // Append DPPs for this lecture, if any
-                (lecture.dpps || []).forEach(dpp => {
-                  const dppWrapper = document.createElement('div');
-                  dppWrapper.style.marginTop = '0.5rem';
-                  const a = document.createElement('a');
-                  a.className = 'btn';
-                  a.href = dpp.fileUrl;
-                  a.target = '_blank';
-                  a.textContent = dpp.title;
-                  dppWrapper.appendChild(a);
-                  lectureDiv.appendChild(dppWrapper);
-                });
-
-                lecturesContainer.appendChild(lectureDiv);
-              });
-
-              // —–– NOTES TAB ––—
-              const notesContainer = document.createElement('div');
-              notesContainer.id = 'notesTab';
-              notesContainer.style.display = 'none';
-              (topic.notes || []).forEach(note => {
-                const nWrap = document.createElement('div');
-                nWrap.style.marginTop = '1rem';
-                const a = document.createElement('a');
-                a.className = 'btn';
-                a.href = note.fileUrl;
-                a.target = '_blank';
-                a.textContent = note.title;
-                nWrap.appendChild(a);
-                notesContainer.appendChild(nWrap);
-              });
-
-              // —–– DPPs TAB ––—
-              const dppsContainer = document.createElement('div');
-              dppsContainer.id = 'dppsTab';
-              dppsContainer.style.display = 'none';
-              (topic.dpps || []).forEach(dpp => {
-                const dWrap = document.createElement('div');
-                dWrap.style.marginTop = '1rem';
-                const a = document.createElement('a');
-                a.className = 'btn';
-                a.href = dpp.fileUrl;
-                a.target = '_blank';
-                a.textContent = dpp.title;
-                dWrap.appendChild(a);
-                dppsContainer.appendChild(dWrap);
-              });
-
-              // Append all three tabs under topicContent
-              topicContent.appendChild(lecturesContainer);
-              topicContent.appendChild(notesContainer);
-              topicContent.appendChild(dppsContainer);
-
-              // Switch‐tab logic
-              window.switchTab = function(tabName) {
-                document.getElementById('lecturesTab').style.display = tabName === 'lectures' ? 'block' : 'none';
-                document.getElementById('notesTab').style.display    = tabName === 'notes'    ? 'block' : 'none';
-                document.getElementById('dppsTab').style.display     = tabName === 'dpps'     ? 'block' : 'none';
-              };
+            window.switchTab = function(tabName) {
+              document.getElementById('lecturesTab').style.display = tabName === 'lectures' ? 'block' : 'none';
+              document.getElementById('notesTab').style.display = tabName === 'notes' ? 'block' : 'none';
+              document.getElementById('dppsTab').style.display = tabName === 'dpps' ? 'block' : 'none';
             };
+          };
+          topicButtonsContainer.appendChild(button);
+        });
+      }
 
-            topicButtonsContainer.appendChild(button);
-          });
-        }
+      topicsDiv.appendChild(topicButtonsContainer);
+      topicsDiv.appendChild(topicContent);
+      document.getElementById('topicLoader').classList.add('hidden');
+    }
 
-        topicsDiv.appendChild(topicButtonsContainer);
-        topicsDiv.appendChild(topicContent);
-      } catch (err) {
-        console.error('Error fetching topics:', err);
-      } finally {
-        document.getElementById('topicLoader').classList.add('hidden');
+    // Clear main grid
+    function clearMainGrid() {
+      while (main.firstChild) {
+        main.removeChild(main.firstChild);
       }
     }
 
-    /********* SEARCH HANDLER *********/
-    function clearMainGrid() {
-      while (main.firstChild) main.removeChild(main.firstChild);
-    }
-
+    // Handle search input
     async function handleSearchEvent() {
       const term = searchInput.value.trim().toLowerCase();
       if (!term) {
@@ -505,17 +428,17 @@
         );
         const json = await res.json();
         document.getElementById('batchLoader').classList.add('hidden');
-
-        // If user changed the input mid‐fetch, ignore this result
-        if (searchInput.value.trim().toLowerCase() !== thisSearch) return;
-
+        const currentTerm = searchInput.value.trim().toLowerCase();
+        if (currentTerm !== thisSearch) return;
         if (!json.results.length) {
           main.innerHTML = `
             <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
               🤷‍♂️ No batches found matching “${searchInput.value.trim()}”
             </div>`;
         } else {
-          json.results.forEach(batchData => appendBatchCard(batchData));
+          json.results.forEach(batchData => {
+            appendBatchCard(batchData);
+          });
         }
       } catch (err) {
         console.error('Search error:', err);
@@ -524,7 +447,7 @@
       }
     }
 
-    /********* INFINITE SCROLL *********/
+    // Infinite scroll for pagination
     window.addEventListener('scroll', () => {
       if (currentView !== 'main' || isLoading || inSearchMode) return;
       if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 300) {
@@ -532,41 +455,56 @@
       }
     });
 
-    searchInput.addEventListener('input', handleSearchEvent);
+    // Wire up search input
+    searchInput.addEventListener('input', () => {
+      handleSearchEvent();
+    });
 
+    // Initial load
     document.addEventListener('DOMContentLoaded', () => {
       loadBatches();
     });
 
-    /********* QUALITY SELECTION MODAL *********/
+
+    // ---------------------------------
+    // SHOW/HIDE QUALITY SELECTION MODAL
+    // ---------------------------------
     function showQualityModal(url720, url480, url360, url240, title) {
-      modalUrlMap = { '720': url720, '480': url480, '360': url360, '240': url240 };
+      // Store in modalUrlMap
+      modalUrlMap = {
+        '720': url720,
+        '480': url480,
+        '360': url360,
+        '240': url240
+      };
       modalTitle = title;
 
-      // Clear existing buttons
+      // Clear any existing buttons
       qualityButtonsContainer.innerHTML = '';
 
-      // Create buttons in order
+      // Create four buttons
       ['720', '480', '360', '240'].forEach(quality => {
         const btn = document.createElement('button');
         btn.className = 'btn';
         btn.textContent = quality + 'p';
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
           playVideo(modalUrlMap[quality], modalTitle);
           hideQualityModal();
-        });
+        };
         qualityButtonsContainer.appendChild(btn);
       });
 
+      // Show modal
       qualityModalOverlay.style.display = 'flex';
     }
 
     function hideQualityModal() {
       qualityModalOverlay.style.display = 'none';
       modalUrlMap = {};
-      modalTitle  = '';
+      modalTitle = '';
     }
 
+    // Existing playVideo(...) remains unchanged
     function playVideo(videoUrl, title) {
       const form = document.createElement('form');
       form.method = 'POST';
@@ -591,47 +529,33 @@
     }
   </script>
 
-  <!-- POPUP LOGIC (UNCHANGED) -->
+  <!-- Popup logic (unchanged) -->
   <div id="popup"
-       style="display: none;
-              position: fixed; top: 50%; left: 50%;
-              transform: translate(-50%, -50%);
-              background: #1e2036; color: white;
-              padding: 20px;
-              box-shadow: 0 0 20px #ffc10766;
-              z-index: 9999;
-              width: 320px; border-radius: 12px;
-              text-align: center;">
+       style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+              background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
     <button onclick="document.getElementById('popup').style.display='none'"
-            style="position: absolute; top: 5px; right: 10px;
-                   background: transparent; border: none;
-                   font-size: 20px; color: white;">
+            style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">
       &times;
     </button>
-    <img id="popupImage" src="" alt="Popup Image"
-         style="max-width: 100%; height: auto; border-radius: 8px;">
+    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
     <p id="popupText" style="margin: 15px 0;"></p>
     <a id="popupLink"
        href="#"
        target="_blank"
-       style="display: inline-block;
-              padding: 10px 15px;
-              background-color: #ffc107;
-              color: #111; font-weight: bold;
-              text-decoration: none;
-              border-radius: 5px;">
+       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
       Join Telegram
     </a>
   </div>
 
+  <!-- Fetch popup.json (unchanged) -->
   <script>
     fetch('/popup.json')
       .then(res => res.json())
       .then(popup => {
         if (popup.show) {
-          document.getElementById('popupImage').src   = popup.image;
-          document.getElementById('popupText').textContent  = popup.text;
-          document.getElementById('popupLink').href   = popup.link;
+          document.getElementById('popupImage').src = popup.image;
+          document.getElementById('popupText').textContent = popup.text;
+          document.getElementById('popupLink').href = popup.link;
           document.getElementById('popup').style.display = 'block';
         }
       })
