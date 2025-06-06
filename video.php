@@ -212,7 +212,7 @@ $title    = $_GET['title']     ?? 'Video Player';
     </div>
 
     <!-- Video Element -->
-    <video id="video" autoplay playsinline webkit-playsinline></video>
+    <video id="video" autoplay playsinline webkit-playsinline x5-playsinline allowfullscreen></video>
 
     <!-- Controls Bar -->
     <div class="controls" id="controls">
@@ -408,5 +408,36 @@ $title    = $_GET['title']     ?? 'Video Player';
       showUI();
     });
   </script>
+
+  <script>
+    // Auto-rotate to landscape when entering fullscreen
+    function isFullscreen() {
+      return (
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    }
+
+    function onFullScreenChange() {
+      if (isFullscreen()) {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape')
+            .catch((err) => {
+              console.warn('Orientation lock failed:', err);
+            });
+        }
+      } else {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', onFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullScreenChange);
+  </script>
+
 </body>
 </html>
