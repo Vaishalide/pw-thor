@@ -5,211 +5,282 @@ $video360 = $_GET['videoUrl2'] ?? '';
 $video240 = $_GET['videoUrl3'] ?? '';
 $title    = $_GET['title']     ?? 'Video Player';
 ?>
-<html>
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-        <link rel="stylesheet" href="https://cdn.plyr.io/3.6.12/plyr.css" />
-        <!-- add Hls.js -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-<!-- then Plyr.js -->
-<script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+     <script>
+    function getCookie(name) {
+      const value = document.cookie;
+      const parts = value.split("; ");
+      for (let i = 0; i < parts.length; i++) {
+       const [key, val] = parts[i].split("=");
+        if (key === name) return val;
+      }
+     return null;
+    }
 
-        <link href="favicon.ico" rel="icon">
-        <script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
-        <link href="https://fonts.googleapis.com/css?family=Poppins|Quattrocento+Sans" rel="stylesheet"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/3.1.3/dash.all.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/hls.js"></script>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-        <title>VIDEO PLAYER</title>
-        <style type="text/css" media="screen">
-            html {
-                font-family: Poppins;
-                background: #0A0909;
-                margin: 0;
-                padding: 0;
-                --plyr-color-main: #1ac266;
-            }
+    if (!getCookie('login')) {
+      // Agar logged in nahi hain, toh generate key page par redirect karo
+      window.location.href = 'https://pwthor.site/generate-key.html';
+    }
+  </script>
+  <title><?php echo htmlspecialchars($title); ?></title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root {
+      --bg: #000;
+      --fg: #fff;
+      --accent: #2f8eed;
+      --seek-bg: #444;
+    }
 
-            .logo-container {
-                position: absolute;
-                top: 10px;
-                left: 10px;
-                width: 60px;
-                height: 60px;
-            }
-            .plyr {
-                height: 100%;
-                width: 100%;
-            }
-            #logo {
-                position: fixed;
-                background-image: url("https://res.cloudinary.com/drlkucdog/image/upload/v1748878974/sl545g6vrorheb1hyzwn.jpg");
-                background-size: contain;
-                background-position: center;
-            }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-            .float {
-                height: 60px;
-                width: 60px;
-                z-index: 10;
-                border-radius: 50px;
-                box-shadow: 2px 2px 3px #999;
-            }
+    html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: Arial, sans-serif;
+  overflow: auto; /* allows vertical and horizontal scroll if needed */
+}
 
-            .label-container{
-                position: relative;
-                top: 5px;
-                left:70px;
-                display:table;
-                visibility: hidden;
-            }
+    /* Header (Back button + Title) */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+      transition: opacity 0.3s;
+    }
 
-            .label-text{
-                color:#FFF;
-                background:rgba(51,51,51,0.5);
-                display:table-cell;
-                vertical-align:middle;
-                padding:10px;
-                border-radius:3px;
-            }
+    .back-btn {
+      color: var(--fg);
+      text-decoration: none;
+      font-size: 18px;
+      background: rgba(255,255,255,0.1);
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
 
-            .label-arrow{
-                display:table-cell;
-                vertical-align:middle;
-                color:#333;
-                opacity:0.5;
-                transform: scaleX(-1);
-            }
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--fg);
+    }
 
-            a.float + div.label-container {
-              visibility: hidden;
-              opacity: 0;
-              transition: visibility 0s, opacity 0.5s ease;
-            }
+    /* Quality selector (top-right) */
+    .top-quality {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 4px;
+      border-radius: 4px;
+      transition: opacity 0.3s;
+    }
+    .top-quality select {
+      background: var(--bg);
+      color: var(--fg);
+      border: 1px solid var(--accent);
+      padding: 5px;
+      border-radius: 4px;
+    }
 
-            a.float:hover + div.label-container{
-              visibility: visible;
-              opacity: 1;
-            }
+    /* Main player container */
+    .player {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+    }
 
-            .loading {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: #000;
-                z-index: 9999;
-            }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
 
-            .loading {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-            }
+    /* Controls bar (bottom) */
+    .controls {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      gap: 10px;
+      z-index: 10;
+      transition: opacity 0.3s;
+    }
 
-            .circle {
-                width: 20px;
-                height: 20px;
-                margin: 10px;
-                border-radius: 50%;
-                animation: loader-animation 0.75s ease infinite;
-            }
+    .btn {
+      background: none;
+      border: none;
+      color: var(--fg);
+      font-size: 1.5em;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
 
-            .circle:nth-child(1) {
-                background-color: #D90429;
-                animation-delay: 0s;
-            }
+    .volume {
+      width: 100px;
+    }
 
-            .circle:nth-child(2) {
-                background-color: #FFA300;
-                animation-delay: 0.15s;
-            }
+    .seek-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-            .circle:nth-child(3) {
-                background-color: #048BA8;
-                animation-delay: 0.3s;
-            }
+    .seek {
+      width: 100%;
+      height: 8px;
+      background: var(--seek-bg);
+      border-radius: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      cursor: pointer;
+    }
+    .seek::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: -4px;
+    }
+    .seek::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
 
-            @keyframes loader-animation {
-                0% {
-                    transform: scale(0);
-                    opacity: 0.7;
-                }
-                100% {
-                    transform: scale(1);
-                    opacity: 0;
-                }
-            }
+    .time {
+      color: var(--fg);
+      font-size: 0.9em;
+      min-width: 40px;
+    }
 
-            select {
-                margin-top: 20px;
-                padding: 10px;
-                color: #fff;
-                background-color: #333;
-                border: none;
-                border-radius: 5px;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="loading" class="loading">
-            <div class="circle"></div>
-            <div class="circle"></div>
-            <div class="circle"></div>
-        </div>
-        <video controls crossorigin playsinline id="videoContainer" style="background-color: #0A0909;">
-            <source src="{{ video_url }}">
-        </video>
-        
-        <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const videoUrl = urlParams.get('videoUrl');  // 720p
-            const videoUrl1 = urlParams.get('videoUrl1');  // 480p
-            const videoUrl2 = urlParams.get('videoUrl2');  // 360p
-            const videoUrl3 = urlParams.get('videoUrl3');  // 240p
+    /* Playback‐speed selector (above controls) */
+    .playback-speed {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px;
+      border-radius: 6px;
+      transition: opacity 0.3s;
+    }
+    .playback-speed select {
+      background: var(--bg);
+      color: var(--fg);
+      border: 1px solid var(--accent);
+      padding: 4px;
+      border-radius: 4px;
+    }
 
-            const video = document.getElementById("videoContainer");
-            
-            // Default video URL to 720p
-            video.src = videoUrl;
+    /* Hidden state for UI elements */
+    .hide-ui {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="player" id="player">
+    <!-- Header: Back + Title -->
+    <div class="header" id="header">
+      <a href="javascript:history.back()" class="back-btn">← Back</a>
+      <div class="title"><?php echo htmlspecialchars($title); ?></div>
+    </div>
 
-            // Quality selection UI
-            const qualitySelect = document.createElement('select');
-            const qualities = [
-                { label: "720p", value: videoUrl },
-                { label: "480p", value: videoUrl1 },
-                { label: "360p", value: videoUrl2 },
-                { label: "240p", value: videoUrl3 }
-            ];
+    <!-- Quality Selector -->
+    <div class="top-quality" id="topQuality">
+      <select id="topQualitySelect">
+        <option value="<?php echo htmlspecialchars($video720); ?>">720p</option>
+        <option value="<?php echo htmlspecialchars($video480); ?>">480p</option>
+        <option value="<?php echo htmlspecialchars($video360); ?>">360p</option>
+        <option value="<?php echo htmlspecialchars($video240); ?>">240p</option>
+      </select>
+    </div>
 
-            qualities.forEach(quality => {
-                const option = document.createElement('option');
-                option.value = quality.value;
-                option.text = quality.label;
-                qualitySelect.appendChild(option);
-            });
+    <!-- Video Element -->
+    <video id="video" autoplay playsinline webkit-playsinline x5-playsinline allowfullscreen></video>
 
-            // Add to the page
-            document.body.appendChild(qualitySelect);
+    <!-- Controls Bar -->
+    <div class="controls" id="controls">
+      <button id="playPause" class="btn">►</button>
+      <button id="mute" class="btn">🔊</button>
+      <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1" />
+      <button id="fullscreen" class="btn">⛶</button>
+      <div class="seek-container">
+        <span id="currentTime" class="time">0:00</span>
+        <input id="seek" type="range" class="seek" min="0" max="100" value="0" />
+        <span id="duration" class="time">0:00</span>
+      </div>
+    </div>
 
-            // Event listener to switch quality
-            qualitySelect.addEventListener('change', function(e) {
-                video.src = e.target.value;
-                video.play();
-            });
+    <!-- Playback‐Speed Selector -->
+    <div class="playback-speed" id="playbackSpeed">
+      <label for="speed" style="margin-right:4px;">Speed:</label>
+      <select id="speed">
+        <option value="0.5">0.5x</option>
+        <option value="0.75">0.75x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.25">1.25x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+    </div>
+  </div>
 
-            const defaultOptions = {
-                controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'rewind', 'fast-forward', 'settings', 'fullscreen', 'keyboard'],
-                autoplay: true,
-                captions: { active: true, update: true },
-                speed: { options: [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3] }
-            };
-             function loadStream(url) {
+  <script>
+    const video            = document.getElementById("video");
+    const playPauseBtn     = document.getElementById("playPause");
+    const muteBtn          = document.getElementById("mute");
+    const volumeSlider     = document.getElementById("volume");
+    const fullscreenBtn    = document.getElementById("fullscreen");
+    const seekBar          = document.getElementById("seek");
+    const currentTimeElem  = document.getElementById("currentTime");
+    const durationElem     = document.getElementById("duration");
+    const topQualitySelect = document.getElementById("topQualitySelect");
+    const speedSelect      = document.getElementById("speed");
+
+    // UI elements to hide/show
+    const header           = document.getElementById("header");
+    const topQuality       = document.getElementById("topQuality");
+    const controls         = document.getElementById("controls");
+    const playbackSpeed    = document.getElementById("playbackSpeed");
+
+    let hlsInstance       = null;
+    let hideUITimer       = null;
+    const HIDE_DELAY      = 4000; // 4 seconds
+
+    // Load HLS (or native) stream
+    function loadStream(url) {
       if (hlsInstance) {
         hlsInstance.destroy();
         hlsInstance = null;
@@ -234,120 +305,155 @@ $title    = $_GET['title']     ?? 'Video Player';
       return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
-function setupHLS(url) {
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(url);
-                    hls.attachMedia(video);
-                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                        loader.style.display = "none";
-                        video.play();
-                    });
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = url;
-                    video.addEventListener('loadedmetadata', function () {
-                        loader.style.display = "none";
-                        video.play();
-                    });
-                } else {
-                    loader.innerText = "This browser does not support HLS.";
-                }
-            }
+    // Show all UI elements
+    function showUI() {
+      header.classList.remove("hide-ui");
+      topQuality.classList.remove("hide-ui");
+      controls.classList.remove("hide-ui");
+      playbackSpeed.classList.remove("hide-ui");
+    }
 
-            setupHLS(defaultSource);
+    // Hide all UI elements
+    function hideUI() {
+      header.classList.add("hide-ui");
+      topQuality.classList.add("hide-ui");
+      controls.classList.add("hide-ui");
+      playbackSpeed.classList.add("hide-ui");
+    }
 
-            // Initialize Plyr
-            const player = new Plyr(video);
-            const initializePlayer = () => {
-                const bodyElement = document.querySelector("body");
-                const loadingElement = document.getElementById("loading");
-                loadingElement.style.display = "none";
-                bodyElement.style.visibility = "visible";
-                
-                defaultOptions.previewThumbnails = {
-                    enabled: true,
-                    src: videoUrl
-                };
+    // Reset the hide‐UI timer (only if in fullscreen)
+    function resetHideTimer() {
+      if (!document.fullscreenElement) {
+        // If not fullscreen, do not hide UI—just clear any timer.
+        clearTimeout(hideUITimer);
+        showUI();
+        return;
+      }
+      clearTimeout(hideUITimer);
+      showUI();
+      hideUITimer = setTimeout(() => {
+        hideUI();
+      }, HIDE_DELAY);
+    }
 
-                defaultOptions.tooltips = { controls: true, seek: true };
-                
-                const player = new Plyr(video, defaultOptions);
-                window.player = player;
-            };
+    // Play/Pause toggle
+    playPauseBtn.addEventListener("click", () => {
+      if (video.paused) {
+        video.play();
+        playPauseBtn.textContent = "❚❚";
+      } else {
+        video.pause();
+        playPauseBtn.textContent = "►";
+      }
+    });
 
-            if (videoUrl.includes('/video/')) {
-                if (Hls.isSupported()) {
-                    const hls = new Hls();
-                    hls.loadSource(videoUrl);
-                    hls.attachMedia(video);
-                    
-                    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                        const availableQualities = hls.levels.map((l) => l.height);
-                        availableQualities.unshift(0);
-                        
-                        defaultOptions.quality = {
-                            default: 0,
-                            options: availableQualities,
-                            forced: true,
-                            onChange: function(newQuality) {
-                                if (newQuality === 0) {
-                                    hls.currentLevel = -1;
-                                } else {
-                                    hls.levels.forEach((level, levelIndex) => {
-                                        if (level.height === newQuality) {
-                                            hls.currentLevel = levelIndex;
-                                        }
-                                    });
-                                }
-                            },
-                        };
-                        
-                        initializePlayer();
-                    });
-                    
-                    window.hls = hls;
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = videoUrl;
-                    initializePlayer();
-                }
-            } else if (videoUrl.includes('.mpd')) {
-                const dash = dashjs.MediaPlayer().create();
-                dash.initialize(video, videoUrl, false);
-                dash.updateSettings({
-                    streaming: {
-                        abr: {
-                            autoSwitchBitrate: {
-                                audio: false,
-                                video: false
-                            }
-                        },
-                        fastSwitchEnabled: true,
-                        lowLatencyEnabled: true
-                    }
-                });
-                dash.on("streamInitialized", function() {
-                    const availableQualities = dash.getBitrateInfoListFor("video").map((l) => l.height);
-                    defaultOptions.quality = {
-                        default: availableQualities[0].height,
-                        options: availableQualities,
-                        forced: true,
-                        onChange: function(newQuality) {
-                            dash.getBitrateInfoListFor("video").forEach((level, levelIndex) => {
-                                if (level.height === newQuality) {
-                                    dash.setQualityFor("video", level.qualityIndex);
-                                }
-                            });
-                        },
-                    };
-                    initializePlayer();
-                });
-                dash.attachView(video);
-                window.dash = dash;
-            } else {
-                video.src = videoUrl;
-                initializePlayer();
-            }
-        });
-        </script>
-    </body>
+    // Mute/Unmute toggle
+    muteBtn.addEventListener("click", () => {
+      video.muted = !video.muted;
+      muteBtn.textContent = video.muted ? "🔇" : "🔊";
+    });
+
+    // Volume slider
+    volumeSlider.addEventListener("input", () => {
+      video.volume = volumeSlider.value;
+      if (video.volume > 0 && video.muted) {
+        video.muted = false;
+        muteBtn.textContent = "🔊";
+      }
+    });
+
+    // Fullscreen toggle
+    fullscreenBtn.addEventListener("click", () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    // When metadata is loaded, set duration text
+    video.addEventListener("loadedmetadata", () => {
+      durationElem.textContent = formatTime(video.duration);
+    });
+
+    // Update current time and seek bar as video plays
+    video.addEventListener("timeupdate", () => {
+      currentTimeElem.textContent = formatTime(video.currentTime);
+      if (video.duration) {
+        seekBar.value = (video.currentTime / video.duration) * 100;
+      }
+    });
+
+    // Seek bar interaction
+    seekBar.addEventListener("input", () => {
+      if (!video.duration) return;
+      video.currentTime = (seekBar.value / 100) * video.duration;
+    });
+
+    // Quality selector change
+    topQualitySelect.addEventListener("change", () => {
+      loadStream(topQualitySelect.value);
+    });
+
+    // Playback speed change
+    speedSelect.addEventListener("change", () => {
+      video.playbackRate = parseFloat(speedSelect.value);
+    });
+
+    // Reset hide‐UI timer on user interaction
+    ["mousemove", "click"].forEach(evt => {
+      document.addEventListener(evt, resetHideTimer);
+    });
+
+    // When fullscreen state changes, reset/hide UI as appropriate
+    document.addEventListener("fullscreenchange", () => {
+      if (document.fullscreenElement) {
+        // Entered fullscreen: start the timer
+        resetHideTimer();
+      } else {
+        // Exited fullscreen: clear timer and show UI
+        clearTimeout(hideUITimer);
+        showUI();
+      }
+    });
+
+    // On initial load, start playing the default quality
+    document.addEventListener("DOMContentLoaded", () => {
+      loadStream(topQualitySelect.value);
+      // Ensure UI‐hide logic won’t run until (if) the user goes fullscreen
+      showUI();
+    });
+  </script>
+
+  <script>
+    // Auto-rotate to landscape when entering fullscreen
+    function isFullscreen() {
+      return (
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+    }
+
+    function onFullScreenChange() {
+      if (isFullscreen()) {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape')
+            .catch((err) => {
+              console.warn('Orientation lock failed:', err);
+            });
+        }
+      } else {
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', onFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullScreenChange);
+  </script>
+
+</body>
 </html>
