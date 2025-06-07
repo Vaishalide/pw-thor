@@ -207,6 +207,56 @@ $title    = $_GET['title']     ?? 'Video Player';
       opacity: 0 !important;
       pointer-events: none;
     }
+
+  .loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    pointer-events: none; /* so clicks pass through when hidden */
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  .loading.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .circle {
+    width: 20px;
+    height: 20px;
+    margin: 10px;
+    border-radius: 50%;
+    animation: loader-animation 0.75s ease infinite;
+  }
+  .circle:nth-child(1) {
+    background-color: #D90429;
+    animation-delay: 0s;
+  }
+  .circle:nth-child(2) {
+    background-color: #FFA300;
+    animation-delay: 0.15s;
+  }
+  .circle:nth-child(3) {
+    background-color: #048BA8;
+    animation-delay: 0.3s;
+  }
+  @keyframes loader-animation {
+    0% {
+      transform: scale(0);
+      opacity: 0.7;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0;
+    }
+      }
   </style>
 </head>
 <body>
@@ -226,7 +276,51 @@ $title    = $_GET['title']     ?? 'Video Player';
         <option value="<?php echo htmlspecialchars($video240); ?>">240p</option>
       </select>
     </div>
+<!–– In the body, wrap your video: ––>
+<div class="video-container" style="position: relative; width:100%; height:auto;">
+  <video id="myVideo" width="100%" height="auto" controls>
+    <source src="path/to/your/video.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 
+  <!-- LOADING OVERLAY -->
+  <div class="loading" id="loader">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+</div>
+
+<!–– Place this before the closing </body> tag ––>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const video = document.getElementById("myVideo");
+    const loader = document.getElementById("loader");
+
+    // Show loader until the video is ready to play
+    loader.classList.remove("hidden");
+    video.addEventListener("canplay", () => {
+      loader.classList.add("hidden");
+    });
+
+    // Show loader on buffering/stall
+    video.addEventListener("waiting", () => {
+      loader.classList.remove("hidden");
+    });
+    // Hide loader when playback resumes
+    video.addEventListener("playing", () => {
+      loader.classList.add("hidden");
+    });
+
+    // (Optional) Also catch seeking events
+    video.addEventListener("seeking", () => {
+      loader.classList.remove("hidden");
+    });
+    video.addEventListener("seeked", () => {
+      loader.classList.add("hidden");
+    });
+  });
+</script>
     <!-- Video Element -->
     <video id="video" autoplay playsinline webkit-playsinline x5-playsinline allowfullscreen></video>
 
