@@ -1,228 +1,268 @@
-<?php
-// Determine video URL and title from POST (preferred) or fallback to GET (optional).
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $videoUrl = isset($_POST['videoUrl']) ? $_POST['videoUrl'] : '';
-    $title    = isset($_POST['title'])    ? $_POST['title']    : '';
-} else {
-    // Fallback only if someone tries to hit video.php directly with query parameters.
-    // If you don’t want any GET‐based fallback, you can remove this entire else block.
-    $videoUrl = isset($_GET['videoUrl']) ? $_GET['videoUrl'] : '';
-    $title    = isset($_GET['title'])    ? $_GET['title']    : '';
-}
-
-if (empty($videoUrl)) {
-    // No video URL provided—redirect back to index or show an error.
-    header('Location: index.html');
-    exit;
-}
-
-// Safely escape for embedding in HTML/JS
-$escapedVideoUrl = addslashes($videoUrl);
-$escapedTitle    = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
- <script>
-    function getCookie(name) {
-        const value = document.cookie;
-        const parts = value.split("; ");
-        for (let i = 0; i < parts.length; i++) {
-            const [key, val] = parts[i].split("=");
-            if (key === name) return val;
-        }
-        return null;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.6.12/plyr.css" />
+  <script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/3.1.3/dash.all.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Poppins|Quattrocento+Sans" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  <title>BeastX Player</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Poppins, sans-serif;
+    }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      z-index: 9999;
+    }
+    .circle {
+      width: 20px;
+      height: 20px;
+      margin: 10px;
+      border-radius: 50%;
+      animation: loader-animation 0.75s ease infinite;
+    }
+    .circle:nth-child(1) { background-color: #D90429; animation-delay: 0s; }
+    .circle:nth-child(2) { background-color: #FFA300; animation-delay: 0.15s; }
+    .circle:nth-child(3) { background-color: #048BA8; animation-delay: 0.3s; }
+    @keyframes loader-animation {
+      0% { transform: scale(0); opacity: 0.7; }
+      100% { transform: scale(1); opacity: 0; }
     }
 
-    if (!getCookie('login')) {
-        // Agar logged in nahi hain, toh generate key page par redirect karo
-        window.location.href = 'https://pwthor.site/generate-key.html';
+    .top-quality {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.6);
+      padding: 6px;
+      border-radius: 4px;
     }
-</script>
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <title><?php echo htmlspecialchars($title); ?></title>
-  <!-- HLS.js -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <style>
-    :root { --bg: #111; --fg: #fff; --accent: #2f8eed; --seek-bg: #444; }
-    [data-theme="light"] { --bg: #f9f9f9; --fg: #111; --accent: #0066cc; --seek-bg: #ccc; }
-    body { margin:0; background:var(--bg); color:var(--fg); font-family:'Segoe UI',sans-serif; display:flex; flex-direction:column; height:100vh; }
-    .header { background:#1a1b2f; padding:1rem; display:flex; align-items:center; color:gold; }
-    .back { color:gold; text-decoration:none; font-size:1.5rem; margin-right:1rem; }
-    .player { position:relative; flex:1; background:#000; display:flex; justify-content:center; align-items:center; overflow:hidden; }
-    video { width:100%; height:100%; object-fit:contain; }
-    .player:-webkit-full-screen video, .player:fullscreen video { width:100vw; height:100vh; }
-    .controls { position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,0.6); display:flex; flex-wrap:wrap; align-items:center; padding:4px; gap:4px; transition:opacity .3s; }
-    .controls.hide { opacity:0; pointer-events:none; }
-    .btn { background:none; border:none; color:var(--fg); font-size:1.2em; padding:4px; cursor:pointer; }
-    .seek-container { flex:1 1 100%; display:flex; align-items:center; gap:4px; }
-    .time { font-size:.75em; width:34px; text-align:center; }
-    .seek, .volume { -webkit-appearance:none; background:transparent; }
-    .seek { flex:1; }
-    .seek::-webkit-slider-runnable-track { height:6px; background:var(--seek-bg); border-radius:3px; }
-    .seek::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; background:var(--accent); border-radius:50%; margin-top:-4px; }
-    .volume { width:70px; }
-    .volume::-webkit-slider-runnable-track { height:4px; background:var(--seek-bg); border-radius:2px; }
-    .volume::-webkit-slider-thumb { -webkit-appearance:none; width:10px; height:10px; background:var(--accent); border-radius:50%; margin-top:-3px; }
-    .settings-panel { position:absolute; bottom:calc(100% + 4px); right:4px; background:rgba(0,0,0,0.8); color:var(--fg); padding:4px; border-radius:4px; display:none; font-size:.75em; z-index:10; }
-    .settings-panel.active { display:block; }
-    .settings-panel button { background:none; border:1px solid var(--fg); color:inherit; padding:2px 4px; margin:2px 1px; cursor:pointer; border-radius:3px; }
+    .top-quality select {
+      background: #000;
+      color: #fff;
+      border: 1px solid #1ac266;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 10px;
+      gap: 10px;
+      z-index: 10;
+    }
+    .btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 1.5em;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+    }
+    .volume {
+      width: 100px;
+    }
+    .seek-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .seek {
+      width: 100%;
+      height: 8px;
+      background: #444;
+      border-radius: 4px;
+      appearance: none;
+      cursor: pointer;
+    }
+    .seek::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+      background: #2f8eed;
+      border-radius: 50%;
+      margin-top: -4px;
+    }
+    .time {
+      color: #fff;
+      font-size: 0.9em;
+    }
+
+    /* Playback Speed Selector */
+    .playback-speed {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 6px;
+      border-radius: 6px;
+    }
+    .playback-speed select {
+      background: #000;
+      color: #fff;
+      border: 1px solid #2f8eed;
+      padding: 4px;
+      border-radius: 4px;
+    }
   </style>
 </head>
-<body data-theme="dark">
-  <div class="header">
-    <a class="back" href="javascript:history.back()">←</a>
-    <div><?php echo htmlspecialchars($title); ?></div>
+<body>
+  <div id="loading" class="loading">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
   </div>
-  <div class="player" id="player">
-    <video id="video" playsinline webkit-playsinline></video>
-    <div class="controls hide" id="controls">
-      <button id="playPause" class="btn">►</button>
-      <button id="mute" class="btn">🔊</button>
-      <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1">
-      <button id="settingsBtn" class="btn">⚙️</button>
-      <button id="themeToggle" class="btn">🌙</button>
-      <button id="fullscreen" class="btn">⛶</button>
-      <div class="seek-container">
-        <span id="currentTime" class="time">0:00</span>
-        <input id="seek" type="range" class="seek" min="0" max="100" value="0">
-        <span id="duration" class="time">0:00</span>
-      </div>
-      <div id="settingsPanel" class="settings-panel">
-        <div><strong>Quality</strong></div>
-        <div id="levels"></div>
-          <div><strong>Speed</strong></div>
-          <div id="speeds"></div>
-      </div>
+
+  <!-- Quality Selector -->
+  <div class="top-quality">
+    <select id="qualitySelect">
+      <option value="{{ video720 }}">720p</option>
+      <option value="{{ video480 }}">480p</option>
+      <option value="{{ video360 }}">360p</option>
+      <option value="{{ video240 }}">240p</option>
+    </select>
+  </div>
+
+  <!-- Video Element -->
+  <video id="player" class="plyr" playsinline controls crossorigin>
+    <source src="{{ video720 }}" type="application/vnd.apple.mpegurl">
+  </video>
+
+  <!-- Controls Bar -->
+  <div class="controls">
+    <button id="playPause" class="btn">►</button>
+    <button id="mute" class="btn">🔊</button>
+    <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1" />
+    <button id="fullscreen" class="btn">⛶</button>
+    <div class="seek-container">
+      <span id="currentTime" class="time">0:00</span>
+      <input id="seek" type="range" class="seek" min="0" max="100" value="0" />
+      <span id="duration" class="time">0:00</span>
     </div>
   </div>
+
+  <!-- Playback-Speed Selector -->
+  <div class="playback-speed">
+    <label for="speed" style="margin-right:4px;">Speed:</label>
+    <select id="speed">
+      <option value="0.5">0.5x</option>
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
+  </div>
+
   <script>
-    const originalUrl = "<?php echo htmlspecialchars($videoUrl); ?>";
-    let currentUrl = originalUrl;
-    const qualities = [144, 360, 480, 720];
-    const video = document.getElementById('video');
-    const controls = document.getElementById('controls');
-    const player = document.getElementById('player');
-    const levels = document.getElementById('levels');
-    const speeds = [0.5, 1, 1.5, 2];
-    const speedsContainer = document.getElementById('speeds');
-    let hideTimeout;
-
-    function showControls() {
-      controls.classList.remove('hide');
-      clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(() => controls.classList.add('hide'), 4000);
-    }
-    document.addEventListener('DOMContentLoaded', () => { initPlayer(); showControls(); });
-    player.addEventListener('mousemove', showControls);
-    player.addEventListener('touchstart', showControls);
-
-    function initPlayer() {
-      loadStream(currentUrl);
-      buildLevels();
-            buildSpeeds();
-      setupEvents();
-    }
+    const videoEl       = document.getElementById('player');
+    const qualitySelect = document.getElementById('qualitySelect');
+    let hls;
 
     function loadStream(url) {
+      if (hls) { hls.destroy(); hls = null; }
       if (Hls.isSupported()) {
-        if (window.hls) window.hls.destroy();
-        window.hls = new Hls({ capLevelToPlayerSize:true });
-        window.hls.loadSource(url);
-        window.hls.attachMedia(video);
-        window.hls.on(Hls.Events.MANIFEST_PARSED, () => { video.currentTime = 7; video.play(); });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = url;
-        video.addEventListener('loadedmetadata', () => { video.currentTime = 7; video.play(); });
+        hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(videoEl);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play());
+      } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+        videoEl.src = url;
+        videoEl.addEventListener('loadedmetadata', () => videoEl.play());
       }
     }
 
-    function buildLevels() {
-      levels.innerHTML = '';
-      // Auto (original) link
-      addLevelButton('Auto', originalUrl);
-      qualities.forEach(q => {
-        addLevelButton(q + 'p', originalUrl.replace(/\/(\d+)\/main\.m3u8$/, '/' + q + '/main.m3u8'));
+    document.addEventListener('DOMContentLoaded', () => {
+      // Hide loader
+      document.getElementById('loading').style.display = 'none';
+
+      // Initialize Plyr
+      const player = new Plyr(videoEl, { quality: { forced: true } });
+      window.player = player;
+
+      // Load default quality
+      loadStream(qualitySelect.value);
+
+      // Change quality
+      qualitySelect.addEventListener('change', () => {
+        loadStream(qualitySelect.value);
       });
-      highlightActive();
-    }
 
-    function buildSpeeds() {
-      speedsContainer.innerHTML = '';
-      speeds.forEach(s => {
-        const btn = document.createElement('button');
-        btn.textContent = s + 'x';
-        btn.onclick = () => { video.playbackRate = s; highlightActiveSpeed(); };
-        speedsContainer.appendChild(btn);
+      // Play/Pause button
+      document.getElementById("playPause").addEventListener("click", () => {
+        if (videoEl.paused) {
+          videoEl.play();
+        } else {
+          videoEl.pause();
+        }
       });
-      highlightActiveSpeed();
-    }
 
-    function highlightActiveSpeed() {
-      Array.from(speedsContainer.children).forEach(btn => {
-        btn.classList.toggle('active', btn.textContent == video.playbackRate + 'x');
+      // Mute/Unmute button
+      document.getElementById("mute").addEventListener("click", () => {
+        videoEl.muted = !videoEl.muted;
       });
-    }
 
-
-    function addLevelButton(label, url) {
-      const btn = document.createElement('button');
-      btn.textContent = label;
-      btn.onclick = () => switchQuality(url);
-      levels.appendChild(btn);
-    }
-
-    function switchQuality(url) {
-      currentUrl = url;
-      loadStream(url);
-      highlightActive();
-    }
-
-    function highlightActive() {
-      Array.from(levels.children).forEach(btn => {
-        btn.classList.toggle('active', btn.textContent !== 'Auto' ? currentUrl.includes('/' + btn.textContent.replace('p','') + '/main.m3u8') : currentUrl === originalUrl);
+      // Volume slider
+      document.getElementById("volume").addEventListener("input", () => {
+        videoEl.volume = document.getElementById("volume").value;
       });
-    }
 
-    function setupEvents() {
-      document.getElementById('playPause').onclick = () => video.paused ? video.play() : video.pause();
-      video.onplay = () => document.getElementById('playPause').textContent = '❚❚';
-      video.onpause = () => document.getElementById('playPause').textContent = '►';
-      video.ontimeupdate = () => {
-        const displayedTime = video.currentTime - 14; const displayedDuration = video.duration - 14; const pct = (video.duration>14) ? (displayedTime>0 ? displayedTime : 0) / displayedDuration * 100 : 0; document.getElementById('seek').value = pct;
-        const displayedTime2 = video.currentTime - 14; document.getElementById('currentTime').textContent = fmt(displayedTime2 > 0 ? displayedTime2 : 0);
-      };
-    video.onloadedmetadata = () => document.getElementById('duration').textContent = fmt(Math.max(0, video.duration - 14));
-      document.getElementById('seek').oninput = e => { const dd = video.duration - 14; video.currentTime = 14 + (e.target.value/100) * dd; };
-      document.getElementById('mute').onclick = () => {
-        video.muted = !video.muted;
-        document.getElementById('mute').textContent = video.muted ? '🔇' : '🔊';
-      };
-      document.getElementById('volume').oninput = e => {
-        video.volume = e.target.value;
-        video.muted = e.target.value == 0;
-      };
-      document.getElementById('fullscreen').onclick = () => document.fullscreenElement ? document.exitFullscreen() : player.requestFullscreen();
-      document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(()=>{});
-        if (!document.fullscreenElement && screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+      // Fullscreen button
+      document.getElementById("fullscreen").addEventListener("click", () => {
+        if (videoEl.requestFullscreen) {
+          videoEl.requestFullscreen();
+        } else if (videoEl.webkitRequestFullscreen) {
+          videoEl.webkitRequestFullscreen();
+        }
       });
-      document.getElementById('settingsBtn').onclick = () => document.getElementById('settingsPanel').classList.toggle('active');
-      document.addEventListener('click', e => {
-        if (!document.getElementById('settingsPanel').contains(e.target) && e.target.id !== 'settingsBtn') document.getElementById('settingsPanel').classList.remove('active');
-      });
-      document.getElementById('themeToggle').onclick = () => {
-        const next = document.body.dataset.theme==='dark'?'light':'dark';
-        document.body.dataset.theme = next;
-        document.getElementById('themeToggle').textContent = next==='dark'?'🌙':'☀️';
-      };
-    }
 
-    function fmt(s) { const m=Math.floor(s/60), sec=Math.floor(s%60).toString().padStart(2,'0'); return m+':'+sec; }
+      // Seek bar
+      document.getElementById("seek").addEventListener("input", () => {
+        videoEl.currentTime = (document.getElementById("seek").value / 100) * videoEl.duration;
+      });
+
+      // Speed selector
+      document.getElementById("speed").addEventListener("change", (event) => {
+        videoEl.playbackRate = parseFloat(event.target.value);
+      });
+
+      // Time update
+      videoEl.addEventListener('timeupdate', () => {
+        document.getElementById("currentTime").textContent = formatTime(videoEl.currentTime);
+        document.getElementById("seek").value = (videoEl.currentTime / videoEl.duration) * 100;
+        document.getElementById("duration").textContent = formatTime(videoEl.duration);
+      });
+    });
+
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    }
   </script>
 </body>
 </html>
