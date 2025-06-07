@@ -2,29 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://www.pw.live/favicon.ico" rel="icon"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <script>
-  //  function getCookie(name) {
-  //    const value = document.cookie;
-  //    const parts = value.split("; ");
-  //    for (let i = 0; i < parts.length; i++) {
-   //     const [key, val] = parts[i].split("=");
-   //     if (key === name) return val;
-   ///   }
- //    return null;
-  //  }
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+   <script>
+    function getCookie(name) {
+      const value = document.cookie;
+      const parts = value.split("; ");
+      for (let i = 0; i < parts.length; i++) {
+       const [key, val] = parts[i].split("=");
+        if (key === name) return val;
+      }
+     return null;
+    }
 
     if (!getCookie('login')) {
       // Agar logged in nahi hain, toh generate key page par redirect karo
-    //  window.location.href = 'https://pwthor.site/generate-key.html';
-  //  }
+      window.location.href = 'https://pwthor.site/generate-key.html';
+    }
   </script>
-  <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
     disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <title>PW THOR</title>
   <style>
     body { margin: 0; font-family: 'Poppins', sans-serif; background: #0e0f1b; color: white; }
@@ -49,23 +51,6 @@
       box-shadow: 0 0 15px #ffc10788;
     }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* Favorite heart icon styles (larger) */
-    .heart-icon {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      font-size: 28px;
-      color: white;
-      cursor: pointer;
-      z-index: 10;
-    }
-    .heart-icon.favorited {
-      color: red;
-    }
-    .card-wrapper {
-      position: relative;
-    }
   </style>
 </head>
 <body>
@@ -81,14 +66,6 @@
   <div id="searchBarWrapper" style="padding: 1rem; text-align: center;">
     <input id="searchInput" placeholder="Search batch by name…" autocomplete="off" />
   </div>
-
-  <!-- FAVORITES BUTTON -->
-  <div style="text-align: center; padding-bottom: 0.5rem;">
-    <button id="favBtn" class="btn">My Favorite Batches</button>
-  </div>
-
-  <!-- FAVORITES CONTAINER (hidden by default) -->
-  <div class="grid hidden" id="favContainer"></div>
 
   <!-- LOADERS -->
   <div id="batchLoader" class="loader hidden"></div>
@@ -113,8 +90,6 @@
     const backBtn = document.getElementById('backBtn');
     const searchBarWrapper = document.getElementById('searchBarWrapper');
     const searchInput = document.getElementById('searchInput');
-    const favBtn = document.getElementById('favBtn');
-    const favContainer = document.getElementById('favContainer');
 
     let currentView = 'main';
     let prevState = [];
@@ -123,7 +98,6 @@
       main.classList.add('hidden');
       subjectsDiv.classList.add('hidden');
       topicsDiv.classList.add('hidden');
-      favContainer.classList.add('hidden');
       searchBarWrapper.style.display = view === 'main' ? '' : 'none';
       backBtn.classList.toggle('hidden', view === 'main');
       currentView = view;
@@ -137,40 +111,19 @@
       if (lastView) showView(lastView);
     };
 
-    // Toggle favorites container visibility
-    favBtn.onclick = () => {
-      if (favContainer.classList.contains('hidden')) {
-        renderFavoriteSection();
-        favContainer.classList.remove('hidden');
-      } else {
-        favContainer.classList.add('hidden');
-      }
-    };
-
-    // Append a single batch card to #main, with favorite heart
+    // Append a single batch card to #main
     function appendBatchCard(batchData) {
-      const isFav = localStorage.getItem(`fav-${batchData.key}`) === 'true';
-
-      const wrapper = document.createElement('div');
-      wrapper.className = 'card-wrapper';
-
       const div = document.createElement('div');
       div.className = 'card';
       div.innerHTML = `
-        <div class="heart-icon ${isFav ? 'favorited' : ''}" onclick="toggleFavorite(event, '${batchData.key}', ${JSON.stringify(batchData).replace(/"/g, '&quot;')})">
-          ♥
-        </div>
         <img src="${batchData.image}" alt="${batchData.name}">
         <div class="card-title">${batchData.name}</div>
       `;
-
       div.onclick = () => {
         prevState.push(currentView);
         loadSubjects(batchData.key);
       };
-
-      wrapper.appendChild(div);
-      main.appendChild(wrapper);
+      main.appendChild(div);
     }
 
     // Fetch and render next page of batches
@@ -257,22 +210,32 @@
 
             topicContent.innerHTML = `<h2>${topic.name}</h2>` + tabs;
 
-            const lecturesHtml = (topic.lectures || []).map(lecture => `
-              <div style="margin-bottom: 2rem; display:flex; flex-direction:column; align-items:center;">
-                <div style="cursor:pointer;" onclick="playVideo('${lecture.videoUrl}', '${lecture.title}')">
-                  <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
-                </div>
-                <div style="text-align:center;">${lecture.title}</div>
-                ${(lecture.notes || []).map(note => `
-                  <div style="margin-top: 0.5rem;">
-                    <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
-                  </div>`).join('')}
-                ${(lecture.dpps || []).map(dpp => `
-                  <div style="margin-top: 0.5rem;">
-                    <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
-                  </div>`).join('')}
-              </div>
-            `).join('');
+            const lecturesHtml = (topic.lectures || []).map(lecture => {
+  const lectureNotes = (lecture.notes || []).map(note => `
+    <div style="margin-top: 0.5rem;">
+      <a href="${note.fileUrl}" target="_blank" class="btn">${note.title}</a>
+    </div>
+  `).join('');
+
+  const lectureDpps = (lecture.dpps || []).map(dpp => `
+    <div style="margin-top: 0.5rem;">
+      <a href="${dpp.fileUrl}" target="_blank" class="btn">${dpp.title}</a>
+    </div>
+  `).join('');
+
+  return `
+    <div style="margin-bottom: 2rem;">
+      <a href="player.php?videoUrl=${encodeURIComponent(lecture.videoUrl)}&videoUrl1=${encodeURIComponent(lecture.videoUrl1)}&videoUrl2=${encodeURIComponent(lecture.videoUrl2)}&videoUrl3=${encodeURIComponent(lecture.videoUrl3)}&title=${encodeURIComponent(lecture.title)}">
+
+        <img src="${lecture.thumbnail}" style="width:100%; max-width:400px; border-radius:10px; display:block; margin:1rem auto;" />
+      </a>
+      <div style="text-align:center;">${lecture.title}</div>
+      ${lectureNotes}
+      ${lectureDpps}
+    </div>
+  `;
+}).join('');
+
 
             const notesHtml = (topic.notes || []).map(note => `
               <div style="margin-top: 1rem;">
@@ -314,8 +277,10 @@
 
     // Handle search input
     async function handleSearchEvent() {
+      // 1. Grab the *current* value of the input, lower‐cased/trimmed
       const term = searchInput.value.trim().toLowerCase();
 
+      // 2. If the box is now empty, switch back to “infinite scroll” mode:
       if (!term) {
         inSearchMode = false;
         clearMainGrid();
@@ -324,24 +289,33 @@
         return;
       }
 
+      // 3. Otherwise, we are in search mode. Clear out any older cards:
       inSearchMode = true;
       clearMainGrid();
       document.getElementById('batchLoader').classList.remove('hidden');
 
+      // 4. Capture this search‐term so we can detect stale responses:
       const thisSearch = term;
 
       try {
+        // 5. Fetch from the server using the query
         const res = await fetch(
           `https://pw-api-75332756c41b.herokuapp.com/data/batches/search?q=${encodeURIComponent(thisSearch)}`
         );
-        const json = await res.json();
+        const json = await res.json(); // { results: [ { key, name, image }, … ] }
+
+        // Right after we get a response, hide the loader.
         document.getElementById('batchLoader').classList.add('hidden');
 
+        // 6. If the user has already changed the input since we fired off this request,
+        //    we should do nothing (i.e. don’t append outdated cards).
         const currentTerm = searchInput.value.trim().toLowerCase();
         if (currentTerm !== thisSearch) {
+          // The input no longer matches; drop these results.
           return;
         }
 
+        // 7. Now that we know the term is still valid, render:
         if (!json.results.length) {
           main.innerHTML = `
             <div style="color: gold; text-align: center; font-size: 1.2rem; margin-top: 2rem;">
@@ -378,58 +352,6 @@
     });
   </script>
 
-  <!-- Favorite toggle and rendering -->
-  <script>
-    function toggleFavorite(e, key, dataStr) {
-      e.stopPropagation();
-      const icon = e.currentTarget;
-      const isFav = icon.classList.toggle('favorited');
-      localStorage.setItem(`fav-${key}`, isFav);
-
-      if (isFav) {
-        localStorage.setItem(`fav-data-${key}`, JSON.stringify(dataStr));
-      } else {
-        localStorage.removeItem(`fav-data-${key}`);
-      }
-
-      // If favorites are visible, re-render
-      if (!favContainer.classList.contains('hidden')) {
-        renderFavoriteSection();
-      }
-    }
-
-    function renderFavoriteSection() {
-      favContainer.innerHTML = '';
-
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('fav-data-')) {
-          const batchData = JSON.parse(localStorage.getItem(key));
-          appendBatchCardToFavorites(batchData);
-        }
-      });
-    }
-
-    function appendBatchCardToFavorites(batchData) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'card-wrapper';
-
-      const div = document.createElement('div');
-      div.className = 'card';
-      div.innerHTML = `
-        <div class="heart-icon favorited" onclick="toggleFavorite(event, '${batchData.key}', ${JSON.stringify(batchData).replace(/"/g, '&quot;')})">♥</div>
-        <img src="${batchData.image}" alt="${batchData.name}">
-        <div class="card-title">${batchData.name}</div>
-      `;
-      div.onclick = () => {
-        prevState.push(currentView);
-        loadSubjects(batchData.key);
-      };
-
-      wrapper.appendChild(div);
-      favContainer.appendChild(wrapper);
-    }
-  </script>
-
   <!-- Popup logic (unchanged) -->
   <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
@@ -443,19 +365,23 @@
     </a>
   </div>
 
-  <script>
-    fetch('/popup.json')
-      .then(res => res.json())
-      .then(popup => {
-        if (popup.show) {
-          document.getElementById('popupImage').src = popup.image;
-          document.getElementById('popupText').textContent = popup.text;
-          document.getElementById('popupLink').href = popup.link;
-          document.getElementById('popup').style.display = 'block';
-        }
-      })
-      .catch(err => console.error('Error loading popup data:', err));
-  </script>
+  <!-- …existing HTML popup markup (id="popup", popupImage, popupText, popupLink) … -->
+
+<script>
+  // Put popup.json at the same level as your index.html (for instance)
+  fetch('/popup.json')
+    .then(res => res.json())
+    .then(popup => {
+      if (popup.show) {
+        document.getElementById('popupImage').src = popup.image;
+        document.getElementById('popupText').textContent = popup.text;
+        document.getElementById('popupLink').href = popup.link;
+        document.getElementById('popup').style.display = 'block';
+      }
+    })
+    .catch(err => console.error('Error loading popup data:', err));
+</script>
+
 
   <script>
     // Disable right-click and DevTools (unchanged)
@@ -486,27 +412,11 @@
 
   <script>
     function playVideo(videoUrl, title) {
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = 'player.php';
-      form.style.display = 'none';
+  const encodedUrl = encodeURIComponent(videoUrl);
+  const encodedTitle = encodeURIComponent(title);
+  window.location.href = `player.php?videoUrl=${encodedUrl}&title=${encodedTitle}`;
+}
 
-      const inputUrl = document.createElement('input');
-      inputUrl.type = 'hidden';
-      inputUrl.name = 'videoUrl';
-      inputUrl.value = videoUrl;
-      form.appendChild(inputUrl);
-
-      const inputTitle = document.createElement('input');
-      inputTitle.type = 'hidden';
-      inputTitle.name = 'title';
-      inputTitle.value = title;
-      form.appendChild(inputTitle);
-
-      document.body.appendChild(form);
-      form.submit();
-      setTimeout(() => document.body.removeChild(form), 1000);
-    }
   </script>
 
 </body>
