@@ -209,6 +209,31 @@ $title    = $_GET['title']     ?? 'Video Player';
                 captions: { active: true, update: true },
                 speed: { options: [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3] }
             };
+             function loadStream(url) {
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      if (!url) return;
+      if (Hls.isSupported()) {
+        hlsInstance = new Hls();
+        hlsInstance.loadSource(url);
+        hlsInstance.attachMedia(video);
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = url;
+      } else {
+        alert("HLS not supported in this browser.");
+      }
+      video.play();
+    }
+
+    // Format seconds → M:SS
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
 function setupHLS(url) {
                 if (Hls.isSupported()) {
                     const hls = new Hls();
