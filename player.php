@@ -5,32 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
   <link rel="stylesheet" href="https://cdn.plyr.io/3.6.12/plyr.css" />
+  <link href="favicon.ico" rel="icon">
   <script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/3.1.3/dash.all.min.js"></script>
   <link href="https://fonts.googleapis.com/css?family=Poppins|Quattrocento+Sans" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dashjs/3.1.3/dash.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js"></script>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
-  <title>BeastX Player</title>
-  <style>
-    html, body {
-      height: 100%;
+  <title>VIDEO PLAYER</title>
+  <style type="text/css" media="screen">
+    html {
+      font-family: Poppins;
+      background: #0A0909;
       margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Poppins, sans-serif;
+      padding: 0;
+      --plyr-color-main: #1ac266;
     }
+
+    .logo-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 60px;
+      height: 60px;
+    }
+
+    .plyr {
+      height: 100%;
+      width: 100%;
+    }
+
+    #logo {
+      position: fixed;
+      background-image: url("https://res.cloudinary.com/drlkucdog/image/upload/v1748878974/sl545g6vrorheb1hyzwn.jpg");
+      background-size: contain;
+      background-position: center;
+    }
+
+    .float {
+      height: 60px;
+      width: 60px;
+      z-index: 10;
+      border-radius: 50px;
+      box-shadow: 2px 2px 3px #999;
+    }
+
+    .label-container {
+      position: relative;
+      top: 5px;
+      left: 70px;
+      display: table;
+      visibility: hidden;
+    }
+
+    .label-text {
+      color: #FFF;
+      background: rgba(51,51,51,0.5);
+      display: table-cell;
+      vertical-align: middle;
+      padding: 10px;
+      border-radius: 3px;
+    }
+
+    .label-arrow {
+      display: table-cell;
+      vertical-align: middle;
+      color: #333;
+      opacity: 0.5;
+      transform: scaleX(-1);
+    }
+
+    a.float + div.label-container {
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s, opacity 0.5s ease;
+    }
+
+    a.float:hover + div.label-container {
+      visibility: visible;
+      opacity: 1;
+    }
+
     .loading {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
+      background: #000;
+      z-index: 9999;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #000;
-      z-index: 9999;
+      height: 100vh;
     }
+
     .circle {
       width: 20px;
       height: 20px;
@@ -38,22 +106,42 @@
       border-radius: 50%;
       animation: loader-animation 0.75s ease infinite;
     }
-    .circle:nth-child(1) { background-color: #D90429; animation-delay: 0s; }
-    .circle:nth-child(2) { background-color: #FFA300; animation-delay: 0.15s; }
-    .circle:nth-child(3) { background-color: #048BA8; animation-delay: 0.3s; }
+
+    .circle:nth-child(1) {
+      background-color: #D90429;
+      animation-delay: 0s;
+    }
+
+    .circle:nth-child(2) {
+      background-color: #FFA300;
+      animation-delay: 0.15s;
+    }
+
+    .circle:nth-child(3) {
+      background-color: #048BA8;
+      animation-delay: 0.3s;
+    }
+
     @keyframes loader-animation {
-      0% { transform: scale(0); opacity: 0.7; }
-      100% { transform: scale(1); opacity: 0; }
+      0% {
+        transform: scale(0);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0;
+      }
     }
 
     .top-quality {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       padding: 6px;
       border-radius: 4px;
     }
+
     .top-quality select {
       background: #000;
       color: #fff;
@@ -73,6 +161,7 @@
       gap: 10px;
       z-index: 10;
     }
+
     .btn {
       background: none;
       border: none;
@@ -82,15 +171,18 @@
       width: 40px;
       height: 40px;
     }
+
     .volume {
       width: 100px;
     }
+
     .seek-container {
       flex: 1;
       display: flex;
       align-items: center;
       gap: 10px;
     }
+
     .seek {
       width: 100%;
       height: 8px;
@@ -99,6 +191,7 @@
       appearance: none;
       cursor: pointer;
     }
+
     .seek::-webkit-slider-thumb {
       width: 16px;
       height: 16px;
@@ -106,12 +199,12 @@
       border-radius: 50%;
       margin-top: -4px;
     }
+
     .time {
       color: #fff;
       font-size: 0.9em;
     }
 
-    /* Playback Speed Selector */
     .playback-speed {
       position: absolute;
       bottom: 60px;
@@ -121,6 +214,7 @@
       padding: 6px;
       border-radius: 6px;
     }
+
     .playback-speed select {
       background: #000;
       color: #fff;
@@ -148,8 +242,8 @@
   </div>
 
   <!-- Video Element -->
-  <video id="player" class="plyr" playsinline controls crossorigin>
-    <source src="{{ video720 }}" type="application/vnd.apple.mpegurl">
+  <video id="videoContainer" class="plyr" playsinline controls crossorigin>
+    <source src="{{ video_url }}">
   </video>
 
   <!-- Controls Bar -->
@@ -179,7 +273,7 @@
   </div>
 
   <script>
-    const videoEl       = document.getElementById('player');
+    const video = document.getElementById("videoContainer");
     const qualitySelect = document.getElementById('qualitySelect');
     let hls;
 
@@ -188,73 +282,75 @@
       if (Hls.isSupported()) {
         hls = new Hls();
         hls.loadSource(url);
-        hls.attachMedia(videoEl);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play());
-      } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
-        videoEl.src = url;
-        videoEl.addEventListener('loadedmetadata', () => videoEl.play());
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = url;
+        video.addEventListener('loadedmetadata', () => video.play());
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", function () {
       // Hide loader
       document.getElementById('loading').style.display = 'none';
 
       // Initialize Plyr
-      const player = new Plyr(videoEl, { quality: { forced: true } });
+      const player = new Plyr(video, {
+        quality: { forced: true }
+      });
       window.player = player;
 
-      // Load default quality
+      // Load the video stream
       loadStream(qualitySelect.value);
 
-      // Change quality
+      // Change video quality
       qualitySelect.addEventListener('change', () => {
         loadStream(qualitySelect.value);
       });
 
       // Play/Pause button
       document.getElementById("playPause").addEventListener("click", () => {
-        if (videoEl.paused) {
-          videoEl.play();
+        if (video.paused) {
+          video.play();
         } else {
-          videoEl.pause();
+          video.pause();
         }
       });
 
       // Mute/Unmute button
       document.getElementById("mute").addEventListener("click", () => {
-        videoEl.muted = !videoEl.muted;
+        video.muted = !video.muted;
       });
 
-      // Volume slider
+      // Volume control
       document.getElementById("volume").addEventListener("input", () => {
-        videoEl.volume = document.getElementById("volume").value;
+        video.volume = document.getElementById("volume").value;
       });
 
       // Fullscreen button
       document.getElementById("fullscreen").addEventListener("click", () => {
-        if (videoEl.requestFullscreen) {
-          videoEl.requestFullscreen();
-        } else if (videoEl.webkitRequestFullscreen) {
-          videoEl.webkitRequestFullscreen();
+        if (video.requestFullscreen) {
+          video.requestFullscreen();
+        } else if (video.webkitRequestFullscreen) {
+          video.webkitRequestFullscreen();
         }
       });
 
       // Seek bar
       document.getElementById("seek").addEventListener("input", () => {
-        videoEl.currentTime = (document.getElementById("seek").value / 100) * videoEl.duration;
+        video.currentTime = (document.getElementById("seek").value / 100) * video.duration;
       });
 
-      // Speed selector
+      // Playback speed
       document.getElementById("speed").addEventListener("change", (event) => {
-        videoEl.playbackRate = parseFloat(event.target.value);
+        video.playbackRate = parseFloat(event.target.value);
       });
 
-      // Time update
-      videoEl.addEventListener('timeupdate', () => {
-        document.getElementById("currentTime").textContent = formatTime(videoEl.currentTime);
-        document.getElementById("seek").value = (videoEl.currentTime / videoEl.duration) * 100;
-        document.getElementById("duration").textContent = formatTime(videoEl.duration);
+      // Update time display
+      video.addEventListener('timeupdate', () => {
+        document.getElementById("currentTime").textContent = formatTime(video.currentTime);
+        document.getElementById("seek").value = (video.currentTime / video.duration) * 100;
+        document.getElementById("duration").textContent = formatTime(video.duration);
       });
     });
 
