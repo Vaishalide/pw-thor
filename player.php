@@ -332,20 +332,45 @@ $title    = $_GET['title']     ?? 'Video Player';
     let hlsInstance       = null;
     let hideUITimer       = null;
     const HIDE_DELAY      = 4000; // 4 seconds
-
-    <script>
+<script>
   const video = document.querySelector('video');
   const loader = document.getElementById('loader');
 
+  function hideLoader() {
+    loader.style.display = 'none';
+  }
+
+  function showLoader() {
+    loader.style.display = 'flex';
+  }
+
   if (video) {
-    video.addEventListener('waiting', () => loader.style.display = 'flex');
-    video.addEventListener('stalled', () => loader.style.display = 'flex');
-    video.addEventListener('loadstart', () => loader.style.display = 'flex');
-    video.addEventListener('playing', () => loader.style.display = 'none');
-    video.addEventListener('canplay', () => loader.style.display = 'none');
-    video.addEventListener('canplaythrough', () => loader.style.display = 'none');
+    // Show loader when starting
+    showLoader();
+
+    // Listen for general buffering/loading
+    video.addEventListener('waiting', showLoader);
+    video.addEventListener('stalled', showLoader);
+    video.addEventListener('loadstart', showLoader);
+
+    // Hide when ready
+    video.addEventListener('canplay', hideLoader);
+    video.addEventListener('canplaythrough', hideLoader);
+    video.addEventListener('playing', hideLoader);
+
+    // Also listen for HLS.js ready event if used
+    if (Hls.isSupported()) {
+      const hls = new Hls();
+      hls.loadSource(video.src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        video.play();
+      });
+      hls.on(Hls.Events.FRAG_LOADED, hideLoader); // <- hide loader on fragment load
+    }
   }
 </script>
+
     // Load HLS (or native) stream
     function loadStream(url) {
       if (hlsInstance) {
