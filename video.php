@@ -232,7 +232,9 @@ $title    = $_GET['title']     ?? 'Video Player';
 
     <!-- Controls Bar -->
     <div class="controls" id="controls">
+      <button id="rewind" title="Rewind 10 seconds">⏪</button>
       <button id="playPause" class="btn">►</button>
+      <button id="forward" title="Forward 10 seconds">⏩</button>
       <button id="mute" class="btn">🔊</button>
       <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1" />
       <button id="fullscreen" class="btn">⛶</button>
@@ -259,7 +261,9 @@ $title    = $_GET['title']     ?? 'Video Player';
 
   <script>
     const video            = document.getElementById("video");
+    const btnRewind = document.getElementById('rewind');
     const playPauseBtn     = document.getElementById("playPause");
+    const btnForward = document.getElementById('forward');
     const muteBtn          = document.getElementById("mute");
     const volumeSlider     = document.getElementById("volume");
     const fullscreenBtn    = document.getElementById("fullscreen");
@@ -352,7 +356,12 @@ $title    = $_GET['title']     ?? 'Video Player';
       video.muted = !video.muted;
       muteBtn.textContent = video.muted ? "🔇" : "🔊";
     });
-
+   btnRewind.addEventListener('click', () => {
+      video.currentTime = Math.max(0, video.currentTime - 10);
+    });
+    btnForward.addEventListener('click', () => {
+      video.currentTime = Math.min(video.duration, video.currentTime + 10);
+    });
     // Volume slider
     volumeSlider.addEventListener("input", () => {
       video.volume = volumeSlider.value;
