@@ -11,6 +11,11 @@ $title    = $_GET['title']     ?? 'Video Player';
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
         <link rel="stylesheet" href="https://cdn.plyr.io/3.6.12/plyr.css" />
+        <!-- add Hls.js -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<!-- then Plyr.js -->
+<script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
+
         <link href="favicon.ico" rel="icon">
         <script src="https://cdn.plyr.io/3.6.12/plyr.js"></script>
         <link href="https://fonts.googleapis.com/css?family=Poppins|Quattrocento+Sans" rel="stylesheet"/>
