@@ -333,43 +333,45 @@ $title    = $_GET['title']     ?? 'Video Player';
     let hideUITimer       = null;
     const HIDE_DELAY      = 4000; // 4 seconds
 <script>
-  const video = document.querySelector('video');
+  const video  = document.getElementById('video');
   const loader = document.getElementById('loader');
 
-  function hideLoader() {
-    loader.style.display = 'none';
-  }
+  function showLoader() { loader.style.display = 'flex'; }
+  function hideLoader() { loader.style.display = 'none'; }
 
-  function showLoader() {
-    loader.style.display = 'flex';
-  }
+  // 1) Show loader straight away
+  showLoader();
 
-  if (video) {
-    // Show loader when starting
-    showLoader();
+  // 2) Native video events
+  video.addEventListener('waiting',       showLoader);
+  video.addEventListener('stalled',       showLoader);
+  video.addEventListener('loadstart',     showLoader);
+  video.addEventListener('canplay',       hideLoader);
+  video.addEventListener('canplaythrough',hideLoader);
+  video.addEventListener('playing',      hideLoader);
 
-    // Listen for general buffering/loading
-    video.addEventListener('waiting', showLoader);
-    video.addEventListener('stalled', showLoader);
-    video.addEventListener('loadstart', showLoader);
+  // 3) HLS.js setup + events
+  if (window.Hls && Hls.isSupported()) {
+    // keep hls in a variable we can reference below
+    const hls = new Hls();
 
-    // Hide when ready
-    video.addEventListener('canplay', hideLoader);
-    video.addEventListener('canplaythrough', hideLoader);
-    video.addEventListener('playing', hideLoader);
+    // load & attach your source
+    hls.loadSource(<?php echo json_encode($video720 ?: $video480 ?: $video360 ?: $video240); ?>);
+    hls.attachMedia(video);
 
-    // Also listen for HLS.js ready event if used
-    if (Hls.isSupported()) {
-      const hls = new Hls();
-      hls.loadSource(video.src);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, function () {
-        video.play();
-      });
-      hls.on(Hls.Events.FRAG_LOADED, hideLoader); // <- hide loader on fragment load
-    }
+    // once manifest is parsed, start playback
+    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+
+    // hide loader whenever a fragment or buffer is appended
+    hls.on(Hls.Events.FRAG_LOADED,    hideLoader);
+    hls.on(Hls.Events.BUFFER_APPENDED, hideLoader);
+  } else {
+    // fallback for browsers with native HLS
+    video.src = <?php echo json_encode($video720 ?: $video480 ?: $video360 ?: $video240); ?>;
+    video.addEventListener('loadedmetadata', () => video.play());
   }
 </script>
+
 
     // Load HLS (or native) stream
     function loadStream(url) {
