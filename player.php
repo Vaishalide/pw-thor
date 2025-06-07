@@ -1,21 +1,10 @@
 <?php
-  // Helper to fetch, decode & escape a GET parameter
- function get_param($key, $sanitize = true) {
-  if (empty($_GET[$key])) return null;
-  $value = urldecode($_GET[$key]);
-  return $sanitize ? htmlspecialchars($value, ENT_QUOTES, 'UTF-8') : $value;
-}
-
-
-  // Grab up to four video sources + the title
- $videoUrls = array_filter([
-  get_param('videoUrl', false),
-  get_param('videoUrl1', false),
-  get_param('videoUrl2', false),
-  get_param('videoUrl3', false),
-]);
-
-  $lectureTitle = get_param('title') ?: 'Untitled Lecture';
+<?php
+$video720 = $_GET['videoUrl']  ?? '';
+$video480 = $_GET['videoUrl1'] ?? '';
+$video360 = $_GET['videoUrl2'] ?? '';
+$video240 = $_GET['videoUrl3'] ?? '';
+$title    = $_GET['title']     ?? 'Video Player';
 ?>
 <html>
     <head>
