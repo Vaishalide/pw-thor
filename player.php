@@ -209,7 +209,30 @@ $title    = $_GET['title']     ?? 'Video Player';
                 captions: { active: true, update: true },
                 speed: { options: [0.5, 1, 1.25, 1.5, 1.75, 2, 2.5, 3] }
             };
+function setupHLS(url) {
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, function () {
+                        loader.style.display = "none";
+                        video.play();
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = url;
+                    video.addEventListener('loadedmetadata', function () {
+                        loader.style.display = "none";
+                        video.play();
+                    });
+                } else {
+                    loader.innerText = "This browser does not support HLS.";
+                }
+            }
 
+            setupHLS(defaultSource);
+
+            // Initialize Plyr
+            const player = new Plyr(video);
             const initializePlayer = () => {
                 const bodyElement = document.querySelector("body");
                 const loadingElement = document.getElementById("loading");
@@ -227,7 +250,7 @@ $title    = $_GET['title']     ?? 'Video Player';
                 window.player = player;
             };
 
-            if (videoUrl.includes('.m3u8')) {
+            if (videoUrl.includes('/video/')) {
                 if (Hls.isSupported()) {
                     const hls = new Hls();
                     hls.loadSource(videoUrl);
