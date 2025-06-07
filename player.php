@@ -1,5 +1,4 @@
 <?php
-<?php
 $video720 = $_GET['videoUrl']  ?? '';
 $video480 = $_GET['videoUrl1'] ?? '';
 $video360 = $_GET['videoUrl2'] ?? '';
