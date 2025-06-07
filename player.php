@@ -204,11 +204,89 @@
                 loadingElement.style.display = "none";
                 bodyElement.style.visibility = "visible";
                 
+                defaultOptions.previewThumbnails = {
+                    enabled: true,
+                    src: videoUrl
+                };
+
+                defaultOptions.tooltips = { controls: true, seek: true };
+                
                 const player = new Plyr(video, defaultOptions);
                 window.player = player;
             };
 
-            initializePlayer();
+            if (videoUrl.includes('.m3u8')) {
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(videoUrl);
+                    hls.attachMedia(video);
+                    
+                    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                        const availableQualities = hls.levels.map((l) => l.height);
+                        availableQualities.unshift(0);
+                        
+                        defaultOptions.quality = {
+                            default: 0,
+                            options: availableQualities,
+                            forced: true,
+                            onChange: function(newQuality) {
+                                if (newQuality === 0) {
+                                    hls.currentLevel = -1;
+                                } else {
+                                    hls.levels.forEach((level, levelIndex) => {
+                                        if (level.height === newQuality) {
+                                            hls.currentLevel = levelIndex;
+                                        }
+                                    });
+                                }
+                            },
+                        };
+                        
+                        initializePlayer();
+                    });
+                    
+                    window.hls = hls;
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = videoUrl;
+                    initializePlayer();
+                }
+            } else if (videoUrl.includes('.mpd')) {
+                const dash = dashjs.MediaPlayer().create();
+                dash.initialize(video, videoUrl, false);
+                dash.updateSettings({
+                    streaming: {
+                        abr: {
+                            autoSwitchBitrate: {
+                                audio: false,
+                                video: false
+                            }
+                        },
+                        fastSwitchEnabled: true,
+                        lowLatencyEnabled: true
+                    }
+                });
+                dash.on("streamInitialized", function() {
+                    const availableQualities = dash.getBitrateInfoListFor("video").map((l) => l.height);
+                    defaultOptions.quality = {
+                        default: availableQualities[0].height,
+                        options: availableQualities,
+                        forced: true,
+                        onChange: function(newQuality) {
+                            dash.getBitrateInfoListFor("video").forEach((level, levelIndex) => {
+                                if (level.height === newQuality) {
+                                    dash.setQualityFor("video", level.qualityIndex);
+                                }
+                            });
+                        },
+                    };
+                    initializePlayer();
+                });
+                dash.attachView(video);
+                window.dash = dash;
+            } else {
+                video.src = videoUrl;
+                initializePlayer();
+            }
         });
         </script>
     </body>
