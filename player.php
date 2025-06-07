@@ -207,54 +207,6 @@ $title    = $_GET['title']     ?? 'Video Player';
       opacity: 0 !important;
       pointer-events: none;
     }
-    /* Loader Styles */
-.loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #000;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.circle {
-  width: 20px;
-  height: 20px;
-  margin: 10px;
-  border-radius: 50%;
-  animation: loader-animation 0.75s ease infinite;
-}
-
-.circle:nth-child(1) {
-  background-color: #D90429;
-  animation-delay: 0s;
-}
-
-.circle:nth-child(2) {
-  background-color: #FFA300;
-  animation-delay: 0.15s;
-}
-
-.circle:nth-child(3) {
-  background-color: #048BA8;
-  animation-delay: 0.3s;
-}
-
-@keyframes loader-animation {
-  0% {
-    transform: scale(0);
-    opacity: 0.7;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
-}
-
   </style>
 </head>
 <body>
@@ -264,12 +216,6 @@ $title    = $_GET['title']     ?? 'Video Player';
       <a href="javascript:history.back()" class="back-btn">← Back</a>
       <div class="title"><?php echo htmlspecialchars($title); ?></div>
     </div>
-<!-- Loader HTML -->
-<div id="loader" class="loading">
-  <div class="circle"></div>
-  <div class="circle"></div>
-  <div class="circle"></div>
-</div>
 
     <!-- Quality Selector -->
     <div class="top-quality" id="topQuality">
@@ -286,7 +232,9 @@ $title    = $_GET['title']     ?? 'Video Player';
 
     <!-- Controls Bar -->
     <div class="controls" id="controls">
+      <button id="rewind" title="Rewind 10 seconds">⏪</button>
       <button id="playPause" class="btn">►</button>
+      <button id="forward" title="Forward 10 seconds">⏩</button>
       <button id="mute" class="btn">🔊</button>
       <input id="volume" type="range" class="volume" min="0" max="1" step="0.01" value="1" />
       <button id="fullscreen" class="btn">⛶</button>
@@ -313,7 +261,9 @@ $title    = $_GET['title']     ?? 'Video Player';
 
   <script>
     const video            = document.getElementById("video");
+    const btnRewind = document.getElementById('rewind');
     const playPauseBtn     = document.getElementById("playPause");
+    const btnForward = document.getElementById('forward');
     const muteBtn          = document.getElementById("mute");
     const volumeSlider     = document.getElementById("volume");
     const fullscreenBtn    = document.getElementById("fullscreen");
@@ -332,46 +282,6 @@ $title    = $_GET['title']     ?? 'Video Player';
     let hlsInstance       = null;
     let hideUITimer       = null;
     const HIDE_DELAY      = 4000; // 4 seconds
-<script>
-  const video  = document.getElementById('video');
-  const loader = document.getElementById('loader');
-
-  function showLoader() { loader.style.display = 'flex'; }
-  function hideLoader() { loader.style.display = 'none'; }
-
-  // 1) Show loader straight away
-  showLoader();
-
-  // 2) Native video events
-  video.addEventListener('waiting',       showLoader);
-  video.addEventListener('stalled',       showLoader);
-  video.addEventListener('loadstart',     showLoader);
-  video.addEventListener('canplay',       hideLoader);
-  video.addEventListener('canplaythrough',hideLoader);
-  video.addEventListener('playing',      hideLoader);
-
-  // 3) HLS.js setup + events
-  if (window.Hls && Hls.isSupported()) {
-    // keep hls in a variable we can reference below
-    const hls = new Hls();
-
-    // load & attach your source
-    hls.loadSource(<?php echo json_encode($video720 ?: $video480 ?: $video360 ?: $video240); ?>);
-    hls.attachMedia(video);
-
-    // once manifest is parsed, start playback
-    hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-
-    // hide loader whenever a fragment or buffer is appended
-    hls.on(Hls.Events.FRAG_LOADED,    hideLoader);
-    hls.on(Hls.Events.BUFFER_APPENDED, hideLoader);
-  } else {
-    // fallback for browsers with native HLS
-    video.src = <?php echo json_encode($video720 ?: $video480 ?: $video360 ?: $video240); ?>;
-    video.addEventListener('loadedmetadata', () => video.play());
-  }
-</script>
-
 
     // Load HLS (or native) stream
     function loadStream(url) {
@@ -446,7 +356,12 @@ $title    = $_GET['title']     ?? 'Video Player';
       video.muted = !video.muted;
       muteBtn.textContent = video.muted ? "🔇" : "🔊";
     });
-
+   btnRewind.addEventListener('click', () => {
+      video.currentTime = Math.max(0, video.currentTime - 10);
+    });
+    btnForward.addEventListener('click', () => {
+      video.currentTime = Math.min(video.duration, video.currentTime + 10);
+    });
     // Volume slider
     volumeSlider.addEventListener("input", () => {
       video.volume = volumeSlider.value;
