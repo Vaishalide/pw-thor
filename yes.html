@@ -1,46 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>ClearKey DRM Player</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.compiled.js"></script>
-</head>
-<body style="margin:0;background:black;">
-  <video id="video" autoplay controls style="width:100%;height:100vh;"></video>
-
-  <script>
-    const manifestUri = "https://sec-prod-mediacdn.pw.live/52d05311-18cd-4ac7-b673-c2245f43964d/master.mpd?URLPrefix=aHR0cHM6Ly9zZWMtcHJvZC1tZWRpYWNkbi5wdy5saXZlLzUyZDA1MzExLTE4Y2QtNGFjNy1iNjczLWMyMjQ1ZjQzOTY0ZA&Expires=1750075360&KeyName=pw-prod-key&Signature=OA4S9vDJlXaQgbZNSFYya4Fd4bXjI4Q3PaAUIjjIpE11MlXvQVXOsMKvG7Tw2aEdn5Bcuhg9PQZft0zQEJC6CQ";
-
-    async function initPlayer() {
-      shaka.polyfill.installAll();
-
-      if (!shaka.Player.isBrowserSupported()) {
-        alert("Browser not supported by Shaka Player.");
-        return;
-      }
-
-      const video = document.getElementById('video');
-      const player = new shaka.Player(video);
-
-      player.configure({
-        drm: {
-          clearKeys: {
-            // KeyID: Key
-            "51615ac5447fbac9c079adbe99daef3f": "eb48000f3737e3a243e3c9b18986529d"
-          }
-        }
-      });
-
-      try {
-        await player.load(manifestUri);
-        console.log("Video loaded successfully!");
-      } catch (error) {
-        console.error("Error loading video:", error.code, error);
-        alert("Failed to load video.");
-      }
+  <meta charset="UTF-8">
+  <title>PW Thor Overlay</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
     }
 
-    document.addEventListener('DOMContentLoaded', initPlayer);
-  </script>
+    #mainIframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .overlay-top {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px 20px;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+    }
+
+    .overlay-top img {
+      height: 30px;
+    }
+
+    .overlay-center {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+<div id="overlayTop" class="overlay-top" style="display: none;">
+  <img src="https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg" alt="Logo">
+  <span>PW Thor</span>
+</div>
+
+<div id="overlayCenter" class="overlay-center" style="display: none;">
+  Loading protected content...
+</div>
+
+<iframe id="mainIframe" src="https://rarestudy.site/batches"></iframe>
+
+<script>
+  const iframe = document.getElementById('mainIframe');
+  const overlayTop = document.getElementById('overlayTop');
+  const overlayCenter = document.getElementById('overlayCenter');
+
+  iframe.onload = () => {
+    try {
+      const currentUrl = iframe.contentWindow.location.pathname;
+
+      if (currentUrl.includes('/keygenerate')) {
+        overlayCenter.style.display = 'flex';
+      } else if (currentUrl.includes('/batches')) {
+        overlayTop.style.display = 'flex';
+      }
+    } catch (err) {
+      // Due to cross-origin, direct iframe access may fail
+      const fallbackURL = iframe.src;
+
+      if (fallbackURL.includes('/keygenerate')) {
+        overlayCenter.style.display = 'flex';
+      } else if (fallbackURL.includes('/batches')) {
+        overlayTop.style.display = 'flex';
+      }
+    }
+  };
+</script>
+
 </body>
 </html>
