@@ -5,21 +5,105 @@
   <title>PW THOR - Proxy Batches</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { background: #0e0f1b; color: white; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-    h1 { color: #ffc107; text-align: center; }
-    .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
-    .card { background: #1e2036; border-radius: 10px; padding: 1rem; width: 250px; cursor: pointer; transition: 0.3s; }
-    .card:hover { background: #2a2e4b; transform: translateY(-5px); }
-    .card img { width: 100%; border-radius: 10px; }
-    .card-title { text-align: center; margin-top: 10px; font-weight: bold; }
-    .loader { margin: 2rem auto; border: 6px solid #333; border-top: 6px solid #ffc107; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .btn { background: #ffc107; color: black; padding: 10px 20px; border: none; border-radius: 5px; text-align: center; display: block; margin: 10px auto 0; text-decoration: none; }
-    .back-btn { margin: 10px 0; display: block; text-align: left; color: #ffc107; cursor: pointer; }
-    input[type="text"] { padding: 10px; width: 80%; margin: 10px auto; display: block; border-radius: 5px; border: none; }
-    .today-classes-container { overflow-x: auto; white-space: nowrap; padding: 10px 0; }
-    .today-card { display: inline-block; background: #26294d; margin-right: 10px; padding: 10px; border-radius: 8px; width: 220px; vertical-align: top; }
-    .today-card-title { font-weight: bold; margin-bottom: 5px; }
+    body {
+      background: #0e0f1b;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #ffc107;
+      text-align: center;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .card {
+      background: #1e2036;
+      border-radius: 10px;
+      padding: 1rem;
+      width: 250px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .card:hover {
+      background: #2a2e4b;
+      transform: translateY(-5px);
+    }
+    .card img {
+      width: 100%;
+      border-radius: 10px;
+    }
+    .card-title {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .loader {
+      margin: 2rem auto;
+      border: 6px solid #333;
+      border-top: 6px solid #ffc107;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .btn {
+      background: #ffc107;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      text-align: center;
+      display: block;
+      margin: 10px auto 0;
+      text-decoration: none;
+    }
+    .back-btn {
+      margin: 10px 0;
+      display: block;
+      text-align: left;
+      color: #ffc107;
+      cursor: pointer;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      margin: 10px auto;
+      display: block;
+      border-radius: 5px;
+      border: none;
+    }
+    .today-classes-container {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 10px;
+      background: #1a1c2d;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+    .today-card {
+      display: inline-block;
+      background: #26294d;
+      margin-right: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      width: 220px;
+      vertical-align: top;
+    }
+    .today-card-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
   </style>
 </head>
 <body>
@@ -116,9 +200,10 @@
             loadChapters(API_BASE + subject.url);
           });
         });
-        // Load today's classes
+
         const todayRes = await fetch(`${API_BASE}/api/proxy/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
         const todayClasses = await todayRes.json();
+
         if (todayClasses.length) {
           todayClassesDiv.innerHTML = "";
           todayClassesDiv.style.display = "block";
@@ -126,6 +211,7 @@
             const card = document.createElement("div");
             card.className = "today-card";
             card.innerHTML = `
+              ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
               <div class="today-card-title">${cls.title}</div>
               <a href="${cls.url}" target="_blank">Open</a>
             `;
