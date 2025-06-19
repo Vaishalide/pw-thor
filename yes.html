@@ -24,6 +24,7 @@
 
       window.player = player;
 
+      // DRM Configuration
       if (data.drmType === "ClearKey" && data.key_strings) {
         const keys = {};
         const [kid, key] = data.key_strings.split('--key ')[1].split(':');
@@ -36,13 +37,17 @@
         });
       }
 
-     const videoUrl = encodeURIComponent(drmJson.url);
-player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
-       
+      // Load the video
+      const videoUrl = encodeURIComponent(data.url);
+      await player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
+    }
 
+    // Install polyfills and initialize player
     shaka.polyfill.installAll();
     if (shaka.Player.isBrowserSupported()) {
-      initPlayer();
+      initPlayer().catch(error => {
+        console.error("Error initializing player:", error);
+      });
     } else {
       alert("Shaka Player not supported in this browser.");
     }
