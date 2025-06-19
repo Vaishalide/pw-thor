@@ -2,107 +2,152 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Batch Viewer</title>
+  <title>Study Batches</title>
   <style>
-    body { font-family: sans-serif; }
-    .batch, .subject, .chapter, .lecture {
-      margin: 10px;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      display: inline-block;
-      vertical-align: top;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 20px;
     }
-    img { max-width: 200px; height: auto; display: block; }
-    h2, h3, h4 { margin: 5px 0; }
+    h1, h2, h3, h4 {
+      margin-top: 30px;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      width: 200px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+    }
+    .title {
+      font-weight: bold;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
   <h1>Batches</h1>
-  <div id="batches"></div>
-  <hr>
-  <div id="subjects"></div>
-  <div id="chapters"></div>
-  <div id="lectures"></div>
+  <div id="batches" class="grid"></div>
+
+  <div id="subjects-section">
+    <h2 id="subject-title" style="display:none;">Subjects</h2>
+    <div id="subjects" class="grid"></div>
+  </div>
+
+  <div id="chapters-section">
+    <h3 id="chapter-title" style="display:none;">Chapters</h3>
+    <div id="chapters" class="grid"></div>
+  </div>
+
+  <div id="lectures-section">
+    <h4 id="lecture-title" style="display:none;">Lectures</h4>
+    <div id="lectures" class="grid"></div>
+  </div>
 
   <script>
+    const API_BASE = "https://testing-453c50579f45.herokuapp.com/api/proxy";
+
     // Load batches
-    fetch('https://5f129b41-01f2-4d5a-8f1c-6dcb49be4165-00-8xnq81j897xt.pike.replit.dev/api/batches')
+    fetch(`${API_BASE}/batches`)
       .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById('batches');
-        data.forEach(batch => {
-          const div = document.createElement('div');
-          div.className = 'batch';
+      .then(batches => {
+        const container = document.getElementById("batches");
+        batches.forEach(batch => {
+          const div = document.createElement("div");
+          div.className = "card";
           div.innerHTML = `
             <img src="${batch.image}" alt="${batch.name}">
-            <h2>${batch.name}</h2>
-            <button onclick="loadSubjects('${batch.url}')">View Subjects</button>
+            <div class="title">${batch.name}</div>
           `;
+          div.onclick = () => loadSubjects(batch.url);
           container.appendChild(div);
         });
       });
 
-    function loadSubjects(batchUrl) {
-      document.getElementById('subjects').innerHTML = '';
-      document.getElementById('chapters').innerHTML = '';
-      document.getElementById('lectures').innerHTML = '';
-      fetch('https://5f129b41-01f2-4d5a-8f1c-6dcb49be4165-00-8xnq81j897xt.pike.replit.dev/api/subjects?url=' + encodeURIComponent(batchUrl))
+    function loadSubjects(subjectUrl) {
+      clearSection("subjects");
+      clearSection("chapters");
+      clearSection("lectures");
+
+      document.getElementById("subject-title").style.display = "block";
+
+      fetch(subjectUrl)
         .then(res => res.json())
         .then(subjects => {
-          const container = document.getElementById('subjects');
-          container.innerHTML = '<h2>Subjects</h2>';
+          const container = document.getElementById("subjects");
           subjects.forEach(subject => {
-            const div = document.createElement('div');
-            div.className = 'subject';
-            div.innerHTML = `
-              <h3>${subject.name}</h3>
-              <button onclick="loadChapters('${subject.url}')">View Chapters</button>
-            `;
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `<div class="title">${subject.name}</div>`;
+            div.onclick = () => loadChapters(subject.url);
             container.appendChild(div);
           });
         });
     }
 
-    function loadChapters(subjectUrl) {
-      document.getElementById('chapters').innerHTML = '';
-      document.getElementById('lectures').innerHTML = '';
-      fetch('https://5f129b41-01f2-4d5a-8f1c-6dcb49be4165-00-8xnq81j897xt.pike.replit.dev/api/chapters?url=' + encodeURIComponent(subjectUrl))
+    function loadChapters(chapterUrl) {
+      clearSection("chapters");
+      clearSection("lectures");
+
+      document.getElementById("chapter-title").style.display = "block";
+
+      fetch(chapterUrl)
         .then(res => res.json())
         .then(chapters => {
-          const container = document.getElementById('chapters');
-          container.innerHTML = '<h3>Chapters</h3>';
+          const container = document.getElementById("chapters");
           chapters.forEach(chapter => {
-            const div = document.createElement('div');
-            div.className = 'chapter';
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `<div class="title">${chapter.name}</div>`;
+            div.onclick = () => loadLectures(chapter.url);
+            container.appendChild(div);
+          });
+        });
+    }
+
+    function loadLectures(lectureUrl) {
+      clearSection("lectures");
+      document.getElementById("lecture-title").style.display = "block";
+
+      fetch(lectureUrl)
+        .then(res => res.json())
+        .then(lectures => {
+          const container = document.getElementById("lectures");
+          lectures.forEach(lec => {
+            const div = document.createElement("div");
+            div.className = "card";
             div.innerHTML = `
-              <h4>${chapter.name}</h4>
-              <button onclick="loadLectures('${chapter.url}')">View Lectures</button>
+              <img src="${lec.thumbnail || ''}" alt="${lec.title}">
+              <div class="title">${lec.title}</div>
+              <a href="${lec.url}" target="_blank">Watch</a>
             `;
             container.appendChild(div);
           });
         });
     }
 
-    function loadLectures(chapterUrl) {
-      document.getElementById('lectures').innerHTML = '';
-      fetch('https://5f129b41-01f2-4d5a-8f1c-6dcb49be4165-00-8xnq81j897xt.pike.replit.dev/api/lectures?url=' + encodeURIComponent(chapterUrl))
-        .then(res => res.json())
-        .then(lectures => {
-          const container = document.getElementById('lectures');
-          container.innerHTML = '<h4>Lectures</h4>';
-          lectures.forEach(lec => {
-            const div = document.createElement('div');
-            div.className = 'lecture';
-            div.innerHTML = `
-              <img src="${lec.thumbnail}" alt="${lec.title}">
-              <p>${lec.title}</p>
-              <a href="${lec.url}" target="_blank">Open Lecture</a>
-            `;
-            container.appendChild(div);
-          });
-        });
+    function clearSection(id) {
+      document.getElementById(id).innerHTML = "";
+      const title = document.getElementById(id.replace("s", "") + "-title");
+      if (title) title.style.display = "none";
     }
   </script>
 
