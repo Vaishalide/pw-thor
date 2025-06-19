@@ -15,6 +15,15 @@
   <script>
     const VIDEO_API = "/krta.json";
 
+    function base64ToUint8Array(base64) {
+      const raw = atob(base64);
+      const uint8Array = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; ++i) {
+        uint8Array[i] = raw.charCodeAt(i);
+      }
+      return uint8Array;
+    }
+
     async function initPlayer() {
       try {
         const response = await fetch(VIDEO_API);
@@ -24,19 +33,14 @@
         const player = new shaka.Player(video);
         window.player = player;
 
-        // Apply ClearKey DRM
+        // ClearKey DRM
         if (data.drmType === "ClearKey" && data.key_strings) {
           const keyMatch = data.key_strings.match(/--key\s+([a-fA-F0-9]+):([a-fA-F0-9]+)/);
           if (keyMatch) {
             const keys = { [keyMatch[1]]: keyMatch[2] };
-
             player.configure({
               drm: {
-                clearKeys: keys,
-                initData: [{
-                  initDataType: 'cenc',
-                  initData: shaka.util.Uint8ArrayUtils.fromBase64(data.pssh)
-                }]
+                clearKeys: keys
               }
             });
           } else {
@@ -45,13 +49,14 @@
           }
         }
 
-        const videoUrl = encodeURIComponent(data.url);
-        await player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
-        console.log("Video loaded successfully.");
+        const manifestUrl = `https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${encodeURIComponent(data.url)}`;
 
+        // Load with explicit initData if pssh is provided
+        const initData = base64ToUint8Array(data.pssh);
+        await player.load(manifestUrl, 0, 'cenc', initData);
+        console.log("Video loaded successfully.");
       } catch (error) {
         console.error("Error initializing Shaka Player:", error);
-        alert("Failed to load video. See console for error.");
       }
     }
 
