@@ -15,41 +15,54 @@
   <script>
     const VIDEO_API = "/krta.json";
 
+    // Initialize the Shaka player
     async function initPlayer() {
-      const response = await fetch(VIDEO_API);
-      const data = await response.json();
+      try {
+        const response = await fetch(VIDEO_API);
+        const data = await response.json();
 
-      const video = document.getElementById("video");
-      const player = new shaka.Player(video);
+        const video = document.getElementById("video");
+        const player = new shaka.Player(video);
+        window.player = player;
 
-      window.player = player;
+        // Apply ClearKey DRM configuration
+        if (data.drmType === "ClearKey" && data.key_strings) {
+          const keys = {};
+          // Parse the key from the format: "--key kid:key"
+          const keyEntry = data.key_strings.match(/--key\s+([a-fA-F0-9]+):([a-fA-F0-9]+)/);
+          if (keyEntry) {
+            const kid = keyEntry[1];
+            const key = keyEntry[2];
+            keys[kid] = key;
 
-      // DRM Configuration
-      if (data.drmType === "ClearKey" && data.key_strings) {
-        const keys = {};
-        const [kid, key] = data.key_strings.split('--key ')[1].split(':');
-        keys[kid] = key;
-
-        player.configure({
-          drm: {
-            clearKeys: keys
+            player.configure({
+              drm: {
+                clearKeys: keys
+              }
+            });
+          } else {
+            console.error("Invalid key_strings format");
+            alert("Failed to parse ClearKey from JSON.");
+            return;
           }
-        });
-      }
+        }
 
-      // Load the video
-      const videoUrl = encodeURIComponent(data.url);
-      await player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
+        // Load the video URL via proxy
+        const videoUrl = encodeURIComponent(data.url);
+        await player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
+
+      } catch (error) {
+        console.error("Error initializing Shaka Player:", error);
+        alert("Failed to load video. Check console for details.");
+      }
     }
 
-    // Install polyfills and initialize player
+    // Polyfills and player support check
     shaka.polyfill.installAll();
     if (shaka.Player.isBrowserSupported()) {
-      initPlayer().catch(error => {
-        console.error("Error initializing player:", error);
-      });
+      initPlayer();
     } else {
-      alert("Shaka Player not supported in this browser.");
+      alert("Shaka Player is not supported in this browser.");
     }
   </script>
 </body>
