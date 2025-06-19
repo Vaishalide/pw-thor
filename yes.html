@@ -108,6 +108,7 @@
       vertical-align: top;
       word-wrap: break-word;
       overflow-wrap: break-word;
+      cursor: pointer;
     }
     .today-card-title {
       font-weight: bold;
@@ -230,8 +231,8 @@
             card.innerHTML = `
               ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
               <div class="today-card-title">${cls.title}</div>
-              <a href="${cls.url}" target="_blank">Open</a>
             `;
+            card.onclick = () => window.open(cls.url, '_blank');
             todayClassesDiv.appendChild(card);
           });
         }
@@ -276,11 +277,8 @@
           div.innerHTML = `
             ${lec.thumbnail ? `<img src="${lec.thumbnail}" alt="${lec.title}" />` : ""}
             <div class="card-title">${lec.title}</div>
-            <video controls width="100%" poster="${lec.thumbnail || ''}">
-              <source src="${lec.url}" type="video/mp4">
-              Your browser does not support the video tag.
-            </video>
           `;
+          div.onclick = () => window.open(lec.url, '_blank');
           lecturesDiv.appendChild(div);
         });
       } catch (err) {
