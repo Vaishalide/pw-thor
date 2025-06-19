@@ -14,14 +14,17 @@
     .card-title { text-align: center; margin-top: 10px; font-weight: bold; }
     .loader { margin: 2rem auto; border: 6px solid #333; border-top: 6px solid #ffc107; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .btn { background: #ffc107; color: black; padding: 10px 20px; border: none; border-radius: 5px; text-align: center; display: block; margin: 10px auto 0; text-decoration: none; }
+    .back-btn { margin: 10px auto; display: block; text-align: center; color: #ffc107; cursor: pointer; }
+    input[type="text"] { padding: 10px; width: 80%; margin: 10px auto; display: block; border-radius: 5px; border: none; }
   </style>
 </head>
 <body>
   <h1>PW THOR Batches</h1>
-
+  <input type="text" id="searchInput" placeholder="Search batch by name..." />
   <div class="loader" id="loader" style="display: none;"></div>
-
   <div class="grid" id="main"></div>
+  <div class="back-btn" id="backBtn" style="display:none;">← Back</div>
   <div class="grid" id="subjects" style="display: none;"></div>
   <div class="grid" id="chapters" style="display: none;"></div>
   <div class="grid" id="lectures" style="display: none;"></div>
@@ -33,6 +36,11 @@
     const chaptersDiv = document.getElementById("chapters");
     const lecturesDiv = document.getElementById("lectures");
     const loader = document.getElementById("loader");
+    const backBtn = document.getElementById("backBtn");
+    const searchInput = document.getElementById("searchInput");
+
+    let viewStack = [];
+    let allBatches = [];
 
     function showLoader(show) {
       loader.style.display = show ? "block" : "none";
@@ -43,6 +51,7 @@
       subjectsDiv.style.display = "none";
       chaptersDiv.style.display = "none";
       lecturesDiv.style.display = "none";
+      backBtn.style.display = viewStack.length ? "block" : "none";
     }
 
     function show(div) {
@@ -54,7 +63,7 @@
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
-        <img src="${image || ''}" alt="${title}" />
+        ${image ? `<img src="${image}" alt="${title}" />` : ""}
         <div class="card-title">${title}</div>
       `;
       div.onclick = onClick;
@@ -66,15 +75,24 @@
       try {
         const res = await fetch(`${API_BASE}/api/proxy/batches`);
         const batches = await res.json();
-        show(main);
-        batches.forEach(batch => {
-          appendCard(main, batch.name, batch.image, () => loadSubjects(API_BASE + batch.url));
-        });
+        allBatches = batches;
+        renderBatches(batches);
       } catch (err) {
         console.error("Failed to load batches:", err);
       } finally {
         showLoader(false);
       }
+    }
+
+    function renderBatches(batches) {
+      main.innerHTML = "";
+      show(main);
+      batches.forEach(batch => {
+        appendCard(main, batch.name, batch.image, () => {
+          viewStack.push(renderBatches.bind(null, batches));
+          loadSubjects(API_BASE + batch.url);
+        });
+      });
     }
 
     async function loadSubjects(subjectUrl) {
@@ -85,7 +103,10 @@
         const subjects = await res.json();
         show(subjectsDiv);
         subjects.forEach(subject => {
-          appendCard(subjectsDiv, subject.name, '', () => loadChapters(API_BASE + subject.url));
+          appendCard(subjectsDiv, subject.name, null, () => {
+            viewStack.push(() => loadSubjects(subjectUrl));
+            loadChapters(API_BASE + subject.url);
+          });
         });
       } catch (err) {
         console.error("Failed to load subjects:", err);
@@ -102,7 +123,10 @@
         const chapters = await res.json();
         show(chaptersDiv);
         chapters.forEach(ch => {
-          appendCard(chaptersDiv, ch.name, '', () => loadLectures(API_BASE + ch.url));
+          appendCard(chaptersDiv, ch.name, null, () => {
+            viewStack.push(() => loadChapters(chapterUrl));
+            loadLectures(API_BASE + ch.url);
+          });
         });
       } catch (err) {
         console.error("Failed to load chapters:", err);
@@ -122,9 +146,11 @@
           const div = document.createElement("div");
           div.className = "card";
           div.innerHTML = `
-            <img src="${lec.thumbnail || ''}" alt="${lec.title}" />
             <div class="card-title">${lec.title}</div>
-            <a href="${lec.url}" class="btn" target="_blank">Watch</a>
+            <video controls width="100%" poster="${lec.thumbnail || ''}">
+              <source src="${lec.url}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
           `;
           lecturesDiv.appendChild(div);
         });
@@ -135,7 +161,19 @@
       }
     }
 
-    // Start initial load
+    backBtn.onclick = () => {
+      if (viewStack.length) {
+        const lastView = viewStack.pop();
+        lastView();
+      }
+    };
+
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
+      renderBatches(filtered);
+    });
+
     loadBatches();
   </script>
 </body>
