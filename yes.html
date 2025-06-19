@@ -83,18 +83,20 @@
       border-radius: 5px;
       border: none;
     }
-    .today-classes-container {
-      overflow-x: auto;
-      white-space: nowrap;
-      padding: 10px;
-      background: #1a1c2d;
-      border-radius: 10px;
+    .today-classes-wrapper {
       margin: 10px 0;
     }
     .today-classes-title {
       color: #ffc107;
       font-size: 1.2rem;
       margin: 0 0 10px 10px;
+    }
+    .today-classes-container {
+      overflow-x: auto;
+      white-space: nowrap;
+      padding: 10px;
+      background: #1a1c2d;
+      border-radius: 10px;
     }
     .today-card {
       display: inline-block;
@@ -114,16 +116,16 @@
     }
   </style>
 </head>
-
-<!-- ... rest of body stays unchanged ... -->
-
 <body>
   <h1>PW THOR Batches</h1>
   <input type="text" id="searchInput" placeholder="Search batch by name..." />
   <div class="loader" id="loader" style="display: none;"></div>
   <div class="grid" id="main"></div>
   <div class="back-btn" id="backBtn" style="display:none;">← Back</div>
-  <div class="today-classes-container" id="todayClasses" style="display: none;"></div>
+  <div class="today-classes-wrapper" id="todayWrapper" style="display: none;">
+    <div class="today-classes-title">📅 Today Classes</div>
+    <div class="today-classes-container" id="todayClasses"></div>
+  </div>
   <div class="grid" id="subjects" style="display: none;"></div>
   <div class="grid" id="chapters" style="display: none;"></div>
   <div class="grid" id="lectures" style="display: none;"></div>
@@ -137,6 +139,7 @@
     const loader = document.getElementById("loader");
     const backBtn = document.getElementById("backBtn");
     const searchInput = document.getElementById("searchInput");
+    const todayWrapper = document.getElementById("todayWrapper");
     const todayClassesDiv = document.getElementById("todayClasses");
 
     let viewStack = [];
@@ -152,7 +155,7 @@
       chaptersDiv.style.display = "none";
       lecturesDiv.style.display = "none";
       backBtn.style.display = viewStack.length ? "block" : "none";
-      todayClassesDiv.style.display = "none";
+      todayWrapper.style.display = "none";
     }
 
     function show(div) {
@@ -215,9 +218,12 @@
         const todayRes = await fetch(`${API_BASE}/api/proxy/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
         const todayClasses = await todayRes.json();
 
-        if (todayClasses.length) {
-          todayClassesDiv.innerHTML = "";
-          todayClassesDiv.style.display = "block";
+        todayClassesDiv.innerHTML = "";
+        todayWrapper.style.display = "block";
+
+        if (todayClasses.length === 0) {
+          todayClassesDiv.innerHTML = '<div style="color: gray; padding: 10px;">No live classes today.</div>';
+        } else {
           todayClasses.forEach(cls => {
             const card = document.createElement("div");
             card.className = "today-card";
@@ -229,6 +235,7 @@
             todayClassesDiv.appendChild(card);
           });
         }
+
       } catch (err) {
         console.error("Failed to load subjects or todayclass:", err);
       } finally {
