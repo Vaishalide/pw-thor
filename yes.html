@@ -1,96 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>PW Thor Overlay</title>
+  <title>DRM Video Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/shaka-player@4.3.5/dist/shaka-player.compiled.js"></script>
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
-
-    #mainIframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .overlay-top {
-      position: fixed;
-      top: 0;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      padding: 10px 20px;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      z-index: 9999;
-    }
-
-    .overlay-top img {
-      height: 30px;
-    }
-
-    .overlay-center {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      z-index: 9999;
-    }
+    body { background: #000; margin: 0; }
+    video { width: 100%; height: 100vh; }
   </style>
 </head>
 <body>
+  <video id="video" autoplay controls></video>
 
-<div id="overlayTop" class="overlay-top" style="display: none;">
-  <img src="https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg" alt="Logo">
-  <span>PW Thor</span>
-</div>
+  <script>
+    const VIDEO_API = "https://5f129b41-01f2-4d5a-8f1c-6dcb49be4165-00-8xnq81j897xt.pike.replit.dev/api/video?url=https://rarestudy.site/media/BAu7rBLTDTgrOZqyonVqkmEd1FmCvuwKVpnmEYQqpg40CVJP7eBzsmYkEUzFWT91LWyhGE2YrA5Iffw0FKU67Smau-YxJ48yT1sERLoMPfCyOPH_FeOCVQCviu7zvB6k5ETHHfFteuGPWSQ3DgRe3Y_yaJwttAXDQA90MYaNzuGgSvbroJlnrHF4aDZVkhhLJV961447KhkqOjoUtgA7BFKFk5eIRiSWejW7htD8eF0iYCt33T9veG9i55DREJrbZsVzFVYbsgmHJTUAllIFhqF_k9qASkJc0iwE8o3zmCTYn3irXKnP8Q8INHOn05CC4RO1q2bBV1W_t59cEz1t5DVCcjwDD-1VxTYQV0sT3pUyA_czK8_xG70QFKEbDHIe";
 
-<div id="overlayCenter" class="overlay-center" style="display: none;">
-  Loading protected content...
-</div>
+    async function initPlayer() {
+      const response = await fetch(VIDEO_API);
+      const data = await response.json();
 
-<iframe id="mainIframe" src="https://rarestudy.site/batches"></iframe>
+      const video = document.getElementById("video");
+      const player = new shaka.Player(video);
 
-<script>
-  const iframe = document.getElementById('mainIframe');
-  const overlayTop = document.getElementById('overlayTop');
-  const overlayCenter = document.getElementById('overlayCenter');
+      window.player = player;
 
-  iframe.onload = () => {
-    try {
-      const currentUrl = iframe.contentWindow.location.pathname;
+      if (data.drmType === "ClearKey" && data.key_strings) {
+        const keys = {};
+        const [kid, key] = data.key_strings.split('--key ')[1].split(':');
+        keys[kid] = key;
 
-      if (currentUrl.includes('/keygenerate')) {
-        overlayCenter.style.display = 'flex';
-      } else if (currentUrl.includes('/batches')) {
-        overlayTop.style.display = 'flex';
+        player.configure({
+          drm: {
+            clearKeys: keys
+          }
+        });
       }
-    } catch (err) {
-      // Due to cross-origin, direct iframe access may fail
-      const fallbackURL = iframe.src;
 
-      if (fallbackURL.includes('/keygenerate')) {
-        overlayCenter.style.display = 'flex';
-      } else if (fallbackURL.includes('/batches')) {
-        overlayTop.style.display = 'flex';
-      }
+      player.load(data.url).then(() => {
+        console.log("Video loaded.");
+      }).catch(err => {
+        console.error("Error loading video", err);
+      });
     }
-  };
-</script>
 
+    shaka.polyfill.installAll();
+    if (shaka.Player.isBrowserSupported()) {
+      initPlayer();
+    } else {
+      alert("Shaka Player not supported in this browser.");
+    }
+  </script>
 </body>
 </html>
