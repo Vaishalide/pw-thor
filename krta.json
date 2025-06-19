@@ -1,0 +1,9 @@
+{
+  "drmType": "ClearKey",
+  "key_strings": "--key 6f3ab8cc43d604179eec69f598aa22af:ac2af1ec05a0c3bdf744714efe6bef40",
+  "keys": [
+    "6f3ab8cc43d604179eec69f598aa22af:ac2af1ec05a0c3bdf744714efe6bef40"
+  ],
+  "pssh": "AAAANHBzc2gBAAAAEHfv7MCyTQKs4zweUuL7SwAAAAFvOrjMQ9YEF57safWYqiKvAAAAAA==",
+  "url": "https://sec-prod-mediacdn.pw.live/72552812-8c83-45f2-8b58-2e8a27ba87cb/master.mpd?URLPrefix=aHR0cHM6Ly9zZWMtcHJvZC1tZWRpYWNkbi5wdy5saXZlLzcyNTUyODEyLThjODMtNDVmMi04YjU4LTJlOGEyN2JhODdjYg&Expires=1750346756&KeyName=pw-prod-key&Signature=22wxwR111Bc6_T41OCe2bzvJefGT-AQgZZsTXcmjGJY-w9bQrdP8Jw8xyOhvuoLoP2edJ-1Qk2NHDxWQJG4ABw"
+}
