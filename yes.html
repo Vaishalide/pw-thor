@@ -17,6 +17,9 @@
     .btn { background: #ffc107; color: black; padding: 10px 20px; border: none; border-radius: 5px; text-align: center; display: block; margin: 10px auto 0; text-decoration: none; }
     .back-btn { margin: 10px 0; display: block; text-align: left; color: #ffc107; cursor: pointer; }
     input[type="text"] { padding: 10px; width: 80%; margin: 10px auto; display: block; border-radius: 5px; border: none; }
+    .today-classes-container { overflow-x: auto; white-space: nowrap; padding: 10px 0; }
+    .today-card { display: inline-block; background: #26294d; margin-right: 10px; padding: 10px; border-radius: 8px; width: 220px; vertical-align: top; }
+    .today-card-title { font-weight: bold; margin-bottom: 5px; }
   </style>
 </head>
 <body>
@@ -25,6 +28,7 @@
   <div class="loader" id="loader" style="display: none;"></div>
   <div class="grid" id="main"></div>
   <div class="back-btn" id="backBtn" style="display:none;">← Back</div>
+  <div class="today-classes-container" id="todayClasses" style="display: none;"></div>
   <div class="grid" id="subjects" style="display: none;"></div>
   <div class="grid" id="chapters" style="display: none;"></div>
   <div class="grid" id="lectures" style="display: none;"></div>
@@ -38,6 +42,7 @@
     const loader = document.getElementById("loader");
     const backBtn = document.getElementById("backBtn");
     const searchInput = document.getElementById("searchInput");
+    const todayClassesDiv = document.getElementById("todayClasses");
 
     let viewStack = [];
     let allBatches = [];
@@ -52,6 +57,7 @@
       chaptersDiv.style.display = "none";
       lecturesDiv.style.display = "none";
       backBtn.style.display = viewStack.length ? "block" : "none";
+      todayClassesDiv.style.display = "none";
     }
 
     function show(div) {
@@ -87,29 +93,47 @@
     function renderBatches(batches) {
       main.innerHTML = "";
       show(main);
+      searchInput.style.display = "block";
       batches.forEach(batch => {
         appendCard(main, batch.name, batch.image, () => {
           viewStack.push(renderBatches.bind(null, batches));
-          loadSubjects(API_BASE + batch.url);
+          loadSubjects(API_BASE + batch.url, batch.url);
         });
       });
     }
 
-    async function loadSubjects(subjectUrl) {
+    async function loadSubjects(subjectUrl, rawBatchUrl) {
       showLoader(true);
       subjectsDiv.innerHTML = "";
+      searchInput.style.display = "none";
       try {
         const res = await fetch(subjectUrl);
         const subjects = await res.json();
         show(subjectsDiv);
         subjects.forEach(subject => {
           appendCard(subjectsDiv, subject.name, null, () => {
-            viewStack.push(() => loadSubjects(subjectUrl));
+            viewStack.push(() => loadSubjects(subjectUrl, rawBatchUrl));
             loadChapters(API_BASE + subject.url);
           });
         });
+        // Load today's classes
+        const todayRes = await fetch(`${API_BASE}/api/proxy/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
+        const todayClasses = await todayRes.json();
+        if (todayClasses.length) {
+          todayClassesDiv.innerHTML = "";
+          todayClassesDiv.style.display = "block";
+          todayClasses.forEach(cls => {
+            const card = document.createElement("div");
+            card.className = "today-card";
+            card.innerHTML = `
+              <div class="today-card-title">${cls.title}</div>
+              <a href="${cls.url}" target="_blank">Open</a>
+            `;
+            todayClassesDiv.appendChild(card);
+          });
+        }
       } catch (err) {
-        console.error("Failed to load subjects:", err);
+        console.error("Failed to load subjects or todayclass:", err);
       } finally {
         showLoader(false);
       }
