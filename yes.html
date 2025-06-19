@@ -15,7 +15,6 @@
   <script>
     const VIDEO_API = "/krta.json";
 
-    // Initialize the Shaka player
     async function initPlayer() {
       try {
         const response = await fetch(VIDEO_API);
@@ -25,39 +24,37 @@
         const player = new shaka.Player(video);
         window.player = player;
 
-        // Apply ClearKey DRM configuration
+        // Apply ClearKey DRM
         if (data.drmType === "ClearKey" && data.key_strings) {
-          const keys = {};
-          // Parse the key from the format: "--key kid:key"
-          const keyEntry = data.key_strings.match(/--key\s+([a-fA-F0-9]+):([a-fA-F0-9]+)/);
-          if (keyEntry) {
-            const kid = keyEntry[1];
-            const key = keyEntry[2];
-            keys[kid] = key;
+          const keyMatch = data.key_strings.match(/--key\s+([a-fA-F0-9]+):([a-fA-F0-9]+)/);
+          if (keyMatch) {
+            const keys = { [keyMatch[1]]: keyMatch[2] };
 
             player.configure({
               drm: {
-                clearKeys: keys
+                clearKeys: keys,
+                initData: [{
+                  initDataType: 'cenc',
+                  initData: shaka.util.Uint8ArrayUtils.fromBase64(data.pssh)
+                }]
               }
             });
           } else {
-            console.error("Invalid key_strings format");
-            alert("Failed to parse ClearKey from JSON.");
+            console.error("Invalid key_strings format.");
             return;
           }
         }
 
-        // Load the video URL via proxy
         const videoUrl = encodeURIComponent(data.url);
         await player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
+        console.log("Video loaded successfully.");
 
       } catch (error) {
         console.error("Error initializing Shaka Player:", error);
-        alert("Failed to load video. Check console for details.");
+        alert("Failed to load video. See console for error.");
       }
     }
 
-    // Polyfills and player support check
     shaka.polyfill.installAll();
     if (shaka.Player.isBrowserSupported()) {
       initPlayer();
