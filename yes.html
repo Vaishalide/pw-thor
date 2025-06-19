@@ -12,60 +12,52 @@
 <body>
   <video id="video" autoplay controls></video>
 
-  <script>
-    const VIDEO_API = "/krta.json";
+ <script>
+  async function initPlayer() {
+    const response = await fetch('/krta.json');
+    const data = await response.json();
 
-    function base64ToUint8Array(base64) {
-      const raw = atob(base64);
-      const uint8Array = new Uint8Array(raw.length);
-      for (let i = 0; i < raw.length; ++i) {
-        uint8Array[i] = raw.charCodeAt(i);
-      }
-      return uint8Array;
-    }
+    const video = document.getElementById('video');
+    const player = new shaka.Player(video);
+    window.player = player;
 
-    async function initPlayer() {
-      try {
-        const response = await fetch(VIDEO_API);
-        const data = await response.json();
+    // Add error event logger
+    player.addEventListener('error', (e) => {
+      const err = e.detail;
+      console.error("Shaka Error", err);
+    });
 
-        const video = document.getElementById("video");
-        const player = new shaka.Player(video);
-        window.player = player;
-
-        // ClearKey DRM
-        if (data.drmType === "ClearKey" && data.key_strings) {
-          const keyMatch = data.key_strings.match(/--key\s+([a-fA-F0-9]+):([a-fA-F0-9]+)/);
-          if (keyMatch) {
-            const keys = { [keyMatch[1]]: keyMatch[2] };
-            player.configure({
-              drm: {
-                clearKeys: keys
-              }
-            });
-          } else {
-            console.error("Invalid key_strings format.");
-            return;
+    // Configure DRM if ClearKey
+    if (data.drmType === "ClearKey") {
+      const keyMatch = data.key_strings.match(/--key\s+([a-fA-F0-9]+):([a-fA-F0-9]+)/);
+      if (keyMatch) {
+        const keys = { [keyMatch[1]]: keyMatch[2] };
+        player.configure({
+          drm: {
+            clearKeys: keys
           }
-        }
-
-        const manifestUrl = `https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${encodeURIComponent(data.url)}`;
-
-        // Load with explicit initData if pssh is provided
-        const initData = base64ToUint8Array(data.pssh);
-        await player.load(manifestUrl, 0, 'cenc', initData);
-        console.log("Video loaded successfully.");
-      } catch (error) {
-        console.error("Error initializing Shaka Player:", error);
+        });
+      } else {
+        console.error("Invalid key format in krta.json");
+        return;
       }
     }
 
-    shaka.polyfill.installAll();
-    if (shaka.Player.isBrowserSupported()) {
-      initPlayer();
-    } else {
-      alert("Shaka Player is not supported in this browser.");
+    try {
+      await player.load(data.url);
+      console.log("Video loaded successfully.");
+    } catch (error) {
+      console.error("Error initializing Shaka Player:", error);
     }
-  </script>
+  }
+
+  shaka.polyfill.installAll();
+  if (shaka.Player.isBrowserSupported()) {
+    initPlayer();
+  } else {
+    alert("Shaka Player not supported.");
+  }
+</script>
+
 </body>
 </html>
