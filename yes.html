@@ -1,179 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Study Batches</title>
+  <meta charset="UTF-8" />
+  <title>PW THOR - Proxy Batches</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    h1, h2, h3, h4 {
-      margin-top: 30px;
-    }
-    .grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .card {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 10px;
-      width: 200px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-    .card:hover {
-      transform: scale(1.02);
-    }
-    img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 6px;
-    }
-    .title {
-      font-weight: bold;
-      margin-top: 10px;
-      text-align: center;
-    }
+    body { background: #0e0f1b; color: white; font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+    h1 { color: #ffc107; text-align: center; }
+    .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px; }
+    .card { background: #1e2036; border-radius: 10px; padding: 1rem; width: 250px; cursor: pointer; transition: 0.3s; }
+    .card:hover { background: #2a2e4b; transform: translateY(-5px); }
+    .card img { width: 100%; border-radius: 10px; }
+    .card-title { text-align: center; margin-top: 10px; font-weight: bold; }
+    .loader { margin: 2rem auto; border: 6px solid #333; border-top: 6px solid #ffc107; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
+  <h1>PW THOR Batches</h1>
 
-  <h1>Batches</h1>
-  <div id="batches" class="grid"></div>
+  <div class="loader" id="loader" style="display: none;"></div>
 
-  <div id="subjects-section">
-    <h2 id="subject-title" style="display:none;">Subjects</h2>
-    <div id="subjects" class="grid"></div>
-  </div>
-
-  <div id="chapters-section">
-    <h3 id="chapter-title" style="display:none;">Chapters</h3>
-    <div id="chapters" class="grid"></div>
-  </div>
-
-  <div id="lectures-section">
-    <h4 id="lecture-title" style="display:none;">Lectures</h4>
-    <div id="lectures" class="grid"></div>
-  </div>
+  <div class="grid" id="main"></div>
+  <div class="grid" id="subjects" style="display: none;"></div>
+  <div class="grid" id="chapters" style="display: none;"></div>
+  <div class="grid" id="lectures" style="display: none;"></div>
 
   <script>
     const API_BASE = "https://testing-453c50579f45.herokuapp.com";
+    const main = document.getElementById("main");
+    const subjectsDiv = document.getElementById("subjects");
+    const chaptersDiv = document.getElementById("chapters");
+    const lecturesDiv = document.getElementById("lectures");
+    const loader = document.getElementById("loader");
 
-    // Load batches
-    fetch(`${API_BASE}/api/proxy/batches`)
-      .then(res => res.json())
-      .then(batches => {
-        console.log("📦 Batches:", batches);
-        const container = document.getElementById("batches");
+    function showLoader(show) {
+      loader.style.display = show ? "block" : "none";
+    }
+
+    function clearAll() {
+      main.style.display = "none";
+      subjectsDiv.style.display = "none";
+      chaptersDiv.style.display = "none";
+      lecturesDiv.style.display = "none";
+    }
+
+    function show(div) {
+      clearAll();
+      div.style.display = "flex";
+    }
+
+    function appendCard(container, title, image, onClick) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <img src="${image || ''}" alt="${title}" />
+        <div class="card-title">${title}</div>
+      `;
+      div.onclick = onClick;
+      container.appendChild(div);
+    }
+
+    async function loadBatches() {
+      showLoader(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/proxy/batches`);
+        const batches = await res.json();
+        show(main);
         batches.forEach(batch => {
+          appendCard(main, batch.name, batch.image, () => loadSubjects(API_BASE + batch.url));
+        });
+      } catch (err) {
+        console.error("Failed to load batches:", err);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function loadSubjects(subjectUrl) {
+      showLoader(true);
+      subjectsDiv.innerHTML = "";
+      try {
+        const res = await fetch(subjectUrl);
+        const subjects = await res.json();
+        show(subjectsDiv);
+        subjects.forEach(subject => {
+          appendCard(subjectsDiv, subject.name, '', () => loadChapters(API_BASE + subject.url));
+        });
+      } catch (err) {
+        console.error("Failed to load subjects:", err);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function loadChapters(chapterUrl) {
+      showLoader(true);
+      chaptersDiv.innerHTML = "";
+      try {
+        const res = await fetch(chapterUrl);
+        const chapters = await res.json();
+        show(chaptersDiv);
+        chapters.forEach(ch => {
+          appendCard(chaptersDiv, ch.name, '', () => loadLectures(API_BASE + ch.url));
+        });
+      } catch (err) {
+        console.error("Failed to load chapters:", err);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function loadLectures(lectureUrl) {
+      showLoader(true);
+      lecturesDiv.innerHTML = "";
+      try {
+        const res = await fetch(lectureUrl);
+        const lectures = await res.json();
+        show(lecturesDiv);
+        lectures.forEach(lec => {
           const div = document.createElement("div");
           div.className = "card";
           div.innerHTML = `
-            <img src="${batch.image}" alt="${batch.name}">
-            <div class="title">${batch.name}</div>
+            <img src="${lec.thumbnail || ''}" alt="${lec.title}" />
+            <div class="card-title">${lec.title}</div>
+            <a href="${lec.url}" class="btn" target="_blank">Watch</a>
           `;
-          div.onclick = () => loadSubjects(API_BASE + batch.url);
-          container.appendChild(div);
+          lecturesDiv.appendChild(div);
         });
-      })
-      .catch(err => console.error("❌ Failed to load batches:", err));
-
-    // Load subjects
-    function loadSubjects(subjectUrl) {
-      clearSection("subjects");
-      clearSection("chapters");
-      clearSection("lectures");
-      document.getElementById("subject-title").style.display = "block";
-      console.log("📘 Fetching subjects from:", subjectUrl);
-
-      fetch(subjectUrl)
-        .then(res => res.json())
-        .then(subjects => {
-          console.log("📘 Subjects loaded:", subjects);
-          const container = document.getElementById("subjects");
-          container.innerHTML = "";
-          subjects.forEach(subject => {
-            const div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `<div class="title">${subject.name}</div>`;
-            div.onclick = () => loadChapters(API_BASE + subject.url);
-            container.appendChild(div);
-          });
-        })
-        .catch(err => console.error("❌ Failed to load subjects:", err));
-    }
-
-    // Load chapters
-    function loadChapters(chapterUrl) {
-      clearSection("chapters");
-      clearSection("lectures");
-      document.getElementById("chapter-title").style.display = "block";
-      console.log("📗 Fetching chapters from:", chapterUrl);
-
-      fetch(chapterUrl)
-        .then(res => res.json())
-        .then(chapters => {
-          console.log("📗 Chapters loaded:", chapters);
-          const container = document.getElementById("chapters");
-          container.innerHTML = "";
-          chapters.forEach(chapter => {
-            const div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `<div class="title">${chapter.name}</div>`;
-            div.onclick = () => loadLectures(API_BASE + chapter.url);
-            container.appendChild(div);
-          });
-        })
-        .catch(err => console.error("❌ Failed to load chapters:", err));
-    }
-
-    // Load lectures
-    function loadLectures(lectureUrl) {
-      clearSection("lectures");
-      document.getElementById("lecture-title").style.display = "block";
-      console.log("🎓 Fetching lectures from:", lectureUrl);
-
-      fetch(lectureUrl)
-        .then(res => res.json())
-        .then(lectures => {
-          console.log("🎓 Lectures loaded:", lectures);
-          const container = document.getElementById("lectures");
-          container.innerHTML = "";
-          lectures.forEach(lec => {
-            const div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `
-              <img src="${lec.thumbnail || ''}" alt="${lec.title}">
-              <div class="title">${lec.title}</div>
-              <a href="${lec.url}" target="_blank">Watch</a>
-            `;
-            container.appendChild(div);
-          });
-        })
-        .catch(err => console.error("❌ Failed to load lectures:", err));
-    }
-
-    // Fixed clearSection logic
-    function clearSection(id) {
-      document.getElementById(id).innerHTML = "";
-      const titleIdMap = {
-        "subjects": "subject-title",
-        "chapters": "chapter-title",
-        "lectures": "lecture-title"
-      };
-      const titleId = titleIdMap[id];
-      if (titleId) {
-        document.getElementById(titleId).style.display = "none";
+      } catch (err) {
+        console.error("Failed to load lectures:", err);
+      } finally {
+        showLoader(false);
       }
     }
-  </script>
 
+    // Start initial load
+    loadBatches();
+  </script>
 </body>
 </html>
