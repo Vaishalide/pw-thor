@@ -36,12 +36,9 @@
         });
       }
 
-      player.load(data.url).then(() => {
-        console.log("Video loaded.");
-      }).catch(err => {
-        console.error("Error loading video", err);
-      });
-    }
+     const videoUrl = encodeURIComponent(drmJson.url);
+player.load(`https://pw-player-7b8d4bce9043.herokuapp.com/proxy?url=${videoUrl}`);
+       
 
     shaka.polyfill.installAll();
     if (shaka.Player.isBrowserSupported()) {
