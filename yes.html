@@ -12,10 +12,12 @@
       margin: 0;
       padding: 20px;
     }
+
     h1 {
       color: #ffc107;
       text-align: center;
     }
+
     .grid {
       display: flex;
       flex-wrap: wrap;
@@ -23,6 +25,7 @@
       justify-content: center;
       margin-top: 20px;
     }
+
     .card {
       background: #1e2036;
       border-radius: 10px;
@@ -31,19 +34,23 @@
       cursor: pointer;
       transition: 0.3s;
     }
+
     .card:hover {
       background: #2a2e4b;
       transform: translateY(-5px);
     }
+
     .card img {
       width: 100%;
       border-radius: 10px;
     }
+
     .card-title {
       text-align: center;
       margin-top: 10px;
       font-weight: bold;
     }
+
     .loader {
       margin: 2rem auto;
       border: 6px solid #333;
@@ -53,10 +60,12 @@
       height: 60px;
       animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
     .btn {
       background: #ffc107;
       color: black;
@@ -68,6 +77,7 @@
       margin: 10px auto 0;
       text-decoration: none;
     }
+
     .back-btn {
       margin: 10px 0;
       display: block;
@@ -75,6 +85,7 @@
       color: #ffc107;
       cursor: pointer;
     }
+
     input[type="text"] {
       padding: 10px;
       width: 80%;
@@ -83,14 +94,17 @@
       border-radius: 5px;
       border: none;
     }
+
     .today-classes-wrapper {
       margin: 10px 0;
     }
+
     .today-classes-title {
       color: #ffc107;
       font-size: 1.2rem;
       margin: 0 0 10px 10px;
     }
+
     .today-classes-container {
       overflow-x: auto;
       white-space: nowrap;
@@ -98,6 +112,7 @@
       background: #1a1c2d;
       border-radius: 10px;
     }
+
     .today-card {
       display: inline-block;
       background: #26294d;
@@ -106,14 +121,29 @@
       border-radius: 8px;
       width: 220px;
       vertical-align: top;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
       cursor: pointer;
     }
+
     .today-card-title {
       font-weight: bold;
       margin-bottom: 5px;
       white-space: normal;
+    }
+
+    /* Lecture tabs */
+    #lectureSection button {
+      background: #ffc107;
+      border: none;
+      margin: 0 5px;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #lectureSection button.active {
+      background: #e0a800;
+      color: white;
     }
   </style>
 </head>
@@ -129,14 +159,22 @@
   </div>
   <div class="grid" id="subjects" style="display: none;"></div>
   <div class="grid" id="chapters" style="display: none;"></div>
-  <div class="grid" id="lectures" style="display: none;"></div>
+
+  <div id="lectureSection" style="display:none;">
+    <div style="text-align: center; margin-bottom: 10px;">
+      <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
+      <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
+      <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
+      <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+    </div>
+    <div class="grid" id="lectureContent"></div>
+  </div>
 
   <script>
     const API_BASE = "https://testing-453c50579f45.herokuapp.com";
     const main = document.getElementById("main");
     const subjectsDiv = document.getElementById("subjects");
     const chaptersDiv = document.getElementById("chapters");
-    const lecturesDiv = document.getElementById("lectures");
     const loader = document.getElementById("loader");
     const backBtn = document.getElementById("backBtn");
     const searchInput = document.getElementById("searchInput");
@@ -145,6 +183,7 @@
 
     let viewStack = [];
     let allBatches = [];
+    let currentLectureUrl = "";
 
     function showLoader(show) {
       loader.style.display = show ? "block" : "none";
@@ -154,9 +193,9 @@
       main.style.display = "none";
       subjectsDiv.style.display = "none";
       chaptersDiv.style.display = "none";
-      lecturesDiv.style.display = "none";
       backBtn.style.display = viewStack.length ? "block" : "none";
       todayWrapper.style.display = "none";
+      document.getElementById("lectureSection").style.display = "none";
     }
 
     function show(div) {
@@ -168,7 +207,7 @@
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
-        ${image !== null ? `<img src="${image}" alt="${title}" />` : ""}
+        ${image ? `<img src="${image}" alt="${title}" />` : ""}
         <div class="card-title">${title}</div>
       `;
       div.onclick = onClick;
@@ -236,7 +275,6 @@
             todayClassesDiv.appendChild(card);
           });
         }
-
       } catch (err) {
         console.error("Failed to load subjects or todayclass:", err);
       } finally {
@@ -264,28 +302,54 @@
       }
     }
 
-    async function loadLectures(lectureUrl) {
+    function loadLectures(lectureUrl) {
+      currentLectureUrl = lectureUrl;
+      switchLectureTab('lectures');
+    }
+
+    function switchLectureTab(type) {
+      const apiMap = {
+        lectures: '/api/proxy/lectures',
+        notes: '/api/proxy/notes',
+        dppnotes: '/api/proxy/dppnotes',
+        dpplecture: '/api/proxy/dpplecture',
+      };
+
+      const lectureContent = document.getElementById("lectureContent");
+      lectureContent.innerHTML = "";
       showLoader(true);
-      lecturesDiv.innerHTML = "";
-      try {
-        const res = await fetch(lectureUrl);
-        const lectures = await res.json();
-        show(lecturesDiv);
-        lectures.forEach(lec => {
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            ${lec.thumbnail ? `<img src="${lec.thumbnail}" alt="${lec.title}" />` : ""}
-            <div class="card-title">${lec.title}</div>
-          `;
-          div.onclick = () => window.open(lec.url, '_blank');
-          lecturesDiv.appendChild(div);
-        });
-      } catch (err) {
-        console.error("Failed to load lectures:", err);
-      } finally {
-        showLoader(false);
-      }
+
+      // Update button highlight
+      ["lectures", "notes", "dppnotes", "dpplecture"].forEach(tab => {
+        document.getElementById("tab-" + tab).classList.remove("active");
+      });
+      document.getElementById("tab-" + type).classList.add("active");
+
+      const replacements = {
+        notes: "/notes",
+        dppnotes: "/DppNotes",
+        dpplecture: "/DppVideos"
+      };
+
+      const urlType = currentLectureUrl.replace("/videos", replacements[type] || "/videos");
+
+      fetch(`${API_BASE}${apiMap[type]}?chapterId=${encodeURIComponent(urlType)}`)
+        .then(res => res.json())
+        .then(items => {
+          show(document.getElementById("lectureSection"));
+          items.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `
+              ${item.image || item.thumbnail ? `<img src="${item.image || item.thumbnail}" alt="${item.title}" />` : ""}
+              <div class="card-title">${item.title}</div>
+            `;
+            div.onclick = () => window.open(item.url, '_blank');
+            lectureContent.appendChild(div);
+          });
+        })
+        .catch(err => console.error("Failed to load section:", err))
+        .finally(() => showLoader(false));
     }
 
     backBtn.onclick = () => {
