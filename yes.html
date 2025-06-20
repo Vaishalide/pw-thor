@@ -12,12 +12,10 @@
       margin: 0;
       padding: 20px;
     }
-
     h1 {
       color: #ffc107;
       text-align: center;
     }
-
     .grid {
       display: flex;
       flex-wrap: wrap;
@@ -25,7 +23,6 @@
       justify-content: center;
       margin-top: 20px;
     }
-
     .card {
       background: #1e2036;
       border-radius: 10px;
@@ -34,23 +31,19 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
     .card:hover {
       background: #2a2e4b;
       transform: translateY(-5px);
     }
-
     .card img {
       width: 100%;
       border-radius: 10px;
     }
-
     .card-title {
       text-align: center;
       margin-top: 10px;
       font-weight: bold;
     }
-
     .loader {
       margin: 2rem auto;
       border: 6px solid #333;
@@ -60,12 +53,10 @@
       height: 60px;
       animation: spin 1s linear infinite;
     }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
     .btn {
       background: #ffc107;
       color: black;
@@ -77,7 +68,6 @@
       margin: 10px auto 0;
       text-decoration: none;
     }
-
     .back-btn {
       margin: 10px 0;
       display: block;
@@ -85,7 +75,6 @@
       color: #ffc107;
       cursor: pointer;
     }
-
     input[type="text"] {
       padding: 10px;
       width: 80%;
@@ -94,17 +83,14 @@
       border-radius: 5px;
       border: none;
     }
-
     .today-classes-wrapper {
       margin: 10px 0;
     }
-
     .today-classes-title {
       color: #ffc107;
       font-size: 1.2rem;
       margin: 0 0 10px 10px;
     }
-
     .today-classes-container {
       overflow-x: auto;
       white-space: nowrap;
@@ -112,7 +98,6 @@
       background: #1a1c2d;
       border-radius: 10px;
     }
-
     .today-card {
       display: inline-block;
       background: #26294d;
@@ -123,14 +108,11 @@
       vertical-align: top;
       cursor: pointer;
     }
-
     .today-card-title {
       font-weight: bold;
       margin-bottom: 5px;
       white-space: normal;
     }
-
-    /* Lecture tabs */
     #lectureSection button {
       background: #ffc107;
       border: none;
@@ -140,7 +122,6 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     #lectureSection button.active {
       background: #e0a800;
       color: white;
@@ -319,7 +300,7 @@
       lectureContent.innerHTML = "";
       showLoader(true);
 
-      // Update button highlight
+      // Tab active highlight
       ["lectures", "notes", "dppnotes", "dpplecture"].forEach(tab => {
         document.getElementById("tab-" + tab).classList.remove("active");
       });
@@ -331,7 +312,9 @@
         dpplecture: "/DppVideos"
       };
 
-      const urlType = currentLectureUrl.replace("/videos", replacements[type] || "/videos");
+      // ✅ Proper URL decode & replace
+      const chapterUrl = new URLSearchParams(currentLectureUrl.split("?")[1]).get("chapterId") || "";
+      const urlType = chapterUrl.replace("/videos", replacements[type] || "/videos");
 
       fetch(`${API_BASE}${apiMap[type]}?chapterId=${encodeURIComponent(urlType)}`)
         .then(res => res.json())
