@@ -205,9 +205,14 @@
     }
 
     function show(div) {
-      clearAll();
-      div.style.display = "flex";
-    }
+  clearAll();
+  if (div.id === "lectureSection") {
+    div.style.display = "block"; // 🛠️ stack tabs + grid vertically
+  } else {
+    div.style.display = "flex";  // default for grid layouts
+  }
+}
+
 
     function appendCard(container, title, image, onClick) {
       const div = document.createElement("div");
