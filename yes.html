@@ -111,11 +111,27 @@
     .lecture-tabs {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 10px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  width: 100%;
 }
 
+.lecture-tabs button {
+  background: #ffc107;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lecture-tabs button.active {
+  background: #e0a800;
+  color: white;
+}
     .today-card-title {
       font-weight: bold;
       margin-bottom: 5px;
@@ -150,15 +166,15 @@
   <div class="grid" id="chapters" style="display: none;"></div>
 
   <div id="lectureSection" style="display:none;">
-   <div class="lecture-tabs">
-  <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
-  <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
-  <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
-  <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+  <div class="lecture-tabs">
+    <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
+    <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
+    <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
+    <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+  </div>
+  <div class="grid" id="lectureContent"></div>
 </div>
 
-    <div class="grid" id="lectureContent"></div>
-  </div>
 
   <script>
     const API_BASE = "https://testing-453c50579f45.herokuapp.com";
