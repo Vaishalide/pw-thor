@@ -129,17 +129,7 @@
   </div>
   <div class="grid" id="subjects" style="display: none;"></div>
   <div class="grid" id="chapters" style="display: none;"></div>
-
-  <!-- New Section: Lectures Tabs -->
-  <div id="lectureSection" style="display:none;">
-    <div style="text-align: center; margin-bottom: 10px;">
-      <button onclick="switchLectureTab('lectures')">Lecture</button>
-      <button onclick="switchLectureTab('notes')">Notes</button>
-      <button onclick="switchLectureTab('dppnotes')">DPPs</button>
-      <button onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
-    </div>
-    <div class="grid" id="lectureContent"></div>
-  </div>
+  <div class="grid" id="lectures" style="display: none;"></div>
 
   <script>
     const API_BASE = "https://testing-453c50579f45.herokuapp.com";
@@ -155,7 +145,6 @@
 
     let viewStack = [];
     let allBatches = [];
-    let currentLectureUrl = "";
 
     function showLoader(show) {
       loader.style.display = show ? "block" : "none";
@@ -168,7 +157,6 @@
       lecturesDiv.style.display = "none";
       backBtn.style.display = viewStack.length ? "block" : "none";
       todayWrapper.style.display = "none";
-      document.getElementById("lectureSection").style.display = "none";
     }
 
     function show(div) {
@@ -276,46 +264,28 @@
       }
     }
 
-    function loadLectures(lectureUrl) {
-      currentLectureUrl = lectureUrl;
-      switchLectureTab('lectures');
-    }
-
-    function switchLectureTab(type) {
-      const apiMap = {
-        lectures: '/api/proxy/lectures',
-        notes: '/api/proxy/notes',
-        dppnotes: '/api/proxy/dppnotes',
-        dpplecture: '/api/proxy/dpplecture',
-      };
-
-      const lectureContent = document.getElementById("lectureContent");
-      lectureContent.innerHTML = "";
+    async function loadLectures(lectureUrl) {
       showLoader(true);
-
-      const urlType = currentLectureUrl.replace("/videos", {
-        notes: "/notes",
-        dppnotes: "/DppNotes",
-        dpplecture: "/DppVideos"
-      }[type] || "/videos");
-
-      fetch(`${API_BASE}${apiMap[type]}?chapterId=${encodeURIComponent(urlType)}`)
-        .then(res => res.json())
-        .then(items => {
-          show(document.getElementById("lectureSection"));
-          items.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `
-              ${item.image || item.thumbnail ? `<img src="${item.image || item.thumbnail}" alt="${item.title}" />` : ""}
-              <div class="card-title">${item.title}</div>
-            `;
-            div.onclick = () => window.open(item.url, '_blank');
-            lectureContent.appendChild(div);
-          });
-        })
-        .catch(err => console.error("Failed to load section:", err))
-        .finally(() => showLoader(false));
+      lecturesDiv.innerHTML = "";
+      try {
+        const res = await fetch(lectureUrl);
+        const lectures = await res.json();
+        show(lecturesDiv);
+        lectures.forEach(lec => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            ${lec.thumbnail ? `<img src="${lec.thumbnail}" alt="${lec.title}" />` : ""}
+            <div class="card-title">${lec.title}</div>
+          `;
+          div.onclick = () => window.open(lec.url, '_blank');
+          lecturesDiv.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Failed to load lectures:", err);
+      } finally {
+        showLoader(false);
+      }
     }
 
     backBtn.onclick = () => {
