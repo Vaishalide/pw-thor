@@ -108,6 +108,14 @@
       vertical-align: top;
       cursor: pointer;
     }
+    .lecture-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
     .today-card-title {
       font-weight: bold;
       margin-bottom: 5px;
@@ -142,12 +150,13 @@
   <div class="grid" id="chapters" style="display: none;"></div>
 
   <div id="lectureSection" style="display:none;">
-    <div style="text-align: center; margin-bottom: 10px;">
-      <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
-      <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
-      <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
-      <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
-    </div>
+   <div class="lecture-tabs">
+  <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
+  <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
+  <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
+  <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+</div>
+
     <div class="grid" id="lectureContent"></div>
   </div>
 
