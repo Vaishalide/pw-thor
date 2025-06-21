@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRM Video Player</title>
+    <title>PW THOR Video Player</title>
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -18,10 +19,13 @@
             background: #111;
             color: white;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
+            padding: 20px;
         }
+
 
         .player-container {
             max-width: 900px;
@@ -44,6 +48,7 @@
 
         .controls-overlay {
             position: absolute;
+            pointer-events: none;
             top: 0;
             left: 0;
             right: 0;
@@ -57,22 +62,27 @@
             z-index: 2;
         }
 
-        .video-wrapper:hover .controls-overlay, .controls-overlay.visible {
+        .video-wrapper:hover .controls-overlay,
+        .controls-overlay.visible {
             opacity: 1;
         }
 
-        .top-bar, .bottom-bar {
+        .top-bar,
+        .bottom-bar {
             padding: 15px;
             display: flex;
             align-items: center;
         }
 
         .top-bar {
-             background: linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0));
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+            pointer-events: auto;
+            /* ✅ clickable */
+            z-index: 10;
         }
-        
+
         .bottom-bar {
-            background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0));
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
             flex-direction: column;
             padding-bottom: 10px;
         }
@@ -85,12 +95,17 @@
             cursor: pointer;
             padding: 5px;
             transition: transform 0.2s ease;
+            pointer-events: auto;
+            z-index: 9999;
+
+
+
         }
 
         .control-btn:hover {
             transform: scale(1.1);
         }
-        
+
         .top-bar .spacer {
             flex-grow: 1;
         }
@@ -120,7 +135,7 @@
             border-radius: 50%;
             cursor: pointer;
         }
-        
+
         #progress-bar::-moz-range-thumb {
             width: 15px;
             height: 15px;
@@ -137,19 +152,20 @@
             align-items: center;
         }
 
-        .left-controls, .right-controls {
+        .left-controls,
+        .right-controls {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
+
         .volume-container {
             display: flex;
             align-items: center;
         }
 
         #volume-slider {
-             -webkit-appearance: none;
+            -webkit-appearance: none;
             appearance: none;
             width: 0;
             height: 4px;
@@ -158,7 +174,7 @@
             transition: width 0.3s ease;
             cursor: pointer;
         }
-        
+
 
         .volume-container:hover #volume-slider {
             width: 80px;
@@ -186,15 +202,15 @@
         .time-display {
             font-size: 14px;
         }
-        
+
         /* Status and Error styling */
         .status-container {
             padding: 10px 20px;
             background: #222;
         }
-        
+
         .status {
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 5px;
             padding: 10px;
             color: white;
@@ -203,6 +219,7 @@
             max-height: 50px;
             overflow-y: auto;
         }
+
         .error {
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid rgba(255, 0, 0, 0.5);
@@ -212,6 +229,7 @@
             margin: 15px 20px;
             display: none;
         }
+
         .error.show {
             display: block;
         }
@@ -227,7 +245,11 @@
             color: white;
             font-size: 16px;
         }
-        .loading.show { display: block; }
+
+        .loading.show {
+            display: block;
+        }
+
         .spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -237,9 +259,15 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 15px;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* Settings Menu Styles */
@@ -297,20 +325,47 @@
             background: #333;
             color: #fff;
         }
+
+        .telegram-button-wrapper {
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+
+        .telegram-btn {
+            display: inline-block;
+            background-color: #0088cc;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .telegram-btn i {
+            margin-right: 8px;
+        }
+
+        .telegram-btn:hover {
+            background-color: #006fa7;
+        }
     </style>
 </head>
+
 <body>
     <div class="player-container">
         <div class="video-wrapper">
             <video id="video" preload="metadata" poster="">
                 Your browser does not support the video tag.
             </video>
-            
+
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 Loading DRM content...
             </div>
-            
+
 
             <div class="controls-overlay">
                 <div class="top-bar">
@@ -323,6 +378,7 @@
                     <div class="progress-bar-wrapper">
                         <input type="range" id="progress-bar" min="0" max="100" step="0.1" value="0">
                     </div>
+
                     <div class="controls-row">
                         <div class="left-controls">
                             <button id="play-pause-btn" class="control-btn"><i class="fas fa-play"></i></button>
@@ -366,14 +422,22 @@
                 </div>
             </div>
         </div>
-        
+
+
         <div class="status-container">
-             <div class="error" id="error"></div>
-             <div class="status">
+            <div class="error" id="error"></div>
+            <div class="status">
                 <div id="statusText">Ready to load DRM content with signed segment requests</div>
             </div>
         </div>
     </div>
+
+    <div class="telegram-button-wrapper">
+        <a href="https://t.me/pwthorxiityatra" target="_blank" class="telegram-btn">
+            <i class="fab fa-telegram-plane"></i> Join our Telegram
+        </a>
+    </div>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.min.js"></script>
     <script>
@@ -384,7 +448,7 @@
         const loading = document.getElementById('loading');
         const error = document.getElementById('error');
         const statusText = document.getElementById('statusText');
-        
+
 
         // New Controls
         const controlsOverlay = document.querySelector('.controls-overlay');
@@ -409,382 +473,8 @@
         let controlsTimeout;
 
         // Function to get URL parameters
-        function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
-        }
+      const _0x5067e5=_0x58ff;(function(_0x179088,_0x13e92a){const _0x2b56b8=_0x58ff,_0x5f0b05=_0x179088();while(!![]){try{const _0x46767f=-parseInt(_0x2b56b8(0x191))/0x1*(-parseInt(_0x2b56b8(0x183))/0x2)+-parseInt(_0x2b56b8(0x1e2))/0x3+-parseInt(_0x2b56b8(0x181))/0x4*(parseInt(_0x2b56b8(0x1b9))/0x5)+-parseInt(_0x2b56b8(0x1f5))/0x6+parseInt(_0x2b56b8(0x1d6))/0x7*(-parseInt(_0x2b56b8(0x1ee))/0x8)+parseInt(_0x2b56b8(0x1e7))/0x9*(-parseInt(_0x2b56b8(0x1df))/0xa)+parseInt(_0x2b56b8(0x1d4))/0xb;if(_0x46767f===_0x13e92a)break;else _0x5f0b05['push'](_0x5f0b05['shift']());}catch(_0x2703d0){_0x5f0b05['push'](_0x5f0b05['shift']());}}}(_0x185f,0x6b978));function getUrlParameter(_0x1ee05a){const _0x301448=_0x58ff,_0x4b261f=new URLSearchParams(window[_0x301448(0x1b5)][_0x301448(0x1c5)]);return _0x4b261f['get'](_0x1ee05a);}function getConfigFromUrl(){const _0x125149=_0x58ff,_0x462850=getUrlParameter(_0x125149(0x19e)),_0x50b43b=getUrlParameter(_0x125149(0x1a1)),_0x53b6c0=getUrlParameter('keyid'),_0x49ec2f=getUrlParameter(_0x125149(0x1f3)),_0x2c9bb1=getUrlParameter(_0x125149(0x18f));console[_0x125149(0x1eb)](_0x125149(0x1ce),{'type':_0x462850,'url':_0x50b43b,'keyid':_0x53b6c0,'key':_0x49ec2f,'pssh':_0x2c9bb1});if(!_0x50b43b)throw new Error(_0x125149(0x1b8));const _0x5ac8fc=[_0x125149(0x1e1),_0x125149(0x1c7),_0x125149(0x180),_0x125149(0x1ac),_0x125149(0x1b1),_0x125149(0x1bf)];if(_0x462850===_0x125149(0x182)){const _0x1adde8=new URL(_0x50b43b),_0xe9ae73={};_0x5ac8fc[_0x125149(0x203)](_0x4ae2e2=>{const _0x5f3389=_0x125149;_0x1adde8[_0x5f3389(0x19d)][_0x5f3389(0x1c0)](_0x4ae2e2)&&(_0xe9ae73[_0x4ae2e2]=_0x1adde8[_0x5f3389(0x19d)][_0x5f3389(0x186)](_0x4ae2e2));});const _0x4931eb=new URL(_0x1adde8[_0x125149(0x185)]+_0x1adde8[_0x125149(0x1b0)]);return{'streamType':_0x125149(0x182),'videoData':{'url':_0x4931eb['toString']()},'signedParams':_0xe9ae73};}if(!_0x53b6c0||!_0x49ec2f)throw new Error(_0x125149(0x1dc));const _0x360c9b=new URL(_0x50b43b),_0x484b63={};_0x5ac8fc[_0x125149(0x203)](_0x3fe299=>{const _0x378385=_0x125149;_0x360c9b[_0x378385(0x19d)][_0x378385(0x1c0)](_0x3fe299)&&(_0x484b63[_0x3fe299]=_0x360c9b[_0x378385(0x19d)][_0x378385(0x186)](_0x3fe299));});const _0x28f8a2=new URL(_0x360c9b['origin']+_0x360c9b['pathname']);return{'streamType':_0x125149(0x1a6),'videoData':{'drmType':_0x125149(0x178),'key_strings':_0x125149(0x1a0)+_0x53b6c0+':'+_0x49ec2f,'keys':[_0x53b6c0+':'+_0x49ec2f],'pssh':_0x2c9bb1||'','url':_0x28f8a2[_0x125149(0x18b)]()},'signedParams':_0x484b63};}function initializeConfig(){const _0x2f729e=_0x58ff;try{const _0x51fe30=getConfigFromUrl();videoData=_0x51fe30[_0x2f729e(0x197)],signedParams=_0x51fe30[_0x2f729e(0x1a5)],streamType=_0x51fe30[_0x2f729e(0x1ff)],streamType===_0x2f729e(0x182)?updateStatus(_0x2f729e(0x1ad)+videoData[_0x2f729e(0x1a1)]['substring'](0x0,0x32)+_0x2f729e(0x1cd)):updateStatus(_0x2f729e(0x1f1)+videoData[_0x2f729e(0x1a1)][_0x2f729e(0x1f2)](0x0,0x32)+'...'),setTimeout(()=>loadContent(),0x3e8);}catch(_0xca3acf){showError(_0xca3acf['message']),updateStatus(_0x2f729e(0x204));}}function _0x185f(){const _0x2aeef3=['split','Error\x20entering\x20fullscreen:','Player','getUTCHours','click','KeyName','900WxpoUt','live','243062FwphJk','getNetworkingEngine','origin','get','paused','keys','pop','fa-expand','toString','auto','fa-pause','play','pssh','ended','1SOxdYN','fa-volume-mute','message','duration','target','find','videoData','Loading\x20HLS\x20live\x20stream...','volume','unlock','Entered\x20fullscreen','SEGMENT','searchParams','type','add','--key\x20','url','style','addEventListener','getUTCSeconds','signedParams','drm','timeout','pause','net','RequestType','Content\x20loaded\x20successfully!','Signature','Live\x20HLS\x20configuration\x20loaded.\x20URL:\x20','show','fa-volume-up','pathname','Key-Pair-Id','linear-gradient(to\x20right,\x20#ff0000\x20','appendChild','00:00','location','orientation','%,\x20rgba(255,\x20255,\x20255,\x200.4)\x20','Missing\x20required\x20parameter:\x20url\x20is\x20required!','45NvVVsP','installAll','requestFullscreen','length','playbackRate','requestPictureInPicture','Policy','has','detail','querySelector','apply','innerHTML','search','MANIFEST','Expires','fa-compress','textContent','NetworkingEngine','muted','exitFullscreen','...','URL\x20Parameters:','No\x20configuration\x20found.\x20Please\x20provide\x20required\x20URL\x20parameters.','Loading\x20DRM\x20content\x20with\x20signed\x20segment\x20requests...','\x20/\x20','Fullscreen\x20exit\x20error:\x20','classList','28919055pDMMoT','uris','49pVbAyj','error','catch','Configuration\x20required','Orientation\x20lock\x20failed:','polyfill','Missing\x20parameters.\x20For\x20DRM,\x20`keyid`\x20and\x20`key`\x20are\x20required.\x20For\x20live\x20streams,\x20add\x20`?type=live`\x20to\x20the\x20URL.','padStart','selectVariantTrack','114290ZGBrml','getVariantTracks','URLPrefix','2445348Qnccur','Playback\x20speed\x20changed\x20to\x20','value','registerRequestFilter','pictureInPictureEnabled','441xRZvcG','Quality\x20set\x20to\x20Auto','lock','Player\x20error\x20occurred','log','set','fullscreenElement','618392rIsbAM','fa-volume-down','toggle','DRM\x20configuration\x20loaded.\x20MPD:\x20','substring','key','Error\x20exiting\x20fullscreen:','2349510lrfcUg','warn','fa-play','Fullscreen\x20error:\x20','getUTCMinutes','load','remove','currentTime','<option\x20value=\x22auto\x22\x20selected>Auto</option>','height','streamType','sort','fullscreenchange','setSeconds','forEach','Waiting\x20for\x20URL\x20parameters...','isBrowserSupported','then','ClearKey','Player\x20error:\x20','visible'];_0x185f=function(){return _0x2aeef3;};return _0x185f();}class SignedSegmentFilter{constructor(_0x5acd4f){const _0x373d09=_0x58ff;this[_0x373d09(0x1a5)]=_0x5acd4f;}[_0x5067e5(0x1c3)](_0x2ac2bb,_0x1ab9a4){const _0x18949a=_0x5067e5;if(_0x2ac2bb===shaka[_0x18949a(0x1a9)][_0x18949a(0x1ca)][_0x18949a(0x1aa)][_0x18949a(0x1c6)]||_0x2ac2bb===shaka[_0x18949a(0x1a9)]['NetworkingEngine'][_0x18949a(0x1aa)][_0x18949a(0x19c)]){const _0x2403cd=new URL(_0x1ab9a4[_0x18949a(0x1d5)][0x0]);Object[_0x18949a(0x188)](this[_0x18949a(0x1a5)])[_0x18949a(0x203)](_0x5d9407=>{const _0x47a5ce=_0x18949a;_0x2403cd['searchParams'][_0x47a5ce(0x1ec)](_0x5d9407,this[_0x47a5ce(0x1a5)][_0x5d9407]);}),_0x1ab9a4[_0x18949a(0x1d5)][0x0]=_0x2403cd['toString'](),updateStatus(_0x2ac2bb+'\x20request\x20with\x20signed\x20params:\x20'+_0x2403cd[_0x18949a(0x1b0)][_0x18949a(0x17b)]('/')[_0x18949a(0x189)]());}return _0x1ab9a4;}}function initializePlayer(){const _0x451ad7=_0x5067e5;shaka[_0x451ad7(0x1db)][_0x451ad7(0x1ba)]();if(!shaka[_0x451ad7(0x17d)][_0x451ad7(0x176)]())return showError('Browser\x20not\x20supported\x20for\x20playback!'),![];player=new shaka[(_0x451ad7(0x17d))](video),player[_0x451ad7(0x1a3)](_0x451ad7(0x1d7),onPlayerError);streamType===_0x451ad7(0x1a6)&&videoData['keys']&&player['configure']({'drm':{'clearKeys':parseClearKeys(videoData['keys'])}});const _0x16a57d=player[_0x451ad7(0x184)]();if(signedParams&&Object[_0x451ad7(0x188)](signedParams)[_0x451ad7(0x1bc)]>0x0){const _0x4f218d=new SignedSegmentFilter(signedParams);_0x16a57d[_0x451ad7(0x1e5)]((_0x161513,_0x563c63)=>_0x4f218d[_0x451ad7(0x1c3)](_0x161513,_0x563c63));}return!![];}function parseClearKeys(_0x140d13){const _0x4a9b38=_0x5067e5,_0x212994={};return _0x140d13[_0x4a9b38(0x203)](_0xc3c4c5=>{const _0x3da71d=_0x4a9b38,[_0x2dc4eb,_0x4efeda]=_0xc3c4c5[_0x3da71d(0x17b)](':');_0x212994[_0x2dc4eb]=_0x4efeda;}),_0x212994;}async function loadContent(){const _0x184826=_0x5067e5;if(!videoData){showError(_0x184826(0x1cf)),updateStatus(_0x184826(0x1d9));return;}if(!player){if(!initializePlayer())return;}try{showLoading(!![]),streamType===_0x184826(0x182)?updateStatus(_0x184826(0x198)):updateStatus(_0x184826(0x1d0)),await player[_0x184826(0x1fa)](videoData['url']),showLoading(![]),updateStatus(_0x184826(0x1ab)),populateQualityOptions();}catch(_0x48c589){showLoading(![]),showError('Failed\x20to\x20load\x20content:\x20'+_0x48c589['message']),updateStatus('Failed\x20to\x20load\x20content');}}function onPlayerError(_0x616dd1){const _0x3c4dcd=_0x5067e5;showError(_0x3c4dcd(0x179)+_0x616dd1[_0x3c4dcd(0x1c1)][_0x3c4dcd(0x193)]),updateStatus(_0x3c4dcd(0x1ea));}function showLoading(_0x4a49d8){const _0x327710=_0x5067e5;loading[_0x327710(0x1d3)][_0x327710(0x1f0)](_0x327710(0x1ae),_0x4a49d8);}function showError(_0x4f875b){const _0x2fe116=_0x5067e5;error[_0x2fe116(0x1c9)]=_0x4f875b,error[_0x2fe116(0x1d3)]['add'](_0x2fe116(0x1ae)),clearTimeout(error[_0x2fe116(0x1a7)]),error[_0x2fe116(0x1a7)]=setTimeout(()=>{const _0xe1a2a1=_0x2fe116;error[_0xe1a2a1(0x1d3)][_0xe1a2a1(0x1fb)](_0xe1a2a1(0x1ae));},0x1388);}function updateStatus(_0x3c523a){statusText['textContent']=_0x3c523a;}function togglePlayPause(){const _0x12fda7=_0x5067e5;video[_0x12fda7(0x187)]||video[_0x12fda7(0x190)]?video[_0x12fda7(0x18e)]():video[_0x12fda7(0x1a8)]();}function updatePlayPauseIcon(){const _0x3b692a=_0x5067e5,_0x474e88=playPauseBtn[_0x3b692a(0x1c2)]('i');video[_0x3b692a(0x187)]||video[_0x3b692a(0x190)]?(_0x474e88[_0x3b692a(0x1d3)][_0x3b692a(0x1fb)](_0x3b692a(0x18d)),_0x474e88[_0x3b692a(0x1d3)]['add'](_0x3b692a(0x1f7))):(_0x474e88[_0x3b692a(0x1d3)][_0x3b692a(0x1fb)]('fa-play'),_0x474e88[_0x3b692a(0x1d3)]['add']('fa-pause'));}function seek(_0x2fd3ff){const _0x55fa54=_0x5067e5;video[_0x55fa54(0x1fc)]+=_0x2fd3ff;}function handleVolumeChange(){const _0x1b4845=_0x5067e5;video[_0x1b4845(0x199)]=volumeSlider['value'],video['volume']===0x0?video['muted']=!![]:video[_0x1b4845(0x1cb)]=![];}function updateVolumeIcon(){const _0x3dfa18=_0x5067e5,_0x33f228=volumeBtn[_0x3dfa18(0x1c2)]('i');_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x1fb)](_0x3dfa18(0x1af),_0x3dfa18(0x1ef),_0x3dfa18(0x192));if(video[_0x3dfa18(0x1cb)]||video[_0x3dfa18(0x199)]===0x0)_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x19f)]('fa-volume-mute');else video['volume']<0.5?_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x19f)]('fa-volume-down'):_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x19f)](_0x3dfa18(0x1af));}function toggleMute(){const _0x405d5d=_0x5067e5;video['muted']=!video[_0x405d5d(0x1cb)],video[_0x405d5d(0x1cb)]?volumeSlider['value']=0x0:volumeSlider[_0x405d5d(0x1e4)]=video['volume']>0x0?video[_0x405d5d(0x199)]:0x1,updateVolumeIcon();}function updateProgress(){const _0x4d184b=_0x5067e5,_0x26e364=video['currentTime']/video[_0x4d184b(0x194)]*0x64;progressBar[_0x4d184b(0x1e4)]=_0x26e364||0x0;const _0x4ab3f5=_0x26e364/0x64;progressBar[_0x4d184b(0x1a2)]['background']=_0x4d184b(0x1b2)+_0x4ab3f5*0x64+_0x4d184b(0x1b7)+_0x4ab3f5*0x64+'%)';const _0x385e22=formatTime(video['currentTime']),_0x4501ba=formatTime(video[_0x4d184b(0x194)]);timeDisplay[_0x4d184b(0x1c9)]=_0x385e22+_0x4d184b(0x1d1)+_0x4501ba;}function setProgress(_0x1d28db){const _0x599a3a=_0x5067e5,_0x3d3ef0=_0x1d28db[_0x599a3a(0x195)][_0x599a3a(0x1e4)]/0x64*video[_0x599a3a(0x194)];video[_0x599a3a(0x1fc)]=_0x3d3ef0;}function _0x58ff(_0xbbba9f,_0x5842aa){const _0x185f3f=_0x185f();return _0x58ff=function(_0x58fffd,_0x5d7a2e){_0x58fffd=_0x58fffd-0x176;let _0x139aef=_0x185f3f[_0x58fffd];return _0x139aef;},_0x58ff(_0xbbba9f,_0x5842aa);}function formatTime(_0x129683){const _0x1f5727=_0x5067e5;if(isNaN(_0x129683))return _0x1f5727(0x1b4);const _0x284028=new Date(null);_0x284028[_0x1f5727(0x202)](_0x129683);const _0x355f0b=_0x284028[_0x1f5727(0x17e)](),_0x21c006=_0x284028[_0x1f5727(0x1f9)](),_0x2f7e61=_0x284028[_0x1f5727(0x1a4)]();if(_0x355f0b>0x0)return String(_0x355f0b)[_0x1f5727(0x1dd)](0x2,'0')+':'+String(_0x21c006)[_0x1f5727(0x1dd)](0x2,'0')+':'+String(_0x2f7e61)['padStart'](0x2,'0');return String(_0x21c006)['padStart'](0x2,'0')+':'+String(_0x2f7e61)[_0x1f5727(0x1dd)](0x2,'0');}function togglePictureInPicture(){const _0x277e24=_0x5067e5;if(document['pictureInPictureElement'])document['exitPictureInPicture']();else document[_0x277e24(0x1e6)]&&video[_0x277e24(0x1be)]();}function toggleFullscreen(){const _0x531874=_0x5067e5,_0x2f77da=videoWrapper;!document[_0x531874(0x1ed)]?_0x2f77da[_0x531874(0x1bb)]()[_0x531874(0x177)](()=>{const _0xa1779a=_0x531874;console[_0xa1779a(0x1eb)](_0xa1779a(0x19b)),screen[_0xa1779a(0x1b6)]&&screen[_0xa1779a(0x1b6)][_0xa1779a(0x1e9)]&&screen['orientation'][_0xa1779a(0x1e9)]('landscape')['catch'](_0x53b632=>{const _0x153cb2=_0xa1779a;console[_0x153cb2(0x1f6)](_0x153cb2(0x1da),_0x53b632[_0x153cb2(0x193)]);});})[_0x531874(0x1d8)](_0x19820e=>{const _0x4bd4d3=_0x531874;console[_0x4bd4d3(0x1d7)](_0x4bd4d3(0x17c),_0x19820e),showError(_0x4bd4d3(0x1f8)+_0x19820e['message']);}):document[_0x531874(0x1cc)]()[_0x531874(0x177)](()=>{const _0x5dd84b=_0x531874;console[_0x5dd84b(0x1eb)]('Exited\x20fullscreen'),screen[_0x5dd84b(0x1b6)]&&screen['orientation'][_0x5dd84b(0x19a)]&&screen[_0x5dd84b(0x1b6)][_0x5dd84b(0x19a)]();})[_0x531874(0x1d8)](_0x5cddc5=>{const _0x2d47c5=_0x531874;console[_0x2d47c5(0x1d7)](_0x2d47c5(0x1f4),_0x5cddc5),showError(_0x2d47c5(0x1d2)+_0x5cddc5[_0x2d47c5(0x193)]);});}function updateFullscreenIcon(){const _0x92cd0d=_0x5067e5,_0x4391e7=fullscreenBtn[_0x92cd0d(0x1c2)]('i');document[_0x92cd0d(0x1ed)]?(_0x4391e7[_0x92cd0d(0x1d3)][_0x92cd0d(0x1fb)](_0x92cd0d(0x18a)),_0x4391e7[_0x92cd0d(0x1d3)]['add'](_0x92cd0d(0x1c8))):(_0x4391e7[_0x92cd0d(0x1d3)][_0x92cd0d(0x1fb)](_0x92cd0d(0x1c8)),_0x4391e7[_0x92cd0d(0x1d3)][_0x92cd0d(0x19f)](_0x92cd0d(0x18a)));}fullscreenBtn[_0x5067e5(0x1a3)](_0x5067e5(0x17f),toggleFullscreen),document[_0x5067e5(0x1a3)](_0x5067e5(0x201),updateFullscreenIcon);function hideControls(){const _0x468a9b=_0x5067e5;if(video[_0x468a9b(0x187)])return;controlsOverlay[_0x468a9b(0x1d3)][_0x468a9b(0x1fb)](_0x468a9b(0x17a));}function showControls(){const _0x17caed=_0x5067e5;controlsOverlay[_0x17caed(0x1d3)][_0x17caed(0x19f)](_0x17caed(0x17a)),clearTimeout(controlsTimeout),controlsTimeout=setTimeout(hideControls,0xbb8);}function toggleSettingsMenu(){const _0x527638=_0x5067e5;settingsMenu[_0x527638(0x1d3)][_0x527638(0x1f0)](_0x527638(0x1ae));}function handleSpeedChange(){const _0x1b2696=_0x5067e5,_0x342be5=parseFloat(speedSelect['value']);video[_0x1b2696(0x1bd)]=_0x342be5,updateStatus(_0x1b2696(0x1e3)+_0x342be5+'x');}function handleQualityChange(){const _0x3a79e9=_0x5067e5,_0x30c725=qualitySelect[_0x3a79e9(0x1e4)];if(player&&_0x30c725!==_0x3a79e9(0x18c)){const _0x4b59ab=player[_0x3a79e9(0x1e0)](),_0x2550e8=_0x4b59ab[_0x3a79e9(0x196)](_0x46fc6d=>_0x46fc6d[_0x3a79e9(0x1fe)]===parseInt(_0x30c725));_0x2550e8&&(player[_0x3a79e9(0x1de)](_0x2550e8),updateStatus('Quality\x20changed\x20to\x20'+_0x30c725+'p'));}else player&&_0x30c725===_0x3a79e9(0x18c)&&(player['selectVariantTrack'](null),updateStatus(_0x3a79e9(0x1e8)));}function populateQualityOptions(){const _0x59e786=_0x5067e5;if(!player)return;const _0x2045f0=player['getVariantTracks'](),_0x446282=qualitySelect[_0x59e786(0x1e4)];qualitySelect[_0x59e786(0x1c4)]=_0x59e786(0x1fd);const _0x4f590f=[...new Set(_0x2045f0['map'](_0x352cb4=>_0x352cb4['height']))][_0x59e786(0x200)]((_0x52187e,_0x59d2fd)=>_0x59d2fd-_0x52187e);_0x4f590f[_0x59e786(0x203)](_0x1ee968=>{const _0x14b021=_0x59e786,_0xf48dda=document['createElement']('option');_0xf48dda['value']=_0x1ee968,_0xf48dda[_0x14b021(0x1c9)]=_0x1ee968+'p',qualitySelect[_0x14b021(0x1b3)](_0xf48dda);}),_0x446282&&_0x4f590f['includes'](parseInt(_0x446282))&&(qualitySelect[_0x59e786(0x1e4)]=_0x446282);}
 
-        // Function to get configuration from URL parameters
-        function getConfigFromUrl() {
-            const type = getUrlParameter('type');
-            const url = getUrlParameter('url');
-            const keyid = getUrlParameter('keyid');
-            const key = getUrlParameter('key');
-            const pssh = getUrlParameter('pssh');
-
-            console.log('URL Parameters:', { type, url, keyid, key, pssh });
-
-            if (!url) {
-                throw new Error('Missing required parameter: url is required!');
-            }
-            
-            // List of potential signing parameters for CloudFront, Google Media CDN, etc.
-            const signingParams = ['URLPrefix', 'Expires', 'KeyName', 'Signature', 'Key-Pair-Id', 'Policy'];
-
-            // Handle HLS live streams
-            if (type === 'live') {
-                const liveUrl = new URL(url);
-                const extractedParams = {};
-                signingParams.forEach(param => {
-                    if (liveUrl.searchParams.has(param)) {
-                        extractedParams[param] = liveUrl.searchParams.get(param);
-                    }
-                });
-                const cleanLiveUrl = new URL(liveUrl.origin + liveUrl.pathname);
-
-                return {
-                    streamType: 'live',
-                    videoData: {
-                        url: cleanLiveUrl.toString()
-                    },
-                    signedParams: extractedParams
-                };
-            }
-
-            // Handle DRM streams
-            if (!keyid || !key) {
-                throw new Error('Missing parameters. For DRM, `keyid` and `key` are required. For live streams, add `?type=live` to the URL.');
-            }
-
-            const mpdUrl = new URL(url);
-            const extractedParams = {};
-            signingParams.forEach(param => {
-                if (mpdUrl.searchParams.has(param)) {
-                    extractedParams[param] = mpdUrl.searchParams.get(param);
-                }
-            });
-
-            const cleanMpdUrl = new URL(mpdUrl.origin + mpdUrl.pathname);
-
-            return {
-                streamType: 'drm',
-                videoData: {
-                    drmType: "ClearKey",
-                    key_strings: `--key ${keyid}:${key}`,
-                    keys: [`${keyid}:${key}`],
-                    pssh: pssh || "",
-                    url: cleanMpdUrl.toString()
-                },
-                signedParams: extractedParams
-            };
-        }
-        
-
-        function initializeConfig() {
-            try {
-                const config = getConfigFromUrl();
-                videoData = config.videoData;
-                signedParams = config.signedParams;
-                streamType = config.streamType;
-
-                if (streamType === 'live') {
-                    updateStatus(`Live HLS configuration loaded. URL: ${videoData.url.substring(0, 50)}...`);
-                } else {
-                    updateStatus(`DRM configuration loaded. MPD: ${videoData.url.substring(0, 50)}...`);
-                }
-                setTimeout(() => loadContent(), 1000);
-            } catch (err) {
-                showError(err.message);
-                updateStatus('Waiting for URL parameters...');
-            }
-        }
-
-        class SignedSegmentFilter {
-            constructor(signedParams) {
-                this.signedParams = signedParams;
-            }
-            apply(type, request) {
-                if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST || 
-                    type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
-                    const uri = new URL(request.uris[0]);
-                    Object.keys(this.signedParams).forEach(key => {
-                        uri.searchParams.set(key, this.signedParams[key]);
-                    });
-                    request.uris[0] = uri.toString();
-                    updateStatus(`${type} request with signed params: ${uri.pathname.split('/').pop()}`);
-                }
-                return request;
-            }
-        }
-
-        function initializePlayer() {
-            shaka.polyfill.installAll();
-            if (!shaka.Player.isBrowserSupported()) {
-                showError('Browser not supported for playback!');
-                return false;
-            }
-            player = new shaka.Player(video);
-            player.addEventListener('error', onPlayerError);
-
-            // Only configure DRM if it's a DRM stream
-            if (streamType === 'drm' && videoData.keys) {
-                player.configure({
-                    drm: {
-                        clearKeys: parseClearKeys(videoData.keys)
-                    }
-                });
-            }
-
-            // The network filter is still needed for signed URLs in both cases
-            const networkingEngine = player.getNetworkingEngine();
-            if (signedParams && Object.keys(signedParams).length > 0) {
-                 const signedFilter = new SignedSegmentFilter(signedParams);
-                 networkingEngine.registerRequestFilter((type, request) => signedFilter.apply(type, request));
-            }
-            return true;
-        }
-
-        function parseClearKeys(keys) {
-            const clearKeys = {};
-            keys.forEach(keyPair => {
-                const [keyId, key] = keyPair.split(':');
-                clearKeys[keyId] = key;
-            });
-            return clearKeys;
-        }
-
-        async function loadContent() {
-            if (!videoData) {
-                showError('No configuration found. Please provide required URL parameters.');
-                updateStatus('Configuration required');
-                return;
-            }
-            if (!player) {
-                if (!initializePlayer()) return;
-            }
-            try {
-                showLoading(true);
-                if (streamType === 'live') {
-                    updateStatus('Loading HLS live stream...');
-                } else {
-                    updateStatus('Loading DRM content with signed segment requests...');
-                }
-                await player.load(videoData.url);
-                showLoading(false);
-                updateStatus('Content loaded successfully!');
-                populateQualityOptions();
-            } catch (err) {
-                showLoading(false);
-                showError(`Failed to load content: ${err.message}`);
-                updateStatus('Failed to load content');
-            }
-        }
-        
-
-        function onPlayerError(event) {
-            showError('Player error: ' + event.detail.message);
-            updateStatus('Player error occurred');
-        }
-
-        function showLoading(show) {
-            loading.classList.toggle('show', show);
-        }
-
-        function showError(message) {
-            error.textContent = message;
-            error.classList.add('show');
-            clearTimeout(error.timeout);
-            error.timeout = setTimeout(() => {
-                error.classList.remove('show');
-            }, 5000);
-        }
-
-        function updateStatus(message) {
-            statusText.textContent = message;
-        }
-
-        // --- NEW CONTROL LOGIC ---
-
-        function togglePlayPause() {
-            if (video.paused || video.ended) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        }
-
-        function updatePlayPauseIcon() {
-            const icon = playPauseBtn.querySelector('i');
-            if (video.paused || video.ended) {
-                icon.classList.remove('fa-pause');
-                icon.classList.add('fa-play');
-            } else {
-                icon.classList.remove('fa-play');
-                icon.classList.add('fa-pause');
-            }
-        }
-        
-        function seek(seconds) {
-            video.currentTime += seconds;
-        }
-
-        function handleVolumeChange() {
-            video.volume = volumeSlider.value;
-            if (video.volume === 0) {
-                video.muted = true;
-            } else {
-                video.muted = false;
-            }
-        }
-        
-        function updateVolumeIcon() {
-            const icon = volumeBtn.querySelector('i');
-            icon.classList.remove('fa-volume-up', 'fa-volume-down', 'fa-volume-mute');
-            if (video.muted || video.volume === 0) {
-                icon.classList.add('fa-volume-mute');
-            } else if (video.volume < 0.5) {
-                icon.classList.add('fa-volume-down');
-            } else {
-                icon.classList.add('fa-volume-up');
-            }
-        }
-
-        function toggleMute() {
-            video.muted = !video.muted;
-            if(video.muted) {
-                 volumeSlider.value = 0;
-            } else {
-                 volumeSlider.value = video.volume > 0 ? video.volume : 1;
-            }
-             updateVolumeIcon();
-        }
-        
-        function updateProgress() {
-            const value = (video.currentTime / video.duration) * 100;
-            progressBar.value = value || 0;
-            
-            const thumbPosition = value / 100;
-            progressBar.style.background = `linear-gradient(to right, #ff0000 ${thumbPosition * 100}%, rgba(255, 255, 255, 0.4) ${thumbPosition * 100}%)`;
-
-
-            // Update time display
-            const currentTime = formatTime(video.currentTime);
-            const duration = formatTime(video.duration);
-            timeDisplay.textContent = `${currentTime} / ${duration}`;
-        }
-
-        function setProgress(e) {
-            const newTime = (e.target.value / 100) * video.duration;
-            video.currentTime = newTime;
-        }
-
-        function formatTime(time) {
-            if (isNaN(time)) return "00:00";
-            const date = new Date(null);
-            date.setSeconds(time);
-            const hours = date.getUTCHours();
-            const minutes = date.getUTCMinutes();
-            const seconds = date.getUTCSeconds();
-            
-
-            if(hours > 0) {
-                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            }
-            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-        }
-        
-        function togglePictureInPicture() {
-            if (document.pictureInPictureElement) {
-                document.exitPictureInPicture();
-            } else if (document.pictureInPictureEnabled) {
-                video.requestPictureInPicture();
-            }
-        }
-        
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                playerContainer.requestFullscreen().catch(err => {
-                    alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                });
-            } else {
-                document.exitFullscreen();
-            }
-        }
-        
-        function updateFullscreenIcon() {
-            const icon = fullscreenBtn.querySelector('i');
-            if (document.fullscreenElement) {
-                icon.classList.remove('fa-expand');
-                icon.classList.add('fa-compress');
-            } else {
-                icon.classList.remove('fa-compress');
-                icon.classList.add('fa-expand');
-            }
-        }
-        
-        function hideControls() {
-            if (video.paused) return;
-            controlsOverlay.classList.remove('visible');
-        }
-
-        function showControls() {
-            controlsOverlay.classList.add('visible');
-            clearTimeout(controlsTimeout);
-            controlsTimeout = setTimeout(hideControls, 3000);
-        }
-
-        // Settings functionality
-        function toggleSettingsMenu() {
-            settingsMenu.classList.toggle('show');
-        }
-
-        function handleSpeedChange() {
-            const speed = parseFloat(speedSelect.value);
-            video.playbackRate = speed;
-            updateStatus(`Playback speed changed to ${speed}x`);
-        }
-
-        function handleQualityChange() {
-            const quality = qualitySelect.value;
-            if (player && quality !== 'auto') {
-                const variants = player.getVariantTracks();
-                const selectedVariant = variants.find(variant => 
-                    variant.height === parseInt(quality)
-                );
-                if (selectedVariant) {
-                    player.selectVariantTrack(selectedVariant);
-                    updateStatus(`Quality changed to ${quality}p`);
-                }
-            } else if (player && quality === 'auto') {
-                player.selectVariantTrack(null);
-                updateStatus('Quality set to Auto');
-            }
-        }
-
-        function populateQualityOptions() {
-            if (!player) return;
-            
-            const variants = player.getVariantTracks();
-            const currentQuality = qualitySelect.value;
-            
-            // Clear existing options except Auto
-            qualitySelect.innerHTML = '<option value="auto" selected>Auto</option>';
-            
-            // Add quality options
-            const uniqueQualities = [...new Set(variants.map(v => v.height))].sort((a, b) => b - a);
-            uniqueQualities.forEach(height => {
-                const option = document.createElement('option');
-                option.value = height;
-                option.textContent = `${height}p`;
-                qualitySelect.appendChild(option);
-            });
-            
-            // Restore current selection if it still exists
-            if (currentQuality && uniqueQualities.includes(parseInt(currentQuality))) {
-                qualitySelect.value = currentQuality;
-            }
-        }
-        
 
         // Event Listeners for new controls
         playPauseBtn.addEventListener('click', togglePlayPause);
@@ -792,39 +482,78 @@
         video.addEventListener('play', updatePlayPauseIcon);
         video.addEventListener('pause', updatePlayPauseIcon);
         video.addEventListener('ended', updatePlayPauseIcon);
-        
+
         rewindBtn.addEventListener('click', () => seek(-10));
         forwardBtn.addEventListener('click', () => seek(10));
-        
+
         volumeBtn.addEventListener('click', toggleMute);
         volumeSlider.addEventListener('input', handleVolumeChange);
         video.addEventListener('volumechange', updateVolumeIcon);
-        
+
         video.addEventListener('timeupdate', updateProgress);
         video.addEventListener('loadedmetadata', updateProgress);
         progressBar.addEventListener('input', setProgress);
-        
+
         pipBtn.addEventListener('click', togglePictureInPicture);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
-        
+
         // Settings event listeners
         settingsBtn.addEventListener('click', toggleSettingsMenu);
         speedSelect.addEventListener('change', handleSpeedChange);
         qualitySelect.addEventListener('change', handleQualityChange);
-        
+
         // Close settings menu when clicking outside
         document.addEventListener('click', (e) => {
             if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
                 settingsMenu.classList.remove('show');
             }
         });
-        
-        videoWrapper.addEventListener('mousemove', showControls);
-        videoWrapper.addEventListener('mouseleave', () => {
-             if(!video.paused) {
-                 controlsTimeout = setTimeout(hideControls, 1000);
-             }
+
+        videoWrapper.addEventListener('mousemove', () => {
+            if (!video.paused) {
+                showControls();
+            }
+        });
+
+        video.addEventListener('play', () => {
+            showControls(); // Start hiding logic when video starts
+        });
+
+        video.addEventListener('pause', () => {
+            showControls(); // Keep controls visible when paused
+            clearTimeout(controlsTimeout); // Don’t auto-hide
+        });
+
+        function showControls() {
+            controlsOverlay.classList.add('visible');
+            clearTimeout(controlsTimeout);
+            if (!video.paused) {
+                controlsTimeout = setTimeout(() => {
+                    controlsOverlay.classList.remove('visible');
+                }, 3000); // 3 seconds
+            }
+        }
+
+
+        const backBtn = document.getElementById('back-btn');
+
+        backBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (document.fullscreenElement) {
+                // First exit fullscreen
+                try {
+                    await document.exitFullscreen();
+                    console.log("Exited fullscreen via back button");
+                } catch (err) {
+                    console.error("Error exiting fullscreen:", err);
+                }
+            } else {
+                // Not in fullscreen, go back
+                history.back();
+            }
         });
 
         // Initialize on page load
@@ -832,6 +561,10 @@
             initializeConfig();
             updateVolumeIcon();
         });
+
+
+
     </script>
 </body>
+
 </html>
