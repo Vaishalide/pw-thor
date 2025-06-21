@@ -915,6 +915,7 @@
         speedSelect.addEventListener('change', handleSpeedChange);
         qualitySelect.addEventListener('change', handleQualityChange);
 
+
         // Close settings menu when clicking outside
         document.addEventListener('click', (e) => {
             if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
@@ -967,6 +968,53 @@
                 history.back();
             }
         });
+
+        let isSeeking = false;
+
+// 🖱️ MOUSE EVENTS
+progressBar.addEventListener('mousedown', (e) => {
+    isSeeking = true;
+    e.stopPropagation(); // prevent video click
+});
+progressBar.addEventListener('mousemove', (e) => {
+    if (isSeeking && video.duration) {
+        const newTime = (e.target.value / 100) * video.duration;
+        video.currentTime = newTime;
+    }
+});
+progressBar.addEventListener('mouseup', (e) => {
+    if (video.duration) {
+        const newTime = (e.target.value / 100) * video.duration;
+        video.currentTime = newTime;
+    }
+    isSeeking = false;
+    e.stopPropagation();
+});
+
+// 📱 TOUCH EVENTS (for mobile)
+progressBar.addEventListener('touchstart', (e) => {
+    isSeeking = true;
+    e.stopPropagation();
+});
+progressBar.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    const rect = progressBar.getBoundingClientRect();
+    const percent = (touch.clientX - rect.left) / rect.width;
+    const clamped = Math.max(0, Math.min(1, percent));
+    const newTime = clamped * video.duration;
+    progressBar.value = clamped * 100;
+    video.currentTime = newTime;
+});
+progressBar.addEventListener('touchend', (e) => {
+    isSeeking = false;
+    e.stopPropagation();
+});
+
+// 👆 Prevent timeline clicks from toggling video
+progressBar.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
