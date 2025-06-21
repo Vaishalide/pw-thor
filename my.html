@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+   <meta charset="UTF-8" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://www.pw.live/favicon.ico" rel="icon"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-  <title>PW THOR</title>
-    </script>
+   </script>
 <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
     disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>PW THOR</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
@@ -200,7 +200,18 @@
     </div>
     <div class="grid" id="lectureContent"></div>
   </div>
-
+ <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
+    <button onclick="document.getElementById('popup').style.display='none'" 
+      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
+    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
+    <p id="popupText" style="margin: 15px 0;"></p>
+    <a id="popupLink" href="#" target="_blank" 
+       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
+       Join Telegram
+    </a>
+  </div>
+  
   <script>
     const API_BASE = "https://pw-api-75332756c41b.herokuapp.com";
     const overlay = document.getElementById("overlay");
@@ -216,7 +227,11 @@
     let viewStack = [];
     let allBatches = [];
     let currentLectureUrl = "";
-    
+
+function showLoader(show) {
+  overlay.style.display = show ? "flex" : "none";
+}
+
 
     function clearAll() {
       main.style.display = "none";
@@ -464,21 +479,8 @@
 
     loadBatches();
   </script>
-   <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
-    <button onclick="document.getElementById('popup').style.display='none'" 
-      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
-    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
-    <p id="popupText" style="margin: 15px 0;"></p>
-    <a id="popupLink" href="#" target="_blank" 
-       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
-       Join Telegram
-    </a>
-  </div>
-
   
-<script>
-  // Put popup.json at the same level as your index.html (for instance)
+  <script>
   fetch('/popup.json')
     .then(res => res.json())
     .then(popup => {
@@ -491,9 +493,30 @@
     })
     .catch(err => console.error('Error loading popup data:', err));
 </script>
-
-function showLoader(show) {
-  overlay.style.display = show ? "flex" : "none";
-}
+  <script>
+    // Disable right-click and DevTools (unchanged)
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function (event) {
+      if (
+        event.key === "F12" ||
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
+        (event.ctrlKey && event.key === 'U')
+      ) {
+        event.preventDefault();
+      }
+    });
+    (function() {
+      const element = new Image();
+      Object.defineProperty(element, 'id', {
+        get: function() {
+          document.location.href = 'about:blank';
+        }
+      });
+      console.log(element);
+    })();
+  </script>
+ <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+  </a>
 </body>
 </html>
