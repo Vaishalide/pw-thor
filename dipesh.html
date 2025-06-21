@@ -724,27 +724,28 @@
         }
 
         function updateProgress() {
-    if (isNaN(video.duration)) return;
+            const value = (video.currentTime / video.duration) * 100;
+            progressBar.value = value || 0;
 
-    const value = (video.currentTime / video.duration) * 100;
-    progressBar.value = value || 0;
+            const thumbPosition = value / 100;
+            progressBar.style.background = `linear-gradient(to right, #ff0000 ${thumbPosition * 100}%, rgba(255, 255, 255, 0.4) ${thumbPosition * 100}%)`;
 
-    const thumbPosition = value / 100;
-    progressBar.style.background = `linear-gradient(to right, #ff0000 ${thumbPosition * 100}%, rgba(255, 255, 255, 0.4) ${thumbPosition * 100}%)`;
 
-    // Update time display
-    const currentTime = formatTime(video.currentTime);
-    const duration = formatTime(video.duration);
-    timeDisplay.textContent = `${currentTime} / ${duration}`;
-}
-
+            // Update time display
+            const currentTime = formatTime(video.currentTime);
+            const duration = formatTime(video.duration);
+            timeDisplay.textContent = `${currentTime} / ${duration}`;
+        }
 
         function setProgress(e) {
-    if (!player || isNaN(video.duration)) return;
-    const newTime = (e.target.value / 100) * video.duration;
-    player.seek(newTime); // Shaka’s internal seek
-}
+            const percent = e.target.value;
+            const duration = video.duration;
+            console.log('Seek to %:', percent, 'Duration:', duration);
 
+            if (!isNaN(duration)) {
+                video.currentTime = (percent / 100) * duration;
+            }
+        }
 
         function formatTime(time) {
             if (isNaN(time)) return "00:00";
@@ -888,7 +889,15 @@
 
         // Event Listeners for new controls
         playPauseBtn.addEventListener('click', togglePlayPause);
-        video.addEventListener('click', togglePlayPause);
+        videoWrapper.addEventListener('click', (e) => {
+            const isClickInsideControls = e.target.closest('.controls-overlay');
+            const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON';
+
+            if (!isClickInsideControls || isInput) return;
+
+            togglePlayPause();
+        });
+
         video.addEventListener('play', updatePlayPauseIcon);
         video.addEventListener('pause', updatePlayPauseIcon);
         video.addEventListener('ended', updatePlayPauseIcon);
@@ -901,8 +910,36 @@
         video.addEventListener('volumechange', updateVolumeIcon);
 
         video.addEventListener('timeupdate', updateProgress);
-        video.addEventListener('loadedmetadata', updateProgress);
-        progressBar.addEventListener('input', setProgress);
+        video.addEventListener('loadedmetadata', () => {
+            updateProgress();
+            progressBar.max = 100; // keep as percentage
+        });
+
+        let isSeeking = false;
+
+        progressBar.addEventListener('mousedown', () => {
+            isSeeking = true;
+        });
+        progressBar.addEventListener('mouseup', (e) => {
+            isSeeking = false;
+            seekTo(e);
+        });
+        progressBar.addEventListener('change', seekTo); // for keyboard
+        progressBar.addEventListener('input', (e) => {
+            if (!isSeeking) {
+                seekTo(e);
+            }
+        });
+
+        function seekTo(e) {
+            const percent = parseFloat(e.target.value);
+            if (!isNaN(video.duration)) {
+                const newTime = (percent / 100) * video.duration;
+                console.log(`Seeking to: ${newTime}`);
+                video.currentTime = newTime;
+            }
+        }
+
 
         pipBtn.addEventListener('click', togglePictureInPicture);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
@@ -965,20 +1002,6 @@
                 history.back();
             }
         });
-
-        progressBar.addEventListener('input', setProgress);
-progressBar.addEventListener('change', setProgress);
-
-progressBar.addEventListener('click', (e) => {
-    e.stopPropagation(); // prevent accidental play/pause
-});
-
-function setProgress(e) {
-    if (isNaN(video.duration)) return;
-    const newTime = (e.target.value / 100) * video.duration;
-    video.currentTime = newTime;
-}
-
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', () => {
