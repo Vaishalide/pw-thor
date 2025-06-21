@@ -216,6 +216,7 @@
     let viewStack = [];
     let allBatches = [];
     let currentLectureUrl = "";
+    
  <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
       background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
     <button onclick="document.getElementById('popup').style.display='none'" 
@@ -228,8 +229,7 @@
     </a>
   </div>
 
-  <!-- …existing HTML popup markup (id="popup", popupImage, popupText, popupLink) … -->
-
+  
 <script>
   // Put popup.json at the same level as your index.html (for instance)
   fetch('/popup.json')
