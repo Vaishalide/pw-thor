@@ -145,6 +145,11 @@
             border: none;
         }
 
+        #progress-bar {
+            pointer-events: auto;
+        }
+
+
         .controls-row {
             display: flex;
             justify-content: space-between;
@@ -884,7 +889,13 @@
 
         // Event Listeners for new controls
         playPauseBtn.addEventListener('click', togglePlayPause);
-        video.addEventListener('click', togglePlayPause);
+        controlsOverlay.addEventListener('click', (e) => {
+            const clickedOnControl = e.target.closest('.control-btn') || e.target.closest('.settings-menu');
+            if (!clickedOnControl) {
+                togglePlayPause();
+            }
+        });
+
         video.addEventListener('play', updatePlayPauseIcon);
         video.addEventListener('pause', updatePlayPauseIcon);
         video.addEventListener('ended', updatePlayPauseIcon);
@@ -900,6 +911,7 @@
         video.addEventListener('loadedmetadata', updateProgress);
         progressBar.addEventListener('input', setProgress);
 
+
         pipBtn.addEventListener('click', togglePictureInPicture);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
@@ -908,6 +920,7 @@
         settingsBtn.addEventListener('click', toggleSettingsMenu);
         speedSelect.addEventListener('change', handleSpeedChange);
         qualitySelect.addEventListener('change', handleQualityChange);
+
 
         // Close settings menu when clicking outside
         document.addEventListener('click', (e) => {
@@ -967,7 +980,6 @@
             initializeConfig();
             updateVolumeIcon();
         });
-
 
 
     </script>
