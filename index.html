@@ -1,7 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+   <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://www.pw.live/favicon.ico" rel="icon"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+   </script>
+<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <title>PW THOR</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
@@ -111,6 +121,18 @@
       flex-wrap: wrap;
       width: 100%;
     }
+ .gear {
+  animation: gear-spin 1.5s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.5));
+}
+
+@keyframes gear-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
     .lecture-tabs button {
       background: #ffc107;
       border: none;
@@ -151,12 +173,19 @@
     }
   </style>
 </head>
-<body>
-  <div id="overlay" class="overlay">Loading player...</div>
-
-  <h1>PW THOR Batches</h1>
+<body> 
+ <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem;">
+    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="PW THOR Logo" style="height: 60px;" />
+    <h1 style="color: #ffc107; font-size: 2rem; margin: 0;">PW THOR</h1>
+  </div>
   <input type="text" id="searchInput" placeholder="Search batch by name..." />
-  <div class="loader" id="loader" style="display: none;"></div>
+<div id="overlay" class="overlay">
+  <svg class="gear" viewBox="0 0 100 100" width="80" height="80">
+    <path fill="#ffc107" d="M94 56.6v-13.2l-10.4-2.1c-.6-2-1.4-3.8-2.4-5.6l6-8.8-9.3-9.3-8.8 6c-1.8-1-3.6-1.8-5.6-2.4L56.6 6h-13.2l-2.1 10.4c-2 .6-3.8 1.4-5.6 2.4l-8.8-6-9.3 9.3 6 8.8c-1 1.8-1.8 3.6-2.4 5.6L6 43.4v13.2l10.4 2.1c.6 2 1.4 3.8 2.4 5.6l-6 8.8 9.3 9.3 8.8-6c1.8 1 3.6 1.8 5.6 2.4L43.4 94h13.2l2.1-10.4c2-.6 3.8-1.4 5.6-2.4l8.8 6 9.3-9.3-6-8.8c1-1.8 1.8-3.6 2.4-5.6L94 56.6zM50 66a16 16 0 1 1 0-32 16 16 0 0 1 0 32z"/>
+  </svg>
+</div>
+
+
   <div class="grid" id="main"></div>
   <div class="back-btn" id="backBtn" style="display:none;">← Back</div>
   <div class="today-classes-wrapper" id="todayWrapper" style="display: none;">
@@ -174,7 +203,18 @@
     </div>
     <div class="grid" id="lectureContent"></div>
   </div>
-
+ <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
+    <button onclick="document.getElementById('popup').style.display='none'" 
+      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
+    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
+    <p id="popupText" style="margin: 15px 0;"></p>
+    <a id="popupLink" href="#" target="_blank" 
+       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
+       Join Telegram
+    </a>
+  </div>
+  
   <script>
     const API_BASE = "https://pw-api-75332756c41b.herokuapp.com";
     const overlay = document.getElementById("overlay");
@@ -191,233 +231,46 @@
     let allBatches = [];
     let currentLectureUrl = "";
 
-    function showLoader(show) {
-      loader.style.display = show ? "block" : "none";
-    }
-
-    function clearAll() {
-      main.style.display = "none";
-      subjectsDiv.style.display = "none";
-      chaptersDiv.style.display = "none";
-      backBtn.style.display = viewStack.length ? "block" : "none";
-      todayWrapper.style.display = "none";
-      document.getElementById("lectureSection").style.display = "none";
-    }
-
-    function show(div) {
-      clearAll();
-      div.style.display = div.id === "lectureSection" ? "block" : "flex";
-    }
-
-    function appendCard(container, title, image, onClick) {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        ${image ? `<img src="${image}" alt="${title}" />` : ""}
-        <div class="card-title">${title}</div>
-      `;
-      div.onclick = onClick;
-      container.appendChild(div);
-    }
-
-    function _0x2ff2(_0x1bdc64,_0x421322){const _0x12efb6=_0x12ef();return _0x2ff2=function(_0x2ff2f4,_0x2a0478){_0x2ff2f4=_0x2ff2f4-0xdc;let _0x1989ef=_0x12efb6[_0x2ff2f4];return _0x1989ef;},_0x2ff2(_0x1bdc64,_0x421322);}(function(_0x78807e,_0x5ddf6c){const _0x4f59de=_0x2ff2,_0x4980c5=_0x78807e();while(!![]){try{const _0x377c85=-parseInt(_0x4f59de(0xde))/0x1+-parseInt(_0x4f59de(0xe7))/0x2+-parseInt(_0x4f59de(0xdd))/0x3*(parseInt(_0x4f59de(0xe0))/0x4)+-parseInt(_0x4f59de(0xe5))/0x5*(parseInt(_0x4f59de(0xdc))/0x6)+parseInt(_0x4f59de(0xe8))/0x7+-parseInt(_0x4f59de(0xe1))/0x8*(-parseInt(_0x4f59de(0xe6))/0x9)+parseInt(_0x4f59de(0xe2))/0xa;if(_0x377c85===_0x5ddf6c)break;else _0x4980c5['push'](_0x4980c5['shift']());}catch(_0x1102de){_0x4980c5['push'](_0x4980c5['shift']());}}}(_0x12ef,0xd878f));function _0x12ef(){const _0x1cbc00=['error','5fkDILd','3813606IJyngm','3535980bFZStZ','11901379yNfFgh','Failed\x20to\x20load\x20batches:','1380180JgnTYd','643221MXqWgo','1174901CVOKwU','json','4oQsYgW','8JBBIlW','21500680spZtCZ','/api/pw/batches'];_0x12ef=function(){return _0x1cbc00;};return _0x12ef();}async function loadBatches(){const _0x1ae428=_0x2ff2;showLoader(!![]);try{const _0x154898=await fetch(API_BASE+_0x1ae428(0xe3)),_0x8e595b=await _0x154898[_0x1ae428(0xdf)]();allBatches=_0x8e595b,renderBatches(_0x8e595b);}catch(_0xad16e3){console[_0x1ae428(0xe4)](_0x1ae428(0xe9),_0xad16e3);}finally{showLoader(![]);}}
-
-   (function(_0x5d5e2f,_0x437aa1){var _0x50b4e9=_0x3bf0,_0x351888=_0x5d5e2f();while(!![]){try{var _0x4ed0a1=-parseInt(_0x50b4e9(0x141))/0x1*(parseInt(_0x50b4e9(0x144))/0x2)+parseInt(_0x50b4e9(0x14a))/0x3+parseInt(_0x50b4e9(0x145))/0x4*(-parseInt(_0x50b4e9(0x148))/0x5)+parseInt(_0x50b4e9(0x140))/0x6+parseInt(_0x50b4e9(0x143))/0x7+-parseInt(_0x50b4e9(0x13f))/0x8*(-parseInt(_0x50b4e9(0x13d))/0x9)+parseInt(_0x50b4e9(0x13e))/0xa*(-parseInt(_0x50b4e9(0x14d))/0xb);if(_0x4ed0a1===_0x437aa1)break;else _0x351888['push'](_0x351888['shift']());}catch(_0x425f25){_0x351888['push'](_0x351888['shift']());}}}(_0x48d3,0xcd02e));function _0x3bf0(_0x2e5f67,_0x332846){var _0x48d341=_0x48d3();return _0x3bf0=function(_0x3bf00c,_0x4ea77c){_0x3bf00c=_0x3bf00c-0x13c;var _0x146605=_0x48d341[_0x3bf00c];return _0x146605;},_0x3bf0(_0x2e5f67,_0x332846);}function renderBatches(_0x2dc431){var _0x1875ec=_0x3bf0;main[_0x1875ec(0x146)]='',show(main),searchInput[_0x1875ec(0x14b)]['display']=_0x1875ec(0x149),_0x2dc431[_0x1875ec(0x142)](_0x45af0f=>{var _0x22413f=_0x1875ec;appendCard(main,_0x45af0f[_0x22413f(0x13c)],_0x45af0f[_0x22413f(0x14c)],()=>{var _0x5a21fc=_0x22413f;viewStack[_0x5a21fc(0x147)](()=>renderBatches(_0x2dc431)),loadSubjects(API_BASE+_0x45af0f['url'],_0x45af0f['url']);});});}function _0x48d3(){var _0x4b4ba1=['841846zlPyjm','4auwucV','innerHTML','push','13965oMmiae','block','3569094OmzzQH','style','image','123827jYgHsy','name','1773nYlJjg','1820XjyXgm','41960vrHKbS','6219948gJzWHB','2DEoMmm','forEach','3314626wiTWJL'];_0x48d3=function(){return _0x4b4ba1;};return _0x48d3();}
-
-    async function loadSubjects(subjectUrl, rawBatchUrl) {
-      showLoader(true);
-      subjectsDiv.innerHTML = "";
-      searchInput.style.display = "none";
-      try {
-        const res = await fetch(subjectUrl);
-        const subjects = await res.json();
-        show(subjectsDiv);
-        subjects.forEach(subject => {
-          appendCard(subjectsDiv, subject.name, null, () => {
-            viewStack.push(() => loadSubjects(subjectUrl, rawBatchUrl));
-            loadChapters(API_BASE + subject.url);
-          });
-        });
-
-        const todayRes = await fetch(`${API_BASE}/api/pw/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
-        const todayClasses = await todayRes.json();
-        todayWrapper.style.display = "block";
-        todayClassesDiv.innerHTML = todayClasses.length === 0
-          ? '<div style="color: gray; padding: 10px;">No live classes today.</div>'
-          : "";
-
-        todayClasses.forEach(cls => {
-          const card = document.createElement("div");
-          card.className = "today-card";
-          card.innerHTML = `
-            ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
-            <div class="today-card-title">${cls.title}</div>
-          `;
-          card.onclick = async () => {
-            const url = cls.url;
-            if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
-              window.open(url, "_blank");
-              return;
-            }
-            overlay.style.display = "flex";
-            try {
-              const res = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(url)}`);
-              const data = await res.json();
-              let query = "";
-
-             if (typeof data === "string") {
-  query = `?type=live&url=${encodeURIComponent(data)}`;
-} else if (typeof data === "object" && data.url && !data.keys) {
-  // Object with just a URL → live stream
-  query = `?type=live&url=${encodeURIComponent(data.url)}`;
-} else if (data.url && data.keys?.length) {
-  const [keyid, key] = data.keys[0].split(":");
-  query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
-  if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
-} else {
-  alert("Unsupported video format.");
-  return;
-}
-
-              window.location.href = `pwplayer.html${query}`;
-            } catch (err) {
-              console.error("Video load failed:", err);
-              alert("Failed to load video.");
-            } finally {
-              overlay.style.display = "none";
-            }
-          };
-          todayClassesDiv.appendChild(card);
-        });
-      } catch (err) {
-        console.error("Failed to load subjects or todayclass:", err);
-      } finally {
-        showLoader(false);
-      }
-    }
-
-    async function loadChapters(chapterUrl) {
-      showLoader(true);
-      chaptersDiv.innerHTML = "";
-      try {
-        const res = await fetch(chapterUrl);
-        const chapters = await res.json();
-        show(chaptersDiv);
-        chapters.forEach(ch => {
-          appendCard(chaptersDiv, ch.name, null, () => {
-            viewStack.push(() => loadChapters(chapterUrl));
-            loadLectures(API_BASE + ch.url);
-          });
-        });
-      } catch (err) {
-        console.error("Failed to load chapters:", err);
-      } finally {
-        showLoader(false);
-      }
-    }
-
-    function loadLectures(lectureUrl) {
-      currentLectureUrl = lectureUrl;
-      switchLectureTab('lectures');
-    }
-
-    function switchLectureTab(type) {
-      const apiMap = {
-        lectures: '/api/pw/lectures',
-        notes: '/api/pw/notes',
-        dppnotes: '/api/pw/dppnotes',
-        dpplecture: '/api/pw/dpplecture',
-      };
-
-      const replacements = {
-        notes: "/notes",
-        dppnotes: "/DppNotes",
-        dpplecture: "/DppVideos"
-      };
-
-      const chapterUrl = new URLSearchParams(currentLectureUrl.split("?")[1]).get("chapterId") || "";
-      const urlType = chapterUrl.replace("/videos", replacements[type] || "/videos");
-
-      ["lectures", "notes", "dppnotes", "dpplecture"].forEach(tab => {
-        document.getElementById("tab-" + tab).classList.remove("active");
-      });
-      document.getElementById("tab-" + type).classList.add("active");
-
-      const lectureContent = document.getElementById("lectureContent");
-      lectureContent.innerHTML = "";
-      showLoader(true);
-
-      fetch(`${API_BASE}${apiMap[type]}?chapterId=${encodeURIComponent(urlType)}`)
-        .then(res => res.json())
-        .then(items => {
-          show(document.getElementById("lectureSection"));
-          if (!items || items.length === 0) {
-            lectureContent.innerHTML = `<div style="color: gray; font-size: 1.1rem; margin-top: 20px; text-align: center;">No content found.</div>`;
-            return;
-          }
-
-          items.forEach(item => {
-            const div = document.createElement("div");
-            div.className = "card";
-            div.innerHTML = `
-              ${item.image || item.thumbnail ? `<img src="${item.image || item.thumbnail}" alt="${item.title}" />` : ""}
-              <div class="card-title">${item.title}</div>
-            `;
-            div.onclick = async () => {
-              const url = item.url;
-              if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
-                window.open(url, "_blank");
-                return;
-              }
-
-              overlay.style.display = "flex";
-              try {
-                const res = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(url)}`);
-                const data = await res.json();
-                let query = "";
-
-               if (typeof data === "string") {
-  query = `?type=live&url=${encodeURIComponent(data)}`;
-} else if (typeof data === "object" && data.url && !data.keys) {
-  // Object with just a URL → live stream
-  query = `?type=live&url=${encodeURIComponent(data.url)}`;
-} else if (data.url && data.keys?.length) {
-  const [keyid, key] = data.keys[0].split(":");
-  query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
-  if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
-} else {
-  alert("Unsupported video format.");
-  return;
-}
-                window.location.href = `pwplayer.html${query}`;
-              } catch (err) {
-                console.error("Video load failed:", err);
-                alert("Failed to load video.");
-              } finally {
-                overlay.style.display = "none";
-              }
-            };
-            lectureContent.appendChild(div);
-          });
-        })
-        .catch(err => console.error("Failed to load section:", err))
-        .finally(() => showLoader(false));
-    }
-
-    backBtn.onclick = () => {
-      if (viewStack.length) {
-        const lastView = viewStack.pop();
-        lastView();
-      }
-    };
-
-    searchInput.addEventListener("input", () => {
-      const keyword = searchInput.value.toLowerCase();
-      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
-      renderBatches(filtered);
-    });
-
-    loadBatches();
+const _0x52a439=_0x20ce;(function(_0x3dc48d,_0x4eb691){const _0x4a0a3d=_0x20ce,_0x44931b=_0x3dc48d();while(!![]){try{const _0x51fb01=parseInt(_0x4a0a3d(0xbe))/0x1+parseInt(_0x4a0a3d(0xb1))/0x2+-parseInt(_0x4a0a3d(0xed))/0x3*(parseInt(_0x4a0a3d(0xb9))/0x4)+parseInt(_0x4a0a3d(0xc1))/0x5*(-parseInt(_0x4a0a3d(0xba))/0x6)+parseInt(_0x4a0a3d(0xa1))/0x7+-parseInt(_0x4a0a3d(0xf0))/0x8+-parseInt(_0x4a0a3d(0xc7))/0x9*(-parseInt(_0x4a0a3d(0xca))/0xa);if(_0x51fb01===_0x4eb691)break;else _0x44931b['push'](_0x44931b['shift']());}catch(_0x58946d){_0x44931b['push'](_0x44931b['shift']());}}}(_0x7f20,0xd75d9));function _0x20ce(_0x5c19c4,_0x58063a){const _0x7f207c=_0x7f20();return _0x20ce=function(_0x20cea2,_0x5cd664){_0x20cea2=_0x20cea2-0x92;let _0x15cf25=_0x7f207c[_0x20cea2];return _0x15cf25;},_0x20ce(_0x5c19c4,_0x58063a);}function showLoader(_0x1e09df){const _0x55fcaa=_0x20ce;overlay[_0x55fcaa(0xd7)]['display']=_0x1e09df?'flex':'none';}function clearAll(){const _0xcd946e=_0x20ce;main[_0xcd946e(0xd7)][_0xcd946e(0x9f)]=_0xcd946e(0xee),subjectsDiv[_0xcd946e(0xd7)][_0xcd946e(0x9f)]=_0xcd946e(0xee),chaptersDiv[_0xcd946e(0xd7)][_0xcd946e(0x9f)]='none',backBtn[_0xcd946e(0xd7)]['display']=viewStack['length']?_0xcd946e(0xb4):_0xcd946e(0xee),todayWrapper[_0xcd946e(0xd7)]['display']=_0xcd946e(0xee),document[_0xcd946e(0xa8)](_0xcd946e(0x9e))[_0xcd946e(0xd7)][_0xcd946e(0x9f)]=_0xcd946e(0xee);}function show(_0x30f14a){const _0x4106f3=_0x20ce;clearAll(),_0x30f14a['style'][_0x4106f3(0x9f)]=_0x30f14a['id']===_0x4106f3(0x9e)?_0x4106f3(0xb4):'flex';}function appendCard(_0x18ebc8,_0x374487,_0x50e072,_0x227e3b){const _0x20f4cb=_0x20ce,_0x49dca9=document['createElement'](_0x20f4cb(0x97));_0x49dca9[_0x20f4cb(0x92)]=_0x20f4cb(0xb0),_0x49dca9[_0x20f4cb(0xec)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20'+(_0x50e072?_0x20f4cb(0xc2)+_0x50e072+_0x20f4cb(0x9d)+_0x374487+_0x20f4cb(0xc0):'')+_0x20f4cb(0xa7)+_0x374487+_0x20f4cb(0xd9),_0x49dca9['onclick']=_0x227e3b,_0x18ebc8[_0x20f4cb(0x98)](_0x49dca9);}async function loadBatches(){const _0x211a86=_0x20ce;showLoader(!![]);try{const _0x1a923a=await fetch(API_BASE+_0x211a86(0xad)),_0x5570ea=await _0x1a923a[_0x211a86(0xe2)]();allBatches=_0x5570ea,renderBatches(_0x5570ea);}catch(_0x222e25){console[_0x211a86(0x94)](_0x211a86(0xc5),_0x222e25);}finally{showLoader(![]);}}function renderBatches(_0x1b3d3b){const _0x36161c=_0x20ce;main[_0x36161c(0xec)]='',show(main),searchInput[_0x36161c(0xd7)][_0x36161c(0x9f)]=_0x36161c(0xb4),_0x1b3d3b['forEach'](_0x30d76e=>{const _0x336546=_0x36161c;appendCard(main,_0x30d76e[_0x336546(0xb3)],_0x30d76e['image'],()=>{const _0x15a90a=_0x336546;viewStack[_0x15a90a(0xab)](()=>renderBatches(_0x1b3d3b)),loadSubjects(API_BASE+_0x30d76e[_0x15a90a(0xcc)],_0x30d76e['url']);});});}async function loadSubjects(_0x156e05,_0x5d9f09){const _0xb54978=_0x20ce;showLoader(!![]),subjectsDiv['innerHTML']='',searchInput['style'][_0xb54978(0x9f)]=_0xb54978(0xee);try{const _0xd5b1d8=await fetch(_0x156e05),_0x35450a=await _0xd5b1d8['json']();show(subjectsDiv),_0x35450a[_0xb54978(0xbf)](_0x5d49d5=>{const _0x2877eb=_0xb54978;appendCard(subjectsDiv,_0x5d49d5[_0x2877eb(0xb3)],null,()=>{viewStack['push'](()=>loadSubjects(_0x156e05,_0x5d9f09)),loadChapters(API_BASE+_0x5d49d5['url']);});});const _0x1a916b=await fetch(API_BASE+_0xb54978(0xe8)+encodeURIComponent(decodeURIComponent(_0x5d9f09['split']('=')[0x1]))),_0x40ad3b=await _0x1a916b[_0xb54978(0xe2)]();todayWrapper[_0xb54978(0xd7)]['display']=_0xb54978(0xb4),todayClassesDiv[_0xb54978(0xec)]=_0x40ad3b[_0xb54978(0xdf)]===0x0?'<div\x20style=\x22color:\x20gray;\x20padding:\x2010px;\x22>No\x20live\x20classes\x20today.</div>':'',_0x40ad3b[_0xb54978(0xbf)](_0x27acaa=>{const _0xa755bb=_0xb54978,_0x124439=document[_0xa755bb(0xc8)](_0xa755bb(0x97));_0x124439['className']=_0xa755bb(0xa5),_0x124439['innerHTML']='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(_0x27acaa[_0xa755bb(0xa2)]?_0xa755bb(0xc2)+_0x27acaa['image']+_0xa755bb(0xda):'')+'\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22today-card-title\x22>'+_0x27acaa[_0xa755bb(0xc4)]+_0xa755bb(0x96),_0x124439[_0xa755bb(0xea)]=async()=>{const _0x40f307=_0xa755bb,_0x56a3ac=_0x27acaa[_0x40f307(0xcc)];if(_0x56a3ac[_0x40f307(0xd4)]('.pdf')||_0x56a3ac[_0x40f307(0xc9)]('youtube.com')||_0x56a3ac[_0x40f307(0xc9)](_0x40f307(0xbd))){window[_0x40f307(0xbb)](_0x56a3ac,_0x40f307(0x95));return;}overlay[_0x40f307(0xd7)]['display']='flex';try{const _0x2df53a=await fetch(API_BASE+_0x40f307(0xd5)+encodeURIComponent(_0x56a3ac)),_0x374117=await _0x2df53a[_0x40f307(0xe2)]();let _0x229af5='';if(typeof _0x374117===_0x40f307(0xc6))_0x229af5=_0x40f307(0xcb)+encodeURIComponent(_0x374117);else{if(typeof _0x374117==='object'&&_0x374117[_0x40f307(0xcc)]&&!_0x374117[_0x40f307(0x99)])_0x229af5=_0x40f307(0xcb)+encodeURIComponent(_0x374117[_0x40f307(0xcc)]);else{if(_0x374117[_0x40f307(0xcc)]&&_0x374117['keys']?.['length']){const [_0x3129e1,_0xf036ac]=_0x374117['keys'][0x0][_0x40f307(0xe0)](':');_0x229af5='?type=drm&url='+encodeURIComponent(_0x374117[_0x40f307(0xcc)])+_0x40f307(0x9c)+_0x3129e1+_0x40f307(0xf1)+_0xf036ac;if(_0x374117[_0x40f307(0xe9)])_0x229af5+=_0x40f307(0xb8)+encodeURIComponent(_0x374117['pssh']);}else{alert(_0x40f307(0xaf));return;}}}window[_0x40f307(0x9b)][_0x40f307(0xb6)]=_0x40f307(0xa6)+_0x229af5;}catch(_0x49b15b){console[_0x40f307(0x94)](_0x40f307(0xac),_0x49b15b),alert(_0x40f307(0xbc));}finally{overlay['style'][_0x40f307(0x9f)]=_0x40f307(0xee);}},todayClassesDiv[_0xa755bb(0x98)](_0x124439);});}catch(_0x2539b6){console['error'](_0xb54978(0xef),_0x2539b6);}finally{showLoader(![]);}}async function loadChapters(_0x4a4b06){const _0x25049c=_0x20ce;showLoader(!![]),chaptersDiv[_0x25049c(0xec)]='';try{const _0x31a51a=await fetch(_0x4a4b06),_0x3bc89a=await _0x31a51a['json']();show(chaptersDiv),_0x3bc89a[_0x25049c(0xbf)](_0x30df17=>{const _0x53f6bb=_0x25049c;appendCard(chaptersDiv,_0x30df17[_0x53f6bb(0xb3)],null,()=>{const _0x4b6534=_0x53f6bb;viewStack[_0x4b6534(0xab)](()=>loadChapters(_0x4a4b06)),loadLectures(API_BASE+_0x30df17[_0x4b6534(0xcc)]);});});}catch(_0x56b38a){console[_0x25049c(0x94)](_0x25049c(0x93),_0x56b38a);}finally{showLoader(![]);}}function _0x7f20(){const _0x4c8f54=['/api/pw/dpplecture','endsWith','/api/pw/video?url=','/api/pw/lectures','style','then','</div>\x0a\x20\x20\x20\x20\x20\x20','\x22\x20style=\x22width:\x20100%;\x20border-radius:\x206px;\x20margin-bottom:\x205px;\x22>','lectures','Failed\x20to\x20load\x20section:','get','/videos','length','split','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-title\x22>','json','finally','/DppNotes','add','classList','/notes','/api/pw/todayclass?batchId=','pssh','onclick','.pdf','innerHTML','588yXjvCO','none','Failed\x20to\x20load\x20subjects\x20or\x20todayclass:','10427904SydwiI','&key=','className','Failed\x20to\x20load\x20chapters:','error','_blank','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','div','appendChild','keys','input','location','&keyid=','\x22\x20alt=\x22','lectureSection','display','pwplayer.html','7072821DDByWZ','image','?type=drm&url=','active','today-card','xyz.html','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-title\x22>','getElementById','?chapterId=','value','push','Video\x20load\x20failed:','/api/pw/batches','thumbnail','Unsupported\x20video\x20format.','card','1261972qUZFKv','catch','name','block','chapterId','href','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','&pssh=','26252VsNjGY','6OUzWBy','open','Failed\x20to\x20load\x20video.','youtu.be','1674152eanuFk','forEach','\x22\x20/>','5293595UAKUNv','<img\x20src=\x22','pop','title','Failed\x20to\x20load\x20batches:','string','10936359wPFmUm','createElement','includes','10JnyZOE','?type=live&url=','url','lectureContent','addEventListener','tab-','youtube.com','toLowerCase','dpplecture'];_0x7f20=function(){return _0x4c8f54;};return _0x7f20();}function loadLectures(_0x43cea3){const _0x4e3a68=_0x20ce;currentLectureUrl=_0x43cea3,switchLectureTab(_0x4e3a68(0xdb));}function switchLectureTab(_0x2123c5){const _0x5d4408=_0x20ce,_0x4772f2={'lectures':_0x5d4408(0xd6),'notes':'/api/pw/notes','dppnotes':'/api/pw/dppnotes','dpplecture':_0x5d4408(0xd3)},_0x2fe68e={'notes':_0x5d4408(0xe7),'dppnotes':_0x5d4408(0xe4),'dpplecture':'/DppVideos'},_0x1ddf4e=new URLSearchParams(currentLectureUrl['split']('?')[0x1])[_0x5d4408(0xdd)](_0x5d4408(0xb5))||'',_0x35fcd6=_0x1ddf4e['replace'](_0x5d4408(0xde),_0x2fe68e[_0x2123c5]||_0x5d4408(0xde));['lectures','notes','dppnotes',_0x5d4408(0xd2)][_0x5d4408(0xbf)](_0x6bfde8=>{const _0x20625d=_0x5d4408;document[_0x20625d(0xa8)](_0x20625d(0xcf)+_0x6bfde8)[_0x20625d(0xe6)]['remove'](_0x20625d(0xa4));}),document[_0x5d4408(0xa8)](_0x5d4408(0xcf)+_0x2123c5)[_0x5d4408(0xe6)][_0x5d4408(0xe5)](_0x5d4408(0xa4));const _0x2ac126=document[_0x5d4408(0xa8)](_0x5d4408(0xcd));_0x2ac126[_0x5d4408(0xec)]='',showLoader(!![]),fetch(''+API_BASE+_0x4772f2[_0x2123c5]+_0x5d4408(0xa9)+encodeURIComponent(_0x35fcd6))[_0x5d4408(0xd8)](_0x383052=>_0x383052['json']())['then'](_0x45f7e4=>{const _0x3f4692=_0x5d4408;show(document[_0x3f4692(0xa8)](_0x3f4692(0x9e)));if(!_0x45f7e4||_0x45f7e4[_0x3f4692(0xdf)]===0x0){_0x2ac126['innerHTML']='<div\x20style=\x22color:\x20gray;\x20font-size:\x201.1rem;\x20margin-top:\x2020px;\x20text-align:\x20center;\x22>No\x20content\x20found.</div>';return;}_0x45f7e4['forEach'](_0x56d5f5=>{const _0x233d79=_0x3f4692,_0x5563bf=document[_0x233d79(0xc8)](_0x233d79(0x97));_0x5563bf['className']=_0x233d79(0xb0),_0x5563bf[_0x233d79(0xec)]='\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20'+(_0x56d5f5[_0x233d79(0xa2)]||_0x56d5f5[_0x233d79(0xae)]?_0x233d79(0xc2)+(_0x56d5f5[_0x233d79(0xa2)]||_0x56d5f5[_0x233d79(0xae)])+_0x233d79(0x9d)+_0x56d5f5['title']+_0x233d79(0xc0):'')+_0x233d79(0xe1)+_0x56d5f5[_0x233d79(0xc4)]+_0x233d79(0xb7),_0x5563bf['onclick']=async()=>{const _0x5e89b1=_0x233d79,_0x149853=_0x56d5f5['url'];if(_0x149853[_0x5e89b1(0xd4)](_0x5e89b1(0xeb))||_0x149853[_0x5e89b1(0xc9)](_0x5e89b1(0xd0))||_0x149853[_0x5e89b1(0xc9)](_0x5e89b1(0xbd))){window[_0x5e89b1(0xbb)](_0x149853,_0x5e89b1(0x95));return;}overlay[_0x5e89b1(0xd7)]['display']='flex';try{const _0x18c549=await fetch(API_BASE+_0x5e89b1(0xd5)+encodeURIComponent(_0x149853)),_0x9be41b=await _0x18c549[_0x5e89b1(0xe2)]();let _0x3c2b35='';if(typeof _0x9be41b===_0x5e89b1(0xc6))_0x3c2b35='?type=live&url='+encodeURIComponent(_0x9be41b);else{if(typeof _0x9be41b==='object'&&_0x9be41b[_0x5e89b1(0xcc)]&&!_0x9be41b[_0x5e89b1(0x99)])_0x3c2b35=_0x5e89b1(0xcb)+encodeURIComponent(_0x9be41b[_0x5e89b1(0xcc)]);else{if(_0x9be41b[_0x5e89b1(0xcc)]&&_0x9be41b['keys']?.[_0x5e89b1(0xdf)]){const [_0x1435bb,_0x1a78dc]=_0x9be41b[_0x5e89b1(0x99)][0x0][_0x5e89b1(0xe0)](':');_0x3c2b35=_0x5e89b1(0xa3)+encodeURIComponent(_0x9be41b[_0x5e89b1(0xcc)])+'&keyid='+_0x1435bb+_0x5e89b1(0xf1)+_0x1a78dc;if(_0x9be41b[_0x5e89b1(0xe9)])_0x3c2b35+='&pssh='+encodeURIComponent(_0x9be41b[_0x5e89b1(0xe9)]);}else{alert(_0x5e89b1(0xaf));return;}}}window[_0x5e89b1(0x9b)][_0x5e89b1(0xb6)]=_0x5e89b1(0xa0)+_0x3c2b35;}catch(_0x42379c){console[_0x5e89b1(0x94)](_0x5e89b1(0xac),_0x42379c),alert(_0x5e89b1(0xbc));}finally{overlay[_0x5e89b1(0xd7)][_0x5e89b1(0x9f)]='none';}},_0x2ac126[_0x233d79(0x98)](_0x5563bf);});})[_0x5d4408(0xb2)](_0x4d3f60=>console['error'](_0x5d4408(0xdc),_0x4d3f60))[_0x5d4408(0xe3)](()=>showLoader(![]));}backBtn[_0x52a439(0xea)]=()=>{const _0x4f0d4a=_0x52a439;if(viewStack[_0x4f0d4a(0xdf)]){const _0x36f86e=viewStack[_0x4f0d4a(0xc3)]();_0x36f86e();}},searchInput[_0x52a439(0xce)](_0x52a439(0x9a),()=>{const _0x45495a=_0x52a439,_0x3067db=searchInput[_0x45495a(0xaa)][_0x45495a(0xd1)](),_0x3c975d=allBatches['filter'](_0x534c3d=>_0x534c3d['name'][_0x45495a(0xd1)]()[_0x45495a(0xc9)](_0x3067db));renderBatches(_0x3c975d);}),loadBatches();
   </script>
+  
+  <script>
+  fetch('/popup.json')
+    .then(res => res.json())
+    .then(popup => {
+      if (popup.show) {
+        document.getElementById('popupImage').src = popup.image;
+        document.getElementById('popupText').textContent = popup.text;
+        document.getElementById('popupLink').href = popup.link;
+        document.getElementById('popup').style.display = 'block';
+      }
+    })
+    .catch(err => console.error('Error loading popup data:', err));
+</script>
+  <script>
+    // Disable right-click and DevTools (unchanged)
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function (event) {
+      if (
+        event.key === "F12" ||
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
+        (event.ctrlKey && event.key === 'U')
+      ) {
+        event.preventDefault();
+      }
+    });
+    (function() {
+      const element = new Image();
+      Object.defineProperty(element, 'id', {
+        get: function() {
+          document.location.href = 'about:blank';
+        }
+      });
+      console.log(element);
+    })();
+  </script>
+ <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
+  </a>
 </body>
 </html>
