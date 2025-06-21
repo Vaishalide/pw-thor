@@ -287,16 +287,20 @@
               const data = await res.json();
               let query = "";
 
-              if (typeof data === "string") {
-                query = `?type=live&url=${encodeURIComponent(data)}`;
-              } else if (data.url && data.keys?.length) {
-                const [keyid, key] = data.keys[0].split(":");
-                query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
-                if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
-              } else {
-                alert("Unsupported video format.");
-                return;
-              }
+             if (typeof data === "string") {
+  query = `?type=live&url=${encodeURIComponent(data)}`;
+} else if (typeof data === "object" && data.url && !data.keys) {
+  // Object with just a URL → live stream
+  query = `?type=live&url=${encodeURIComponent(data.url)}`;
+} else if (data.url && data.keys?.length) {
+  const [keyid, key] = data.keys[0].split(":");
+  query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
+  if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
+} else {
+  alert("Unsupported video format.");
+  return;
+}
+
               window.location.href = `pwplayer.html${query}`;
             } catch (err) {
               console.error("Video load failed:", err);
@@ -394,16 +398,19 @@
                 const data = await res.json();
                 let query = "";
 
-                if (typeof data === "string") {
-                  query = `?type=live&url=${encodeURIComponent(data)}`;
-                } else if (data.url && data.keys?.length) {
-                  const [keyid, key] = data.keys[0].split(":");
-                  query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
-                  if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
-                } else {
-                  alert("Unsupported video format.");
-                  return;
-                }
+               if (typeof data === "string") {
+  query = `?type=live&url=${encodeURIComponent(data)}`;
+} else if (typeof data === "object" && data.url && !data.keys) {
+  // Object with just a URL → live stream
+  query = `?type=live&url=${encodeURIComponent(data.url)}`;
+} else if (data.url && data.keys?.length) {
+  const [keyid, key] = data.keys[0].split(":");
+  query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
+  if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
+} else {
+  alert("Unsupported video format.");
+  return;
+}
                 window.location.href = `pwplayer.html${query}`;
               } catch (err) {
                 console.error("Video load failed:", err);
