@@ -2,7 +2,7 @@
 // API key aur destination URL define kar lete hain
 $apiKey = '2f15491d0c2b98eddcd7d9b32957df6088f00f90';
 $destinationUrl = 'https://pwthor.site/login-success.html';
-$alias = 'SDV_bots'; // Optional alias
+$alias = 'PW_thor'; // Optional alias
 
 // API URL ko prepare karte hain
 $apiUrl = "https://easysky.in/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
