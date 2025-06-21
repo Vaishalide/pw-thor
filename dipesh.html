@@ -738,13 +738,8 @@
         }
 
         function setProgress(e) {
-            const percent = e.target.value;
-            const duration = video.duration;
-            console.log('Seek to %:', percent, 'Duration:', duration);
-
-            if (!isNaN(duration)) {
-                video.currentTime = (percent / 100) * duration;
-            }
+            const newTime = (e.target.value / 100) * video.duration;
+            video.currentTime = newTime;
         }
 
         function formatTime(time) {
@@ -889,13 +884,11 @@
 
         // Event Listeners for new controls
         playPauseBtn.addEventListener('click', togglePlayPause);
-        videoWrapper.addEventListener('click', (e) => {
-            const isClickInsideControls = e.target.closest('.controls-overlay');
-            const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'BUTTON';
-
-            if (!isClickInsideControls || isInput) return;
-
-            togglePlayPause();
+        controlsOverlay.addEventListener('click', (e) => {
+            const clickedOnControl = e.target.closest('.control-btn') || e.target.closest('.settings-menu');
+            if (!clickedOnControl) {
+                togglePlayPause();
+            }
         });
 
         video.addEventListener('play', updatePlayPauseIcon);
@@ -910,36 +903,8 @@
         video.addEventListener('volumechange', updateVolumeIcon);
 
         video.addEventListener('timeupdate', updateProgress);
-        video.addEventListener('loadedmetadata', () => {
-            updateProgress();
-            progressBar.max = 100; // keep as percentage
-        });
-
-        let isSeeking = false;
-
-        progressBar.addEventListener('mousedown', () => {
-            isSeeking = true;
-        });
-        progressBar.addEventListener('mouseup', (e) => {
-            isSeeking = false;
-            seekTo(e);
-        });
-        progressBar.addEventListener('change', seekTo); // for keyboard
-        progressBar.addEventListener('input', (e) => {
-            if (!isSeeking) {
-                seekTo(e);
-            }
-        });
-
-        function seekTo(e) {
-            const percent = parseFloat(e.target.value);
-            if (!isNaN(video.duration)) {
-                const newTime = (percent / 100) * video.duration;
-                console.log(`Seeking to: ${newTime}`);
-                video.currentTime = newTime;
-            }
-        }
-
+        video.addEventListener('loadedmetadata', updateProgress);
+        progressBar.addEventListener('input', setProgress);
 
         pipBtn.addEventListener('click', togglePictureInPicture);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
