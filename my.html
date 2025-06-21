@@ -217,38 +217,6 @@
     let allBatches = [];
     let currentLectureUrl = "";
     
- <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
-    <button onclick="document.getElementById('popup').style.display='none'" 
-      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
-    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
-    <p id="popupText" style="margin: 15px 0;"></p>
-    <a id="popupLink" href="#" target="_blank" 
-       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
-       Join Telegram
-    </a>
-  </div>
-
-  
-<script>
-  // Put popup.json at the same level as your index.html (for instance)
-  fetch('/popup.json')
-    .then(res => res.json())
-    .then(popup => {
-      if (popup.show) {
-        document.getElementById('popupImage').src = popup.image;
-        document.getElementById('popupText').textContent = popup.text;
-        document.getElementById('popupLink').href = popup.link;
-        document.getElementById('popup').style.display = 'block';
-      }
-    })
-    .catch(err => console.error('Error loading popup data:', err));
-</script>
-
-function showLoader(show) {
-  overlay.style.display = show ? "flex" : "none";
-}
-
 
     function clearAll() {
       main.style.display = "none";
@@ -496,5 +464,36 @@ function showLoader(show) {
 
     loadBatches();
   </script>
+   <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
+    <button onclick="document.getElementById('popup').style.display='none'" 
+      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
+    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
+    <p id="popupText" style="margin: 15px 0;"></p>
+    <a id="popupLink" href="#" target="_blank" 
+       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
+       Join Telegram
+    </a>
+  </div>
+
+  
+<script>
+  // Put popup.json at the same level as your index.html (for instance)
+  fetch('/popup.json')
+    .then(res => res.json())
+    .then(popup => {
+      if (popup.show) {
+        document.getElementById('popupImage').src = popup.image;
+        document.getElementById('popupText').textContent = popup.text;
+        document.getElementById('popupLink').href = popup.link;
+        document.getElementById('popup').style.display = 'block';
+      }
+    })
+    .catch(err => console.error('Error loading popup data:', err));
+</script>
+
+function showLoader(show) {
+  overlay.style.display = show ? "flex" : "none";
+}
 </body>
 </html>
