@@ -724,23 +724,27 @@
         }
 
         function updateProgress() {
-            const value = (video.currentTime / video.duration) * 100;
-            progressBar.value = value || 0;
+    if (isNaN(video.duration)) return;
 
-            const thumbPosition = value / 100;
-            progressBar.style.background = `linear-gradient(to right, #ff0000 ${thumbPosition * 100}%, rgba(255, 255, 255, 0.4) ${thumbPosition * 100}%)`;
+    const value = (video.currentTime / video.duration) * 100;
+    progressBar.value = value || 0;
 
+    const thumbPosition = value / 100;
+    progressBar.style.background = `linear-gradient(to right, #ff0000 ${thumbPosition * 100}%, rgba(255, 255, 255, 0.4) ${thumbPosition * 100}%)`;
 
-            // Update time display
-            const currentTime = formatTime(video.currentTime);
-            const duration = formatTime(video.duration);
-            timeDisplay.textContent = `${currentTime} / ${duration}`;
-        }
+    // Update time display
+    const currentTime = formatTime(video.currentTime);
+    const duration = formatTime(video.duration);
+    timeDisplay.textContent = `${currentTime} / ${duration}`;
+}
+
 
         function setProgress(e) {
-            const newTime = (e.target.value / 100) * video.duration;
-            video.currentTime = newTime;
-        }
+    if (!player || isNaN(video.duration)) return;
+    const newTime = (e.target.value / 100) * video.duration;
+    player.seek(newTime); // Shaka’s internal seek
+}
+
 
         function formatTime(time) {
             if (isNaN(time)) return "00:00";
