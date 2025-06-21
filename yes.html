@@ -12,12 +12,10 @@
       margin: 0;
       padding: 20px;
     }
-
     h1 {
       color: #ffc107;
       text-align: center;
     }
-
     .grid {
       display: flex;
       flex-wrap: wrap;
@@ -25,7 +23,6 @@
       justify-content: center;
       margin-top: 20px;
     }
-
     .card {
       background: #1e2036;
       border-radius: 10px;
@@ -34,23 +31,19 @@
       cursor: pointer;
       transition: 0.3s;
     }
-
     .card:hover {
       background: #2a2e4b;
       transform: translateY(-5px);
     }
-
     .card img {
       width: 100%;
       border-radius: 10px;
     }
-
     .card-title {
       text-align: center;
       margin-top: 10px;
       font-weight: bold;
     }
-
     .loader {
       margin: 2rem auto;
       border: 6px solid #333;
@@ -60,12 +53,10 @@
       height: 60px;
       animation: spin 1s linear infinite;
     }
-
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
     .back-btn {
       margin: 10px 0;
       display: block;
@@ -73,7 +64,6 @@
       color: #ffc107;
       cursor: pointer;
     }
-
     input[type="text"] {
       padding: 10px;
       width: 80%;
@@ -82,17 +72,14 @@
       border-radius: 5px;
       border: none;
     }
-
     .today-classes-wrapper {
       margin: 10px 0;
     }
-
     .today-classes-title {
       color: #ffc107;
       font-size: 1.2rem;
       margin: 0 0 10px 10px;
     }
-
     .today-classes-container {
       overflow-x: auto;
       white-space: nowrap;
@@ -100,7 +87,6 @@
       background: #1a1c2d;
       border-radius: 10px;
     }
-
     .today-card {
       display: inline-block;
       background: #26294d;
@@ -111,13 +97,11 @@
       vertical-align: top;
       cursor: pointer;
     }
-
     .today-card-title {
       font-weight: bold;
       margin-bottom: 5px;
       white-space: normal;
     }
-
     .lecture-tabs {
       display: flex;
       justify-content: center;
@@ -127,7 +111,6 @@
       flex-wrap: wrap;
       width: 100%;
     }
-
     .lecture-tabs button {
       background: #ffc107;
       border: none;
@@ -137,12 +120,10 @@
       cursor: pointer;
       white-space: nowrap;
     }
-
     .lecture-tabs button.active {
       background: #e0a800;
       color: white;
     }
-
     #lectureSection button {
       background: #ffc107;
       border: none;
@@ -152,12 +133,10 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     #lectureSection button.active {
       background: #e0a800;
       color: white;
     }
-
     .overlay {
       position: fixed;
       inset: 0;
@@ -186,7 +165,6 @@
   </div>
   <div class="grid" id="subjects" style="display: none;"></div>
   <div class="grid" id="chapters" style="display: none;"></div>
-
   <div id="lectureSection" style="display:none;">
     <div class="lecture-tabs">
       <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
@@ -200,7 +178,6 @@
   <script>
     const API_BASE = "https://testing-453c50579f45.herokuapp.com";
     const overlay = document.getElementById("overlay");
-    const lectureContent = document.getElementById("lectureContent");
     const main = document.getElementById("main");
     const subjectsDiv = document.getElementById("subjects");
     const chaptersDiv = document.getElementById("chapters");
@@ -298,48 +275,38 @@
             ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
             <div class="today-card-title">${cls.title}</div>
           `;
-         todayClasses.forEach(cls => {
-  const card = document.createElement("div");
-  card.className = "today-card";
-  card.innerHTML = `
-    ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
-    <div class="today-card-title">${cls.title}</div>
-  `;
-  card.onclick = async () => {
-    const url = cls.url;
-    if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
-      window.open(url, "_blank");
-      return;
-    }
+          card.onclick = async () => {
+            const url = cls.url;
+            if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
+              window.open(url, "_blank");
+              return;
+            }
+            overlay.style.display = "flex";
+            try {
+              const res = await fetch(`${API_BASE}/api/proxy/video?url=${encodeURIComponent(url)}`);
+              const data = await res.json();
+              let query = "";
 
-    overlay.style.display = "flex";
-    try {
-      const res = await fetch(`${API_BASE}/api/proxy/video?url=${encodeURIComponent(url)}`);
-      const data = await res.json();
-      let query = "";
-
-      if (typeof data === "string") {
-        query = `?type=live&url=${encodeURIComponent(data)}`;
-      } else if (data.url && data.keys?.length) {
-        const [keyid, key] = data.keys[0].split(":");
-        query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
-        if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
-      } else {
-        alert("Unsupported video format.");
-        return;
-      }
-
-      window.location.href = `pwplayer.html${query}`;
-    } catch (err) {
-      console.error("Video load failed:", err);
-      alert("Failed to load video.");
-    } finally {
-      overlay.style.display = "none";
-    }
-  };
-  todayClassesDiv.appendChild(card);
-});
-
+              if (typeof data === "string") {
+                query = `?type=live&url=${encodeURIComponent(data)}`;
+              } else if (data.url && data.keys?.length) {
+                const [keyid, key] = data.keys[0].split(":");
+                query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
+                if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
+              } else {
+                alert("Unsupported video format.");
+                return;
+              }
+              window.location.href = `pwplayer.html${query}`;
+            } catch (err) {
+              console.error("Video load failed:", err);
+              alert("Failed to load video.");
+            } finally {
+              overlay.style.display = "none";
+            }
+          };
+          todayClassesDiv.appendChild(card);
+        });
       } catch (err) {
         console.error("Failed to load subjects or todayclass:", err);
       } finally {
@@ -394,6 +361,7 @@
       });
       document.getElementById("tab-" + type).classList.add("active");
 
+      const lectureContent = document.getElementById("lectureContent");
       lectureContent.innerHTML = "";
       showLoader(true);
 
@@ -436,7 +404,6 @@
                   alert("Unsupported video format.");
                   return;
                 }
-
                 window.location.href = `pwplayer.html${query}`;
               } catch (err) {
                 console.error("Video load failed:", err);
