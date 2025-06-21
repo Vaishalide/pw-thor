@@ -86,7 +86,7 @@
 
     const data = { destinationUrl, alias };
 
-    fetch('generate-url.php', {
+    fetch('https://pwthor.ct.ws/generate-url.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
