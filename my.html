@@ -111,17 +111,22 @@
       flex-wrap: wrap;
       width: 100%;
     }
-    .spinner {
-  width: 64px;
-  height: 64px;
-  border: 6px solid #888;
-  border-top: 6px solid #ffc107;
+   .gear-spinner {
+  width: 60px;
+  height: 60px;
+  background:
+    conic-gradient(#ffc107 10deg, transparent 10deg 30deg, #888 30deg 40deg, transparent 40deg 60deg),
+    conic-gradient(#ffc107 10deg, transparent 10deg 30deg, #888 30deg 40deg, transparent 40deg 60deg);
+  background-size: 100% 100%, 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 50%;
   animation: spin 1s linear infinite;
+  position: relative;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 
               0 0 20px rgba(255, 215, 0, 0.3);
-  background: radial-gradient(circle, #2c2f3a 0%, #1a1c22 100%);
 }
+
 
     .lecture-tabs button {
       background: #ffc107;
@@ -167,7 +172,7 @@
   <h1>PW THOR</h1>
   <input type="text" id="searchInput" placeholder="Search batch by name..." />
  <div id="overlay" class="overlay">
-  <div class="spinner"></div>
+  <div class="gear-spinner"></div>
 </div>
 
   <div class="grid" id="main"></div>
