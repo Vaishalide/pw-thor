@@ -5,7 +5,7 @@ $destinationUrl = 'https://pwthor.site/login-success.html';
 $alias = 'pw_thor'; // Optional alias
 
 // API URL ko prepare karte hain
-$apiUrl = "https://easysky.in/api?api=$apiKey" . urlencode($destinationUrl) . "&alias=$alias&format=json";
+$apiUrl = "https://easysky.in/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
 
 // cURL se API call karte hain
 $ch = curl_init();
