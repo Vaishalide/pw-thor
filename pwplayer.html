@@ -241,6 +241,62 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Settings Menu Styles */
+        .settings-menu {
+            position: absolute;
+            bottom: 80px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 200px;
+            display: none;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .settings-menu.show {
+            display: block;
+        }
+
+        .settings-item {
+            margin-bottom: 15px;
+        }
+
+        .settings-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            display: block;
+            color: #fff;
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .settings-select {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: #fff;
+            padding: 8px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .settings-select:focus {
+            outline: none;
+            border-color: #ff0000;
+        }
+
+        .settings-select option {
+            background: #333;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -254,6 +310,7 @@
                 <div class="spinner"></div>
                 Loading DRM content...
             </div>
+            
 
             <div class="controls-overlay">
                 <div class="top-bar">
@@ -261,7 +318,6 @@
                     <div class="spacer"></div>
                     <button id="menu-btn" class="control-btn"><i class="fas fa-ellipsis-v"></i></button>
                 </div>
-                
 
                 <div class="bottom-bar">
                     <div class="progress-bar-wrapper">
@@ -279,10 +335,34 @@
                         </div>
                         <div class="right-controls">
                             <span id="time-display" class="time-display">00:00 / 00:00</span>
+                            <button id="settings-btn" class="control-btn"><i class="fas fa-cog"></i></button>
                             <button id="pip-btn" class="control-btn"><i class="fas fa-clone"></i></button>
                             <button id="fullscreen-btn" class="control-btn"><i class="fas fa-expand"></i></button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Settings Menu -->
+            <div class="settings-menu" id="settings-menu">
+                <div class="settings-item">
+                    <label class="settings-label">Playback Speed</label>
+                    <select class="settings-select" id="speed-select">
+                        <option value="0.25">0.25x</option>
+                        <option value="0.5">0.5x</option>
+                        <option value="0.75">0.75x</option>
+                        <option value="1" selected>1x (Normal)</option>
+                        <option value="1.25">1.25x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="1.75">1.75x</option>
+                        <option value="2">2x</option>
+                    </select>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">Quality</label>
+                    <select class="settings-select" id="quality-select">
+                        <option value="auto" selected>Auto</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -304,6 +384,7 @@
         const loading = document.getElementById('loading');
         const error = document.getElementById('error');
         const statusText = document.getElementById('statusText');
+        
 
         // New Controls
         const controlsOverlay = document.querySelector('.controls-overlay');
@@ -316,6 +397,10 @@
         const timeDisplay = document.getElementById('time-display');
         const pipBtn = document.getElementById('pip-btn');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsMenu = document.getElementById('settings-menu');
+        const speedSelect = document.getElementById('speed-select');
+        const qualitySelect = document.getElementById('quality-select');
 
         let player = null;
         let videoData = null;
@@ -338,7 +423,6 @@
             const pssh = getUrlParameter('pssh');
 
             console.log('URL Parameters:', { type, url, keyid, key, pssh });
-            
 
             if (!url) {
                 throw new Error('Missing required parameter: url is required!');
@@ -394,6 +478,7 @@
                 signedParams: extractedParams
             };
         }
+        
 
         function initializeConfig() {
             try {
@@ -440,7 +525,6 @@
             }
             player = new shaka.Player(video);
             player.addEventListener('error', onPlayerError);
-            
 
             // Only configure DRM if it's a DRM stream
             if (streamType === 'drm' && videoData.keys) {
@@ -488,12 +572,14 @@
                 await player.load(videoData.url);
                 showLoading(false);
                 updateStatus('Content loaded successfully!');
+                populateQualityOptions();
             } catch (err) {
                 showLoading(false);
                 showError(`Failed to load content: ${err.message}`);
                 updateStatus('Failed to load content');
             }
         }
+        
 
         function onPlayerError(event) {
             showError('Player error: ' + event.detail.message);
@@ -541,7 +627,6 @@
         function seek(seconds) {
             video.currentTime += seconds;
         }
-        
 
         function handleVolumeChange() {
             video.volume = volumeSlider.value;
@@ -600,6 +685,7 @@
             const hours = date.getUTCHours();
             const minutes = date.getUTCMinutes();
             const seconds = date.getUTCSeconds();
+            
 
             if(hours > 0) {
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -646,6 +732,58 @@
             clearTimeout(controlsTimeout);
             controlsTimeout = setTimeout(hideControls, 3000);
         }
+
+        // Settings functionality
+        function toggleSettingsMenu() {
+            settingsMenu.classList.toggle('show');
+        }
+
+        function handleSpeedChange() {
+            const speed = parseFloat(speedSelect.value);
+            video.playbackRate = speed;
+            updateStatus(`Playback speed changed to ${speed}x`);
+        }
+
+        function handleQualityChange() {
+            const quality = qualitySelect.value;
+            if (player && quality !== 'auto') {
+                const variants = player.getVariantTracks();
+                const selectedVariant = variants.find(variant => 
+                    variant.height === parseInt(quality)
+                );
+                if (selectedVariant) {
+                    player.selectVariantTrack(selectedVariant);
+                    updateStatus(`Quality changed to ${quality}p`);
+                }
+            } else if (player && quality === 'auto') {
+                player.selectVariantTrack(null);
+                updateStatus('Quality set to Auto');
+            }
+        }
+
+        function populateQualityOptions() {
+            if (!player) return;
+            
+            const variants = player.getVariantTracks();
+            const currentQuality = qualitySelect.value;
+            
+            // Clear existing options except Auto
+            qualitySelect.innerHTML = '<option value="auto" selected>Auto</option>';
+            
+            // Add quality options
+            const uniqueQualities = [...new Set(variants.map(v => v.height))].sort((a, b) => b - a);
+            uniqueQualities.forEach(height => {
+                const option = document.createElement('option');
+                option.value = height;
+                option.textContent = `${height}p`;
+                qualitySelect.appendChild(option);
+            });
+            
+            // Restore current selection if it still exists
+            if (currentQuality && uniqueQualities.includes(parseInt(currentQuality))) {
+                qualitySelect.value = currentQuality;
+            }
+        }
         
 
         // Event Listeners for new controls
@@ -669,6 +807,18 @@
         pipBtn.addEventListener('click', togglePictureInPicture);
         fullscreenBtn.addEventListener('click', toggleFullscreen);
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        
+        // Settings event listeners
+        settingsBtn.addEventListener('click', toggleSettingsMenu);
+        speedSelect.addEventListener('change', handleSpeedChange);
+        qualitySelect.addEventListener('change', handleQualityChange);
+        
+        // Close settings menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+                settingsMenu.classList.remove('show');
+            }
+        });
         
         videoWrapper.addEventListener('mousemove', showControls);
         videoWrapper.addEventListener('mouseleave', () => {
