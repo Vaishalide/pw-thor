@@ -111,6 +111,18 @@
       flex-wrap: wrap;
       width: 100%;
     }
+    .spinner {
+  width: 64px;
+  height: 64px;
+  border: 6px solid #888;
+  border-top: 6px solid #ffc107;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 
+              0 0 20px rgba(255, 215, 0, 0.3);
+  background: radial-gradient(circle, #2c2f3a 0%, #1a1c22 100%);
+}
+
     .lecture-tabs button {
       background: #ffc107;
       border: none;
@@ -156,7 +168,10 @@
 
   <h1>PW THOR Batches</h1>
   <input type="text" id="searchInput" placeholder="Search batch by name..." />
-  <div class="loader" id="loader" style="display: none;"></div>
+ <div id="overlay" class="overlay">
+  <div class="spinner"></div>
+</div>
+
   <div class="grid" id="main"></div>
   <div class="back-btn" id="backBtn" style="display:none;">← Back</div>
   <div class="today-classes-wrapper" id="todayWrapper" style="display: none;">
@@ -191,9 +206,10 @@
     let allBatches = [];
     let currentLectureUrl = "";
 
-    function showLoader(show) {
-      loader.style.display = show ? "block" : "none";
-    }
+function showLoader(show) {
+  overlay.style.display = show ? "flex" : "none";
+}
+
 
     function clearAll() {
       main.style.display = "none";
