@@ -1,53 +1,27 @@
 <?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-header('Content-Type: application/json');
+// API key aur destination URL define kar lete hain
+$apiKey = '2f15491d0c2b98eddcd7d9b32957df6088f00f90';
+$destinationUrl = 'https://pwthor.site/login-success.html';
+$alias = 'SDV_bots'; // Optional alias
 
-// === CONFIGURATION ===
-$shortenerApiKey = '2f15491d0c2b98eddcd7d9b32957df6088f00f90';
-$storageDir = '/tmp/';
+// API URL ko prepare karte hain
+$apiUrl = "https://easysky.in/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(["error" => "Invalid request method"]);
-    exit;
-}
-
-// ✅ Accept JSON input manually
-if (isset($_SERVER["CONTENT_TYPE"]) && strpos($_SERVER["CONTENT_TYPE"], "application/json") !== false) {
-    $jsonInput = file_get_contents('php://input');
-    $jsonData = json_decode($jsonInput, true);
-    $_POST = $jsonData ?? [];
-}
-
-$destinationUrl = $_POST['destinationUrl'] ?? null;
-$alias = $_POST['alias'] ?? 'pwthor';
-
-if (!$destinationUrl) {
-    echo json_encode(["error" => "No file or content provided"]);
-    exit;
-}
-
-// === STEP: Call EasySky URL shortener API ===
-$encodedUrl = urlencode($destinationUrl);
-$apiUrl = "https://easysky.in/api?api=$shortenerApiKey&url=$encodedUrl&alias=$alias&format=json";
-
+// cURL se API call karte hain
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 $response = curl_exec($ch);
 curl_close($ch);
 
+// Response ko JSON format mein parse karte hain
 $data = json_decode($response, true);
 
-if (isset($data['status']) && $data['status'] === 'success') {
-    echo json_encode([
-        "success" => true,
-        "shortenedUrl" => $data['shortenedUrl'],
-        "originalUrl" => $destinationUrl
-    ]);
+if ($data['status'] === 'success') {
+    // Agar success ho to short URL return karo
+    echo json_encode(['shortenedUrl' => $data['shortenedUrl']]);
 } else {
-    echo json_encode([
-        "error" => "Shortening failed",
-        "api_response" => $data
-    ]);
+    // Error message return karo
+    echo json_encode(['error' => 'URL generation failed']);
 }
+?>
