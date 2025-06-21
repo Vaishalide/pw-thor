@@ -44,6 +44,13 @@
       margin-top: 10px;
       font-weight: bold;
     }
+    body {
+      background: #0e0f1b;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
     .loader {
       margin: 2rem auto;
       border: 6px solid #333;
@@ -132,6 +139,18 @@
   background: #e0a800;
   color: white;
 }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffc107;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      z-index: 9999;
+      display: none;
+    }
     .today-card-title {
       font-weight: bold;
       margin-bottom: 5px;
@@ -153,6 +172,8 @@
   </style>
 </head>
 <body>
+  <div id="overlay" class="overlay">Loading player...</div>
+
   <h1>PW THOR Batches</h1>
   <input type="text" id="searchInput" placeholder="Search batch by name..." />
   <div class="loader" id="loader" style="display: none;"></div>
@@ -166,18 +187,19 @@
   <div class="grid" id="chapters" style="display: none;"></div>
 
   <div id="lectureSection" style="display:none;">
-  <div class="lecture-tabs">
-    <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
-    <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
-    <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
-    <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+    <div class="lecture-tabs">
+      <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
+      <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
+      <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
+      <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+    </div>
+    <div class="grid" id="lectureContent"></div>
   </div>
-  <div class="grid" id="lectureContent"></div>
-</div>
-
 
   <script>
     const API_BASE = "https://testing-453c50579f45.herokuapp.com";
+    const overlay = document.getElementById("overlay");
+
     const main = document.getElementById("main");
     const subjectsDiv = document.getElementById("subjects");
     const chaptersDiv = document.getElementById("chapters");
@@ -205,14 +227,13 @@
     }
 
     function show(div) {
-  clearAll();
-  if (div.id === "lectureSection") {
-    div.style.display = "block"; // 🛠️ stack tabs + grid vertically
-  } else {
-    div.style.display = "flex";  // default for grid layouts
-  }
-}
-
+      clearAll();
+      if (div.id === "lectureSection") {
+        div.style.display = "block";
+      } else {
+        div.style.display = "flex";
+      }
+    }
 
     function appendCard(container, title, image, onClick) {
       const div = document.createElement("div");
@@ -330,7 +351,6 @@
       lectureContent.innerHTML = "";
       showLoader(true);
 
-      // Tab active highlight
       ["lectures", "notes", "dppnotes", "dpplecture"].forEach(tab => {
         document.getElementById("tab-" + tab).classList.remove("active");
       });
@@ -342,7 +362,6 @@
         dpplecture: "/DppVideos"
       };
 
-      // ✅ Proper URL decode & replace
       const chapterUrl = new URLSearchParams(currentLectureUrl.split("?")[1]).get("chapterId") || "";
       const urlType = chapterUrl.replace("/videos", replacements[type] || "/videos");
 
@@ -351,27 +370,52 @@
         .then(items => {
           show(document.getElementById("lectureSection"));
           if (!items || items.length === 0) {
-  const msg = {
-    lectures: "No lectures found.",
-    notes: "No notes found.",
-    dppnotes: "No DPPs found.",
-    dpplecture: "No DPP lectures found."
-  }[type] || "No content found.";
+            const msg = {
+              lectures: "No lectures found.",
+              notes: "No notes found.",
+              dppnotes: "No DPPs found.",
+              dpplecture: "No DPP lectures found."
+            }[type] || "No content found.";
 
-  lectureContent.innerHTML = `<div style="color: gray; font-size: 1.1rem; margin-top: 20px; text-align: center;">${msg}</div>`;
-} else {
-  items.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      ${item.image || item.thumbnail ? `<img src="${item.image || item.thumbnail}" alt="${item.title}" />` : ""}
-      <div class="card-title">${item.title}</div>
-    `;
-    div.onclick = () => window.open(item.url, '_blank');
-    lectureContent.appendChild(div);
-  });
-}
+            lectureContent.innerHTML = `<div style="color: gray; font-size: 1.1rem; margin-top: 20px; text-align: center;">${msg}</div>`;
+          } else {
+            items.forEach(item => {
+              const div = document.createElement("div");
+              div.className = "card";
+              div.innerHTML = `
+                ${item.image || item.thumbnail ? `<img src="${item.image || item.thumbnail}" alt="${item.title}" />` : ""}
+                <div class="card-title">${item.title}</div>
+              `;
+              div.onclick = async () => {
+                overlay.style.display = "flex";
+                try {
+                  const res = await fetch(`${API_BASE}/api/proxy/video?url=${encodeURIComponent(item.url)}`);
+                  const data = await res.json();
+                  let query = "";
 
+                  if (typeof data === "string") {
+                    query = `?type=live&url=${encodeURIComponent(data)}`;
+                  } else if (data.url && data.keys && data.keys.length > 0) {
+                    const [keyid, key] = data.keys[0].split(":");
+                    query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
+                    if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
+                  } else {
+                    alert("Unsupported video format.");
+                    overlay.style.display = "none";
+                    return;
+                  }
+
+                  window.location.href = `pwplayer.html${query}`;
+                } catch (err) {
+                  console.error("Video load failed:", err);
+                  alert("Failed to load video.");
+                } finally {
+                  overlay.style.display = "none";
+                }
+              };
+              lectureContent.appendChild(div);
+            });
+          }
         })
         .catch(err => console.error("Failed to load section:", err))
         .finally(() => showLoader(false));
@@ -391,6 +435,9 @@
     });
 
     loadBatches();
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>
