@@ -1,11 +1,11 @@
 <?php
 // API key aur destination URL define kar lete hain
-$apiKey = 'c5c905fcda3a5b7420b87d578de49d4e5fe05892';
+$apiKey = '2f15491d0c2b98eddcd7d9b32957df6088f00f90';
 $destinationUrl = 'https://pwthor.site/login-success.html';
 $alias = 'PW_thor'; // Optional alias
 
 // API URL ko prepare karte hain
-$apiUrl = "https://pocolinks.com/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
+$apiUrl = "https://easysky.in/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
 
 // cURL se API call karte hain
 $ch = curl_init();
