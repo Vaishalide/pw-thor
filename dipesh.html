@@ -58,14 +58,27 @@
             flex-direction: column;
             justify-content: space-between;
             opacity: 0;
+            /* <--- start hidden */
             transition: opacity 0.3s ease;
             z-index: 2;
         }
 
-        .video-wrapper:hover .controls-overlay,
+
+
+        .controls-overlay:not(.visible) {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .controls-overlay.visible {
             opacity: 1;
+            pointer-events: auto;
         }
+
+        /* .video-wrapper:hover .controls-overlay,
+        .controls-overlay.visible {
+            opacity: 1;
+        } */
 
         .top-bar,
         .bottom-bar {
@@ -471,11 +484,15 @@
         const speedSelect = document.getElementById('speed-select');
         const qualitySelect = document.getElementById('quality-select');
 
+        let hideControlsTimeout = null;
+        let lastMouseMoveTime = Date.now();
+
         let player = null;
         let videoData = null;
         let signedParams = null;
         let streamType = 'drm'; // Default stream type
         let controlsTimeout;
+
 
         // Function to get URL parameters
         function getUrlParameter(name) {
@@ -718,15 +735,20 @@
             }
         }
 
-        function toggleMute() {
-            video.muted = !video.muted;
-            if (video.muted) {
-                volumeSlider.value = 0;
-            } else {
-                volumeSlider.value = video.volume > 0 ? video.volume : 1;
-            }
-            updateVolumeIcon();
-        }
+        function toggleVolumeCycle() {
+    if (video.volume === 1) {
+        video.volume = 0.5;
+    } else if (video.volume === 0.5) {
+        video.volume = 0;
+    } else {
+        video.volume = 1;
+    }
+
+    // Update slider UI
+    volumeSlider.value = video.volume;
+    updateVolumeIcon();
+}
+
 
         function updateProgress() {
             const value = (video.currentTime / video.duration) * 100;
@@ -819,20 +841,32 @@
             }
         }
 
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
         document.addEventListener('fullscreenchange', updateFullscreenIcon);
 
 
-        function hideControls() {
-            if (video.paused) return;
-            controlsOverlay.classList.remove('visible');
-        }
+
+
 
         function showControls() {
             controlsOverlay.classList.add('visible');
+            lastMouseMoveTime = Date.now();
             clearTimeout(controlsTimeout);
-            controlsTimeout = setTimeout(hideControls, 3000);
         }
+
+
+        function hideControls() {
+            if (!video.paused) {
+                controlsOverlay.classList.remove('visible');
+            }
+        }
+
+
+        function resetInactivityTimer() {
+            lastMouseMoveTime = Date.now();
+            showControls();
+        }
+
+
 
         // Settings functionality
         function toggleSettingsMenu() {
@@ -903,7 +937,7 @@
         rewindBtn.addEventListener('click', () => seek(-10));
         forwardBtn.addEventListener('click', () => seek(10));
 
-        volumeBtn.addEventListener('click', toggleMute);
+        volumeBtn.addEventListener('click', toggleVolumeCycle);
         volumeSlider.addEventListener('input', handleVolumeChange);
         video.addEventListener('volumechange', updateVolumeIcon);
 
@@ -929,30 +963,11 @@
             }
         });
 
-        videoWrapper.addEventListener('mousemove', () => {
-            if (!video.paused) {
-                showControls();
-            }
-        });
+        videoWrapper.addEventListener('mousemove', resetInactivityTimer);
+        videoWrapper.addEventListener('touchstart', resetInactivityTimer);
+        controlsOverlay.addEventListener('mousemove', resetInactivityTimer);
+        controlsOverlay.addEventListener('touchstart', resetInactivityTimer);
 
-        video.addEventListener('play', () => {
-            showControls(); // Start hiding logic when video starts
-        });
-
-        video.addEventListener('pause', () => {
-            showControls(); // Keep controls visible when paused
-            clearTimeout(controlsTimeout); // Don’t auto-hide
-        });
-
-        function showControls() {
-            controlsOverlay.classList.add('visible');
-            clearTimeout(controlsTimeout);
-            if (!video.paused) {
-                controlsTimeout = setTimeout(() => {
-                    controlsOverlay.classList.remove('visible');
-                }, 3000); // 3 seconds
-            }
-        }
 
 
         const backBtn = document.getElementById('back-btn');
@@ -980,6 +995,16 @@
             initializeConfig();
             updateVolumeIcon();
         });
+
+        setInterval(() => {
+            const now = Date.now();
+            const inactiveFor = now - lastMouseMoveTime;
+
+            if (inactiveFor > 3000 && !video.paused) {
+                hideControls();
+            }
+        }, 500);
+
 
 
     </script>
