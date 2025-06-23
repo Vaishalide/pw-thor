@@ -142,6 +142,33 @@
       showLoader(true);
       subjectsDiv.innerHTML = "";
       searchBar.style.display = "none";
+
+      // Load today's classes ABOVE subjects
+      todaySubjects.innerHTML = "";
+      todayHeading.style.display = "none";
+      todaySubjects.style.display = "none";
+      noToday.style.display = "none";
+      try {
+        const res = await fetch(`${API_BASE}/api/live`);
+        if (!res.ok) throw new Error("Live failed");
+        const data = await res.json();
+        if (!data.length) {
+          noToday.style.display = "block";
+        } else {
+          todayHeading.style.display = "block";
+          todaySubjects.style.display = "flex";
+          data.forEach(item => {
+            const div = document.createElement("div");
+            div.className = "card";
+            div.innerHTML = `<img src="${item.thumb}" /><div class="card-title">${item.name}</div>`;
+            div.onclick = () => window.open(item.url, '_blank');
+            todaySubjects.appendChild(div);
+          });
+        }
+      } catch {
+        noToday.style.display = "block";
+      }
+
       try {
         const res = await fetch(`${API_BASE}/api/lessons/${courseId}`);
         const subjects = await res.json();
@@ -203,7 +230,7 @@
     async function openVideoPlayer(video, batchId) {
       showLoader(true);
       try {
-        const res = await fetch(`${API_BASE}/api/resolve-video?video_type=${video.type}&video_url=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.name)}&poster=${encodeURIComponent(video.thumb)}&course_id=${batchId}&batch_id=${batchId}`);
+        const res = await fetch(`${API_BASE}/api/resolve-video?video_type=kgs&video_url=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.name)}&poster=${encodeURIComponent(video.thumb)}&course_id=${batchId}&batch_id=${batchId}`);
         const result = await res.json();
         playerFrame.src = result.redirected_to;
         videoTitle.textContent = video.name;
@@ -227,40 +254,7 @@
       }
     }
 
-    async function loadTodayClasses() {
-      showLoader(true);
-      todaySubjects.innerHTML = "";
-      todayHeading.style.display = "none";
-      noToday.style.display = "none";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/live`);
-        if (!res.ok) throw new Error("No live");
-        const data = await res.json();
-        if (!data.length) {
-          noToday.style.display = "block";
-          return;
-        }
-        todayHeading.style.display = "block";
-        todaySubjects.style.display = "flex";
-        data.forEach(item => {
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `<img src="${item.thumb}" alt="${item.name}" /><div class="card-title">${item.name}</div>`;
-          div.onclick = () => window.open(item.url, '_blank');
-          todaySubjects.appendChild(div);
-        });
-      } catch (err) {
-        noToday.style.display = "block";
-      } finally {
-        showLoader(false);
-      }
-    }
-
-    window.onload = () => {
-      loadBatches();
-      loadTodayClasses();
-    };
+    window.onload = loadBatches;
   </script>
 </body>
 </html>
