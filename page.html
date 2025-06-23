@@ -114,10 +114,24 @@
       98% { opacity: 0.8; }
       99% { opacity: 0; }
     }
+      .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+      z-index: -1;
+      animation: scrollStars 60s linear infinite;
+    }
+    @keyframes scrollStars {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 1000px; }
+    }
   </style>
 </head>
-<body>
-  <div class="rain"></div>
+$1<div class="stars"></div>
+<div class="rain"></div>
 
   <svg class="svg-thunderbolt" viewBox="0 0 100 100" preserveAspectRatio="none">
     <polyline points="50,0 45,30 55,30 48,60 60,60 40,100" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
