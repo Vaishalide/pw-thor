@@ -18,9 +18,10 @@
     .card img { width: 100%; border-radius: 10px; }
     .card-title { text-align: center; margin-top: 10px; font-weight: bold; }
     .btn { background: #ffc107; color: #111; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 8px auto 0; display: block; text-align: center; font-weight: bold; text-decoration: none; }
-    .loader svg { width: 80px; height: 80px; stroke: #ffc107; fill: none; stroke-width: 5; animation: spin 2s linear infinite; margin: 2rem auto; display: block; }
+    .loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; }
+    .loader-overlay svg { width: 80px; height: 80px; stroke: #ffc107; fill: none; stroke-width: 5; animation: spin 2s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    .video-player { display: none; flex-direction: column; align-items: center; background: #000; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; padding: 10px; }
+    .video-player { display: none; flex-direction: column; align-items: center; background: #000; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; padding: 10px; }
     .video-header { width: 100%; display: flex; align-items: center; justify-content: space-between; color: #fff; padding: 10px; }
     .video-header h2 { flex: 1; text-align: center; font-size: 1.2rem; margin: 0; }
     .video-header button { background: #ffc107; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
@@ -28,6 +29,7 @@
     @media screen and (orientation: landscape) { iframe { height: 100vh; } }
     #searchBar { display: block; margin: 1rem auto; padding: 10px; width: 80%; max-width: 400px; border-radius: 8px; border: none; font-size: 1rem; }
     .section-heading { text-align: center; font-size: 1.2rem; margin-top: 10px; color: #ffc107; }
+    .no-classes { text-align: center; font-style: italic; color: gray; padding: 1rem; }
   </style>
 </head>
 <body>
@@ -35,16 +37,23 @@
     <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="PW THOR Logo" />
     <h1>PW THOR</h1>
   </div>
-  <div class="loader" id="loader">
+
+  <div class="loader-overlay" id="loader">
     <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>
   </div>
+
   <input id="searchBar" type="text" placeholder="Search courses..." oninput="filterCourses()" />
   <div class="back-btn" id="backBtn" onclick="goBack()">← Back</div>
+
   <div class="grid" id="main"></div>
-  <div class="section-heading" id="todayHeading" style="display:none;">Today's Classes</div>
+
+  <div class="section-heading" id="todayHeading" style="display:none;">Today's Live Classes</div>
   <div class="grid" id="todaySubjects" style="display:none;"></div>
+  <div class="no-classes" id="noToday" style="display:none;">No live classes today.</div>
+
   <div class="grid" id="subjects" style="display:none;"></div>
   <div class="grid" id="lectureContent" style="display:none;"></div>
+
   <div class="video-player" id="videoPlayer">
     <div class="video-header">
       <button onclick="closePlayer()">← Back</button>
@@ -53,14 +62,16 @@
     </div>
     <iframe id="playerFrame" allowfullscreen allow="fullscreen; autoplay; encrypted-media;"></iframe>
   </div>
+
   <script>
     const API_BASE = "https://api-kgs-ff20d78e287f.herokuapp.com";
+    const loader = document.getElementById("loader");
+    const todayHeading = document.getElementById("todayHeading");
+    const todaySubjects = document.getElementById("todaySubjects");
+    const noToday = document.getElementById("noToday");
     const main = document.getElementById("main");
     const subjectsDiv = document.getElementById("subjects");
-    const todayDiv = document.getElementById("todaySubjects");
-    const todayHeading = document.getElementById("todayHeading");
     const lectureContent = document.getElementById("lectureContent");
-    const loader = document.getElementById("loader");
     const searchBar = document.getElementById("searchBar");
     const videoPlayer = document.getElementById("videoPlayer");
     const playerFrame = document.getElementById("playerFrame");
@@ -69,12 +80,16 @@
     let allCourses = [];
     let viewStack = [];
 
-    function showLoader(show) { loader.style.display = show ? "block" : "none"; }
+    function showLoader(show) {
+      loader.style.display = show ? "flex" : "none";
+    }
+
     function show(div) {
       main.style.display = "none";
       subjectsDiv.style.display = "none";
-      todayDiv.style.display = "none";
+      todaySubjects.style.display = "none";
       todayHeading.style.display = "none";
+      noToday.style.display = "none";
       lectureContent.style.display = "none";
       div.style.display = "flex";
       backBtn.style.display = viewStack.length ? "block" : "none";
@@ -126,25 +141,12 @@
     async function loadSubjects(courseId) {
       showLoader(true);
       subjectsDiv.innerHTML = "";
-      todayDiv.innerHTML = "";
       searchBar.style.display = "none";
       try {
         const res = await fetch(`${API_BASE}/api/lessons/${courseId}`);
         const subjects = await res.json();
         show(subjectsDiv);
-        const today = subjects.filter(s => s.is_today);
-        const other = subjects.filter(s => !s.is_today);
-        if (today.length) {
-          todayHeading.style.display = "block";
-          todayDiv.style.display = "flex";
-          today.forEach(subject => {
-            appendCard(todayDiv, subject.name, null, () => {
-              viewStack.push(() => loadSubjects(courseId));
-              loadLessonContent(courseId, subject.id);
-            });
-          });
-        }
-        other.forEach(subject => {
+        subjects.forEach(subject => {
           appendCard(subjectsDiv, subject.name, null, () => {
             viewStack.push(() => loadSubjects(courseId));
             loadLessonContent(courseId, subject.id);
@@ -225,7 +227,40 @@
       }
     }
 
-    window.onload = loadBatches;
+    async function loadTodayClasses() {
+      showLoader(true);
+      todaySubjects.innerHTML = "";
+      todayHeading.style.display = "none";
+      noToday.style.display = "none";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/live`);
+        if (!res.ok) throw new Error("No live");
+        const data = await res.json();
+        if (!data.length) {
+          noToday.style.display = "block";
+          return;
+        }
+        todayHeading.style.display = "block";
+        todaySubjects.style.display = "flex";
+        data.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `<img src="${item.thumb}" alt="${item.name}" /><div class="card-title">${item.name}</div>`;
+          div.onclick = () => window.open(item.url, '_blank');
+          todaySubjects.appendChild(div);
+        });
+      } catch (err) {
+        noToday.style.display = "block";
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    window.onload = () => {
+      loadBatches();
+      loadTodayClasses();
+    };
   </script>
 </body>
 </html>
