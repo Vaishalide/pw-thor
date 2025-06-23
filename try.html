@@ -69,13 +69,13 @@
       showLoader(true);
       subjectsDiv.innerHTML = "";
       try {
-        const res = await fetch(`${API_BASE}/api/courses/${courseId}/subjects`);
+        const res = await fetch(`${API_BASE}/api/lessons/${courseId}`);
         const subjects = await res.json();
         show(subjectsDiv);
         subjects.forEach(subject => {
-          appendCard(subjectsDiv, subject.title, null, () => {
+          appendCard(subjectsDiv, subject.name, null, () => {
             viewStack.push(() => loadSubjects(courseId));
-            loadLessons(subject.id);
+            loadLessonContent(courseId, subject.id);
           });
         });
       } catch (err) {
@@ -85,42 +85,33 @@
       }
     }
 
-    async function loadLessons(subjectId) {
-      showLoader(true);
-      chaptersDiv.innerHTML = "";
-      try {
-        const res = await fetch(`${API_BASE}/api/subjects/${subjectId}/lessons`);
-        const lessons = await res.json();
-        show(chaptersDiv);
-        lessons.forEach(lesson => {
-          appendCard(chaptersDiv, lesson.title, null, () => {
-            viewStack.push(() => loadLessons(subjectId));
-            loadLessonContent(lesson.id);
-          });
-        });
-      } catch (err) {
-        console.error("Failed to load lessons:", err);
-      } finally {
-        showLoader(false);
-      }
-    }
-
-    async function loadLessonContent(lessonId) {
+    async function loadLessonContent(batchId, lessonId) {
       showLoader(true);
       lectureContent.innerHTML = "";
       try {
-        const res = await fetch(`${API_BASE}/api/lessons/${lessonId}/content`);
+        const res = await fetch(`${API_BASE}/api/lesson_content/${batchId}/${lessonId}`);
         const data = await res.json();
+
         show(lectureContent);
-        if (!data || !data.url) {
-          lectureContent.innerHTML = '<div style="color: gray; padding: 10px;">No content found.</div>';
+
+        if (!data.videos || data.videos.length === 0) {
+          lectureContent.innerHTML = '<div style="color: gray; padding: 10px;">No videos available for this lesson.</div>';
           return;
         }
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML = `<div class="card-title">${data.title || 'Lesson Video'}</div>`;
-        div.onclick = () => window.open(data.url, "_blank");
-        lectureContent.appendChild(div);
+
+        data.videos.forEach(video => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <div class="card-title">${video.name}</div>
+            <img src="${video.thumb}" alt="Video Thumbnail" style="width: 100%; border-radius: 10px; margin-bottom: 10px;" />
+          `;
+          div.onclick = () => {
+            window.open(`https://www.youtube.com/watch?v=${video.video_url}`, "_blank");
+          };
+          lectureContent.appendChild(div);
+        });
+
       } catch (err) {
         console.error("Failed to load lesson content:", err);
       } finally {
