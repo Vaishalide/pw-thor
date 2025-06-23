@@ -92,33 +92,37 @@
       height: 100vh;
       pointer-events: none;
       z-index: 0;
-      background-image: url('https://i.ibb.co/Y7n1VBj/rain-animation.gif');
+      background-image: url('https://kgs.nyc3.digitaloceanspaces.com/backgrounds/realistic-rain-loop.gif');
       background-size: cover;
       background-repeat: repeat;
       opacity: 0.4;
     }
-    .thunder {
-      position: fixed;
+    .svg-thunderbolt {
+      position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      z-index: 1;
-      background: white;
+      z-index: 3;
       opacity: 0;
-      animation: thunderflash 4s infinite;
+      animation: boltFlash 5s infinite;
     }
-    @keyframes thunderflash {
-      0%, 97%, 100% { opacity: 0; }
-      98% { opacity: 0.7; }
+    @keyframes boltFlash {
+      0%, 96%, 100% { opacity: 0; }
+      97% { opacity: 1; }
+      98% { opacity: 0.8; }
       99% { opacity: 0; }
     }
   </style>
 </head>
 <body>
   <div class="rain"></div>
-  <div class="thunder"></div>
+
+  <svg class="svg-thunderbolt" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <polyline points="50,0 45,30 55,30 48,60 60,60 40,100" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+
   <div class="container">
     <h1>Welcome to PWTHOR</h1>
     <p class="quote">Education must be free for everyone</p>
