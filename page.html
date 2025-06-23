@@ -1,166 +1,362 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PWTHOR</title>
-  <link rel="icon" href="https://kgs.nyc3.digitaloceanspaces.com/logo/kgs-favicon.ico">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>PW THOR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://www.pw.live/favicon.ico" rel="icon" />
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       margin: 0;
       font-family: 'Poppins', sans-serif;
-      background: #0e0f1b;
       color: white;
       overflow-x: hidden;
-      position: relative;
     }
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
+    .overlay-content {
+      position: absolute;
+      top: 5%;
+      width: 100%;
       text-align: center;
-      position: relative;
-      z-index: 1;
+      z-index: 1000;
     }
-    h1 {
+    .overlay-content h1 {
       font-size: 2.5rem;
       color: #ffc107;
       margin: 0.5rem 0;
+      text-shadow: 2px 2px 5px black;
     }
-    p.quote {
+    .overlay-content p {
       font-size: 1.2rem;
-      color: #eee;
       margin-bottom: 2rem;
+      color: #e0e0e0;
+      text-shadow: 1px 1px 3px black;
     }
-    .apps {
+    .cards {
       display: flex;
+      justify-content: center;
       gap: 2rem;
       flex-wrap: wrap;
-      justify-content: center;
-      z-index: 2;
     }
     .card {
-      background: rgba(30, 32, 54, 0.8);
-      border-radius: 12px;
-      padding: 1rem 2rem;
+      background: rgba(30, 32, 54, 0.9);
+      border-radius: 15px;
+      padding: 1rem;
+      width: 240px;
       cursor: pointer;
-      transition: transform 0.4s ease, background 0.3s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      transition: transform 0.3s;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
     }
     .card:hover {
-      background: #2a2e4b;
-      transform: translateY(-5px);
+      transform: translateY(-10px);
     }
     .card img {
-      width: 80px;
-      height: 80px;
+      width: 100%;
+      height: 120px;
       object-fit: contain;
-      margin-bottom: 0.5rem;
+      border-radius: 10px;
     }
     .card span {
+      display: block;
+      margin-top: 1rem;
       font-weight: bold;
+      font-size: 1.2rem;
       color: #ffc107;
-      font-size: 1.1rem;
+      text-align: center;
     }
-    .dragonfly {
-      position: absolute;
-      right: 10%;
-      top: 20%;
-      width: 280px;
-      z-index: 2;
-      animation: flap 1s infinite ease-in-out;
-      transition: transform 2s ease-out;
-    }
-    @keyframes flap {
-      0%, 100% { transform: scale(1) rotateZ(0deg); }
-      50% { transform: scale(1.02) rotateZ(2deg); }
-    }
-    .fly-away {
-      transform: translateX(100vw) translateY(-50vh) rotateZ(720deg) scale(0.3);
-    }
-    .rain {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 0;
-      background-image: url('https://kgs.nyc3.digitaloceanspaces.com/backgrounds/realistic-rain-loop.gif');
-      background-size: cover;
-      background-repeat: repeat;
-      opacity: 0.4;
-    }
-    .svg-thunderbolt {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 3;
-      opacity: 0;
-      animation: boltFlash 5s infinite;
-    }
-    @keyframes boltFlash {
-      0%, 96%, 100% { opacity: 0; }
-      97% { opacity: 1; }
-      98% { opacity: 0.8; }
-      99% { opacity: 0; }
-    }
-      .stars {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
-      z-index: -1;
-      animation: scrollStars 60s linear infinite;
-    }
-    @keyframes scrollStars {
-      0% { background-position: 0 0; }
-      100% { background-position: 0 1000px; }
+
+    @media (max-width: 600px) {
+      .overlay-content h1 {
+        font-size: 2rem;
+      }
+      .card {
+        width: 90%;
+      }
     }
   </style>
 </head>
-$1<div class="stars"></div>
-<div class="rain"></div>
+<body>
+  <!-- Background animation container -->
+  <div class="wrap">
+    <div class="wrap">
+	<div class="scene-1">
+		<div class="bg-1 animation_to_left"></div>
+		<div class="bg-2 animation_to_right"></div>
+		<div class="back-table animation_to_left">
+			<div class="books"></div>
+			<div class="frame"></div>
+		</div>
+		<div class="photos animation_to_left"></div>
+		<div class="shelf-1 animation_to_left">
+				<div class="book"></div>
+				<div class="camera">
+				<div class="camera__flash"></div>
+			</div>
+		</div>
+		<div class="shelf-2 animation_to_left">
+			<div class="books"></div>
+			<div class="ship">
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+			</div>
+		</div>
+		<div class="table animation_to_right">
+			<div></div>
+			<div></div>
+			<div></div>
+			<div class="tablet"></div>
+			<div class="lamp">
+				<div></div>
+			</div>
+		</div>
+		<div class="chair animation_to_right"></div>
+		<div class="armchair animation_to_right">
+			<div></div>
+			<div class="plaid"></div>
+		</div>
+		<div class="picture animation_to_right">
+			<div></div>
+			<div></div>
+		</div>
+		<div class="red-dog animation_to_right">
+			<div class="red-dog__body"></div>
+			<div class="red-dog__leg"></div>
+			<div class="red-dog__hand"></div>
+			<div class="red-dog__head">
+				<div></div>
+				<div></div>
+			</div>
+		</div>
+		<div class="man animation_to_right">
+			<div class="man__leg">
+				<div class="man__knee">
+					<div class="man__feet">
+						<div></div>
+						<div></div>
+					</div>
+				</div>
+			</div>
+			<div class="man__body">
+				<div class="man__chest">
+					<div class="man__head">
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div class="man__arm">
+						<div class="man__forearm">
+							<div></div>
+							<div></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="scene-2">
+		<div class="bg-1"></div>
+		<div class="bg-2"></div>
+		<div class="bg-3"></div>
+		<div class="bg-4"></div>
+		<div class="bg-5"></div>
+		<div class="bg-6"></div>
+		<div class="rock">
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div class="lighthouse"></div>
+		</div>
+		<div class="girl">
+			<div></div>
+			<div></div>
+			<div class="girl__back-leg">
+				<div class="girl__foot"></div>
+				<div class="girl__foot-thumbs"></div>
+			</div>
+			<div class="girl__back-arm">
+				<div class="girl__paper"></div>
+			</div>
+			<div class="girl__chest">
+				<div class="girl__face">
+					<div class="girl__nose"></div>
+				</div>
+			</div>
+			<div class="girl__back-shorts"></div>
+			<div class="girl__front-leg">
+				<div class="girl__knee"></div>
+			</div>
+			<div class="girl__shorts"></div>
+			<div class="girl__front-arm">
+				<div class="girl__forearm">
+					<div class="girl__palm"></div>
+				</div>
+			</div>
+		</div>
+		<div class="stone"></div>
+		<div class="basket">
+			<div></div>
+			<div></div>
+		</div>
+		<div class="sand">
+			<div></div>
+		</div>
+		<div class="crab">
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+		<div class="water">
+			<div></div>
+			<div></div>
+			<div></div>
+			<div></div>
+		</div>
+	</div>
+	<div class="scene-3">
+		<div class="bg-1"></div>
+		<div class="bg-2"></div>
+		<div class="road">
+			<div class="car">
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div><div></div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div></div>
+				<div class="sneakers">
+					<div></div>
+				</div>
+				<div class="papper"></div>
+				<div class="pizza">
+					<div class="pizza__fat"></div>
+				</div>
+				<div class="coffee"></div>
+				<div class="man">
+					<div class="man__legs">
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</div>
+					<div class="man__head">
+						<div class="man__beard"></div>
+						<div class="man__hair"></div>
+						<div class="man__nose"></div>
+					</div>
+					<div class="man__body"></div>
+					<div class="laptop"></div>
+					<div class="man__arm">
+						<div class="man__forearm"></div>
+					</div>
+					<div class="man__shorts"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="scene-4">
+		<div class="bg-2"></div>
+		<div class="bg-1"></div>
+		<div class="scene-4__right">
+			<div class="bookshelf"></div>
+			<div class="photo"></div>
+			<div class="books-1"></div>
+			<div class="books-2"></div>
+			<div class="books-3"></div>
+		</div>
+		<div class="scene-4__top">
+			<div class="picture-1"></div>
+			<div class="picture-2"></div>
+			<div class="picture-3"></div>
+			<div class="picture-4"></div>
+			<div class="picture-5"></div>
+			<div class="picture-6"></div>
+			<div class="picture-7"></div>
+			<div class="picture-8"></div>
+		</div>
+		<div class="scene-4__left">
+			<div class="commode">
+				<div class="commode__box"></div>
+				<div class="printer"></div>
+			</div>
+			<div class="chair">
+				<div class="chair__legs"></div>
+				<div class="chair__back"></div>
+				<div class="girl">
+					<div class="girl__neck"></div>
+					<div class="girl__back-arm">
+						<div class="girl__palm"></div>
+					</div>
+					<div class="girl__body"></div>
+					<div class="girl__head">
+						<div class="girl__hair"></div>
+						<div class="girl__face"></div>
+					</div>
+					<div class="girl__front-arm">
+						<div class="girl__forearm">
+							<div class="teacup"></div>
+						</div>
+					</div>
+					<div class="girl__skirt"></div>
+					<div class="girl__back-leg"></div>
+					<div class="girl__front-leg"></div>
+				</div>
+			</div>
+			<div class="table">
+				<div class="table__leg"></div>
+				<div class="plant"></div>
+				<div class="plant__flower"></div>
+				<div class="monitor"></div>
+				<div class="keyboard"></div>
+			</div>
+		</div>
+	</div>
+</div>
+  </div>
 
-  <svg class="svg-thunderbolt" viewBox="0 0 100 100" preserveAspectRatio="none">
-    <polyline points="50,0 45,30 55,30 48,60 60,60 40,100" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-
-  <div class="container">
+  <!-- Overlay UI content -->
+  <div class="overlay-content">
     <h1>Welcome to PWTHOR</h1>
-    <p class="quote">Education must be free for everyone</p>
-    <div class="apps">
-      <div class="card" onclick="flyDragonAndRedirect('pw.html')">
-        <img src="https://cdn.pw.live/logo.png" alt="Physics Wallah Logo">
+    <p>Education must be free for everyone</p>
+    <div class="cards">
+      <div class="card" onclick="location.href='pw.html'">
+        <img src="https://cdn.pw.live/logo.png" alt="Physics Wallah Logo" />
         <span>Physics Wallah</span>
       </div>
-      <div class="card" onclick="flyDragonAndRedirect('kgs.html')">
-        <img src="https://kgs.nyc3.digitaloceanspaces.com/logo/kgs-logo.png" alt="Khan Global Studies Logo">
+      <div class="card" onclick="location.href='kgs.html'">
+        <img src="https://kgs.nyc3.digitaloceanspaces.com/logo/kgs-logo.png" alt="Khan Global Studies Logo" />
         <span>Khan Global Studies</span>
       </div>
     </div>
-    <img src="ChatGPT Image Jun 23, 2025, 10_03_56 PM-bg-removed-Pacdora.png" alt="Dragonfly" class="dragonfly" id="dragonfly">
   </div>
-
-  <script>
-    function flyDragonAndRedirect(url) {
-      const dragon = document.getElementById('dragonfly');
-      dragon.classList.add('fly-away');
-      setTimeout(() => {
-        window.location.href = url;
-      }, 2000);
-    }
-  </script>
 </body>
 </html>
