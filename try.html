@@ -113,7 +113,7 @@
           thumb.onclick = async () => {
             showLoader(true);
             try {
-              const resolveRes = await fetch(`${API_BASE}/api/resolve-video?video_type=${video.type}&video_url=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.name)}&poster=${encodeURIComponent(video.thumb)}&course_id=${batchId}&batch_id=${batchId}`);
+              const resolveRes = await fetch(`${API_BASE}/api/resolve-video?video_type=kgs&video_url=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.name)}&poster=${encodeURIComponent(video.thumb)}&course_id=${batchId}&batch_id=${batchId}`);
               const resolveData = await resolveRes.json();
               const iframe = document.createElement("iframe");
               iframe.src = resolveData.redirected_to;
