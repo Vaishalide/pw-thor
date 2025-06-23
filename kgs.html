@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://www.pw.live/favicon.ico" rel="icon"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+   <script>
+    function getCookie(name) {
+        const value = document.cookie;
+        const parts = value.split("; ");
+        for (let i = 0; i < parts.length; i++) {
+            const [key, val] = parts[i].split("=");
+            if (key === name) return val;
+        }
+        return null;
+    }
+
+    if (!getCookie('login')) {
+        // Agar logged in nahi hain, toh generate key page par redirect karo
+        window.location.href = 'https://pwthor.site/generate-key.html';
+    }
+</script>
+   </script>
+<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <title>PW THOR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
+  <link href="https://media.licdn.com/dms/image/v2/D4D0BAQH7xukMCivyTQ/company-logo_200_200/company-logo_200_200/0/1683371069173?e=2147483647&v=beta&t=ym_-zwS6YxRb7dEDfErB_VBoLzD7ed2srkhC_xIZ2hg" rel="icon"/>
+  <style>
+    body { font-family: 'Poppins', Arial; background: #0e0f1b; color: white; margin: 0; padding: 0; }
+    .header { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem; }
+    .header img { height: 60px; }
+    .header h1 { color: #ffc107; font-size: 2rem; margin: 0; }
+    .back-btn { margin: 10px 20px; display: none; color: #ffc107; cursor: pointer; font-weight: bold; }
+    .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 20px; }
+    .card { background: #1e2036; padding: 1rem; border-radius: 10px; width: 250px; cursor: pointer; transition: 0.3s; }
+    .card:hover { background: #2a2e4b; transform: translateY(-5px); }
+    .card img { width: 100%; border-radius: 10px; }
+    .card-title { text-align: center; margin-top: 10px; font-weight: bold; }
+    .btn { background: #ffc107; color: #111; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 8px auto 0; display: block; text-align: center; font-weight: bold; text-decoration: none; }
+    .loader-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); z-index: 9999; justify-content: center; align-items: center; }
+    .loader-overlay svg { width: 80px; height: 80px; stroke: #ffc107; fill: none; stroke-width: 5; animation: spin 2s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .video-player { display: none; flex-direction: column; align-items: center; background: #000; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 99999; padding: 10px; }
+    .video-header { width: 100%; display: flex; align-items: center; justify-content: space-between; color: #fff; padding: 10px; }
+    .video-header h2 { flex: 1; text-align: center; font-size: 1.2rem; margin: 0; }
+    .video-header button { background: #ffc107; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; margin-top: 10px; }
+    @media screen and (orientation: landscape) { iframe { height: 100vh; } }
+    #searchBar { display: block; margin: 1rem auto; padding: 10px; width: 80%; max-width: 400px; border-radius: 8px; border: none; font-size: 1rem; }
+    .section-heading { text-align: center; font-size: 1.2rem; margin-top: 10px; color: #ffc107; }
+    .no-classes { text-align: center; font-style: italic; color: gray; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="PW THOR Logo" />
+    <h1>PW THOR</h1>
+  </div>
+
+  <div class="loader-overlay" id="loader">
+    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40"/></svg>
+  </div>
+
+  <input id="searchBar" type="text" placeholder="Search courses..." oninput="filterCourses()" />
+  <div class="back-btn" id="backBtn" onclick="goBack()">← Back</div>
+
+  <div class="grid" id="main"></div>
+
+  <div class="section-heading" id="todayHeading" style="display:none;">Today's Live Classes</div>
+  <div class="grid" id="todaySubjects" style="display:none;"></div>
+  <div class="no-classes" id="noToday" style="display:none;">No live classes today.</div>
+
+  <div class="grid" id="subjects" style="display:none;"></div>
+  <div class="grid" id="lectureContent" style="display:none;"></div>
+
+  <div class="video-player" id="videoPlayer">
+    <div class="video-header">
+      <button onclick="closePlayer()">← Back</button>
+      <h2 id="videoTitle"></h2>
+      <div style="width: 60px;"></div>
+    </div>
+    <iframe id="playerFrame" allowfullscreen allow="fullscreen; autoplay; encrypted-media;"></iframe>
+  </div>
+
+  <script>
+   const _0x33f22a=_0x1b7f;(function(_0x3310fd,_0x2c366d){const _0x1dff73=_0x1b7f,_0x4fd174=_0x3310fd();while(!![]){try{const _0x5589c8=parseInt(_0x1dff73(0x13b))/0x1*(parseInt(_0x1dff73(0x14d))/0x2)+-parseInt(_0x1dff73(0x145))/0x3+parseInt(_0x1dff73(0x142))/0x4+-parseInt(_0x1dff73(0x12c))/0x5+parseInt(_0x1dff73(0x146))/0x6+parseInt(_0x1dff73(0x158))/0x7+-parseInt(_0x1dff73(0x138))/0x8;if(_0x5589c8===_0x2c366d)break;else _0x4fd174['push'](_0x4fd174['shift']());}catch(_0x3282ce){_0x4fd174['push'](_0x4fd174['shift']());}}}(_0x2e86,0x6e71a));const API_BASE=_0x33f22a(0x162),loader=document[_0x33f22a(0x14e)](_0x33f22a(0x14c)),todayHeading=document[_0x33f22a(0x14e)](_0x33f22a(0x167)),todaySubjects=document[_0x33f22a(0x14e)](_0x33f22a(0x165)),noToday=document[_0x33f22a(0x14e)](_0x33f22a(0x143)),main=document[_0x33f22a(0x14e)](_0x33f22a(0x12f)),subjectsDiv=document[_0x33f22a(0x14e)](_0x33f22a(0x133)),lectureContent=document[_0x33f22a(0x14e)](_0x33f22a(0x140)),searchBar=document[_0x33f22a(0x14e)](_0x33f22a(0x16b)),videoPlayer=document[_0x33f22a(0x14e)]('videoPlayer'),playerFrame=document[_0x33f22a(0x14e)](_0x33f22a(0x141)),videoTitle=document[_0x33f22a(0x14e)](_0x33f22a(0x15c)),backBtn=document['getElementById']('backBtn');let allCourses=[],viewStack=[];function showLoader(_0x267eaa){const _0x1a3f1b=_0x33f22a;loader[_0x1a3f1b(0x153)]['display']=_0x267eaa?_0x1a3f1b(0x15e):_0x1a3f1b(0x135);}function _0x2e86(){const _0x45572a=['forEach','appendChild','data','&title=','loader','758CFQZqK','getElementById','Failed\x20to\x20load\x20lesson\x20content:','href','name','large','style','display','pdfs','target','<img\x20src=\x22','2597553aDrwEc','push','/api/live','textContent','videoTitle','</div>','flex','/api/lessons/','image','card-title','https://api-kgs-ff20d78e287f.herokuapp.com','btn','value','todaySubjects','block','todayHeading','<div\x20style=\x22color:\x20gray;\x20padding:\x2010px;\x22>No\x20videos\x20available\x20for\x20this\x20lesson.</div>','img','json','searchBar','src','error','&batch_id=','videos','div','1631045zuFVXA','createElement','_blank','main','onload','innerHTML','className','subjects','onclick','none','pop','title','2999128xSdOlK','thumb','video_url','677rwbswP','length','toLowerCase','Notes','/api/lesson_content/','lectureContent','playerFrame','2311376UHcieC','noToday','<div\x20class=\x22card-title\x22>','1583187VrGgwA','2854206NVHIGi','card'];_0x2e86=function(){return _0x45572a;};return _0x2e86();}function show(_0x2a2569){const _0x12b0d5=_0x33f22a;main[_0x12b0d5(0x153)][_0x12b0d5(0x154)]=_0x12b0d5(0x135),subjectsDiv[_0x12b0d5(0x153)][_0x12b0d5(0x154)]=_0x12b0d5(0x135),todaySubjects['style'][_0x12b0d5(0x154)]=_0x12b0d5(0x135),todayHeading[_0x12b0d5(0x153)]['display']=_0x12b0d5(0x135),noToday[_0x12b0d5(0x153)][_0x12b0d5(0x154)]='none',lectureContent[_0x12b0d5(0x153)][_0x12b0d5(0x154)]='none',_0x2a2569[_0x12b0d5(0x153)][_0x12b0d5(0x154)]='flex',backBtn[_0x12b0d5(0x153)][_0x12b0d5(0x154)]=viewStack[_0x12b0d5(0x13c)]?_0x12b0d5(0x166):_0x12b0d5(0x135);}function _0x1b7f(_0x567bb4,_0x2a9ccd){const _0x2e8640=_0x2e86();return _0x1b7f=function(_0x1b7f4a,_0x2a86cb){_0x1b7f4a=_0x1b7f4a-0x12b;let _0x5b92ef=_0x2e8640[_0x1b7f4a];return _0x5b92ef;},_0x1b7f(_0x567bb4,_0x2a9ccd);}function appendCard(_0x4b039d,_0x203298,_0x329539,_0x57aad9){const _0x5adf09=_0x33f22a,_0x419ccf=document[_0x5adf09(0x12d)](_0x5adf09(0x12b));_0x419ccf[_0x5adf09(0x132)]=_0x5adf09(0x147),_0x419ccf[_0x5adf09(0x131)]=(_0x329539?'<img\x20src=\x22'+_0x329539+'\x22\x20/>':'')+_0x5adf09(0x144)+_0x203298+_0x5adf09(0x15d);if(_0x57aad9)_0x419ccf[_0x5adf09(0x134)]=_0x57aad9;_0x4b039d[_0x5adf09(0x149)](_0x419ccf);}function filterCourses(){const _0x2a131d=_0x33f22a,_0xaf9be5=searchBar[_0x2a131d(0x164)][_0x2a131d(0x13d)]();main[_0x2a131d(0x131)]='';const _0x12ec5b=allCourses['filter'](_0x55290b=>_0x55290b[_0x2a131d(0x137)][_0x2a131d(0x13d)]()['includes'](_0xaf9be5));_0x12ec5b[_0x2a131d(0x148)](_0xffb17a=>{const _0x5f0c92=_0x2a131d;appendCard(main,_0xffb17a[_0x5f0c92(0x137)],_0xffb17a[_0x5f0c92(0x160)]?.[_0x5f0c92(0x152)],()=>{const _0x75da21=_0x5f0c92;viewStack[_0x75da21(0x159)](loadBatches),loadSubjects(_0xffb17a['id']);});});}async function loadBatches(){const _0x507217=_0x33f22a;showLoader(!![]),searchBar[_0x507217(0x153)][_0x507217(0x154)]=_0x507217(0x166);try{const _0x34ca09=await fetch(API_BASE+'/api/courses'),_0x53bd6a=await _0x34ca09['json'](),_0x57bfea=_0x53bd6a[_0x507217(0x14a)]||[];allCourses=_0x57bfea,main[_0x507217(0x131)]='',show(main),_0x57bfea['forEach'](_0x31121d=>{const _0x1e7a13=_0x507217;appendCard(main,_0x31121d[_0x1e7a13(0x137)],_0x31121d['image']?.['large'],()=>{viewStack['push'](loadBatches),loadSubjects(_0x31121d['id']);});});}catch(_0x10361a){console[_0x507217(0x16d)]('Failed\x20to\x20load\x20courses:',_0x10361a);}finally{showLoader(![]);}}async function loadSubjects(_0x59e857){const _0x5939ef=_0x33f22a;showLoader(!![]),subjectsDiv[_0x5939ef(0x131)]='',searchBar[_0x5939ef(0x153)][_0x5939ef(0x154)]=_0x5939ef(0x135),todaySubjects[_0x5939ef(0x131)]='',todayHeading[_0x5939ef(0x153)][_0x5939ef(0x154)]=_0x5939ef(0x135),todaySubjects['style'][_0x5939ef(0x154)]='none',noToday[_0x5939ef(0x153)][_0x5939ef(0x154)]=_0x5939ef(0x135);try{const _0x2c2780=await fetch(API_BASE+_0x5939ef(0x15a));if(!_0x2c2780['ok'])throw new Error('Live\x20failed');const _0x1bf4e7=await _0x2c2780[_0x5939ef(0x16a)]();!_0x1bf4e7[_0x5939ef(0x13c)]?noToday['style'][_0x5939ef(0x154)]=_0x5939ef(0x166):(todayHeading[_0x5939ef(0x153)][_0x5939ef(0x154)]='block',todaySubjects[_0x5939ef(0x153)][_0x5939ef(0x154)]=_0x5939ef(0x15e),_0x1bf4e7[_0x5939ef(0x148)](_0x844c72=>{const _0x403cca=_0x5939ef,_0x2767b7=document[_0x403cca(0x12d)](_0x403cca(0x12b));_0x2767b7[_0x403cca(0x132)]=_0x403cca(0x147),_0x2767b7[_0x403cca(0x131)]=_0x403cca(0x157)+_0x844c72[_0x403cca(0x139)]+'\x22\x20/><div\x20class=\x22card-title\x22>'+_0x844c72[_0x403cca(0x151)]+'</div>',_0x2767b7[_0x403cca(0x134)]=()=>window['open'](_0x844c72['url'],'_blank'),todaySubjects[_0x403cca(0x149)](_0x2767b7);}));}catch{noToday[_0x5939ef(0x153)]['display']='block';}try{const _0x4f2edf=await fetch(API_BASE+_0x5939ef(0x15f)+_0x59e857),_0x976a7c=await _0x4f2edf[_0x5939ef(0x16a)]();show(subjectsDiv),_0x976a7c[_0x5939ef(0x148)](_0x50b3b3=>{const _0xf428b8=_0x5939ef;appendCard(subjectsDiv,_0x50b3b3[_0xf428b8(0x151)],null,()=>{const _0x7bf59c=_0xf428b8;viewStack[_0x7bf59c(0x159)](()=>loadSubjects(_0x59e857)),loadLessonContent(_0x59e857,_0x50b3b3['id']);});});}catch(_0x2a7ab6){console[_0x5939ef(0x16d)]('Failed\x20to\x20load\x20subjects:',_0x2a7ab6);}finally{showLoader(![]);}}async function loadLessonContent(_0x237dd3,_0xb4aace){const _0x5f4530=_0x33f22a;showLoader(!![]),lectureContent['innerHTML']='';try{const _0x2e299e=await fetch(API_BASE+_0x5f4530(0x13f)+_0x237dd3+'/'+_0xb4aace),_0xd233cc=await _0x2e299e[_0x5f4530(0x16a)]();show(lectureContent);if(!_0xd233cc[_0x5f4530(0x16f)]||_0xd233cc[_0x5f4530(0x16f)]['length']===0x0){lectureContent['innerHTML']=_0x5f4530(0x168);return;}_0xd233cc[_0x5f4530(0x16f)][_0x5f4530(0x148)](_0x1203ea=>{const _0x34a615=_0x5f4530,_0x1f6e6d=document[_0x34a615(0x12d)](_0x34a615(0x12b));_0x1f6e6d['className']=_0x34a615(0x147);const _0x3228f7=document[_0x34a615(0x12d)](_0x34a615(0x169));_0x3228f7[_0x34a615(0x16c)]=_0x1203ea[_0x34a615(0x139)],_0x3228f7['onclick']=()=>openVideoPlayer(_0x1203ea,_0x237dd3);const _0x4a54a2=document[_0x34a615(0x12d)]('div');_0x4a54a2[_0x34a615(0x132)]=_0x34a615(0x161),_0x4a54a2[_0x34a615(0x15b)]=_0x1203ea[_0x34a615(0x151)],_0x1f6e6d['appendChild'](_0x3228f7),_0x1f6e6d[_0x34a615(0x149)](_0x4a54a2),_0x1203ea[_0x34a615(0x155)]&&_0x1203ea[_0x34a615(0x155)]['length']>0x0&&_0x1203ea[_0x34a615(0x155)][_0x34a615(0x148)](_0x19efcd=>{const _0x55ba6d=_0x34a615,_0x1d43a8=document[_0x55ba6d(0x12d)]('a');_0x1d43a8[_0x55ba6d(0x150)]=_0x19efcd['url'],_0x1d43a8[_0x55ba6d(0x15b)]=_0x19efcd[_0x55ba6d(0x137)]||_0x55ba6d(0x13e),_0x1d43a8[_0x55ba6d(0x132)]=_0x55ba6d(0x163),_0x1d43a8[_0x55ba6d(0x156)]=_0x55ba6d(0x12e),_0x1f6e6d[_0x55ba6d(0x149)](_0x1d43a8);}),lectureContent[_0x34a615(0x149)](_0x1f6e6d);});}catch(_0xace99c){console[_0x5f4530(0x16d)](_0x5f4530(0x14f),_0xace99c);}finally{showLoader(![]);}}async function openVideoPlayer(_0x3aa5db,_0x1c111e){const _0x55b764=_0x33f22a;showLoader(!![]);try{const _0x1f732f=await fetch(API_BASE+'/api/resolve-video?video_type=kgs&video_url='+encodeURIComponent(_0x3aa5db[_0x55b764(0x13a)])+_0x55b764(0x14b)+encodeURIComponent(_0x3aa5db['name'])+'&poster='+encodeURIComponent(_0x3aa5db[_0x55b764(0x139)])+'&course_id='+_0x1c111e+_0x55b764(0x16e)+_0x1c111e),_0x513cd0=await _0x1f732f['json']();playerFrame[_0x55b764(0x16c)]=_0x513cd0['redirected_to'],videoTitle[_0x55b764(0x15b)]=_0x3aa5db[_0x55b764(0x151)],videoPlayer[_0x55b764(0x153)][_0x55b764(0x154)]=_0x55b764(0x15e);}catch(_0x1eaf49){alert('Failed\x20to\x20load\x20video.');}finally{showLoader(![]);}}function closePlayer(){const _0x35b3c7=_0x33f22a;playerFrame[_0x35b3c7(0x16c)]='',videoPlayer[_0x35b3c7(0x153)][_0x35b3c7(0x154)]='none';}function goBack(){const _0x481e77=_0x33f22a;if(viewStack[_0x481e77(0x13c)]){const _0x687187=viewStack[_0x481e77(0x136)]();_0x687187();}}window[_0x33f22a(0x130)]=loadBatches;
+  </script>
+</body>
+</html>
 
