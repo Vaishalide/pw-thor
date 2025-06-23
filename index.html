@@ -1,277 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://www.pw.live/favicon.ico" rel="icon"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-   <script>
-    function getCookie(name) {
-        const value = document.cookie;
-        const parts = value.split("; ");
-        for (let i = 0; i < parts.length; i++) {
-            const [key, val] = parts[i].split("=");
-            if (key === name) return val;
-        }
-        return null;
-    }
-
-    if (!getCookie('login')) {
-        // Agar logged in nahi hain, toh generate key page par redirect karo
-        window.location.href = 'https://pwthor.site/generate-key.html';
-    }
-</script>
-   </script>
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <title>PW THOR</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PWTHOR</title>
+  <link rel="icon" href="https://kgs.nyc3.digitaloceanspaces.com/logo/kgs-favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
       background: #0e0f1b;
       color: white;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+      position: relative;
+      z-index: 1;
     }
     h1 {
+      font-size: 2.5rem;
       color: #ffc107;
-      text-align: center;
+      margin: 0.5rem 0;
     }
-    .grid {
+    p.quote {
+      font-size: 1.2rem;
+      color: #eee;
+      margin-bottom: 2rem;
+    }
+    .apps {
       display: flex;
+      gap: 2rem;
       flex-wrap: wrap;
-      gap: 20px;
       justify-content: center;
-      margin-top: 20px;
+      z-index: 2;
     }
     .card {
-      background: #1e2036;
-      border-radius: 10px;
-      padding: 1rem;
-      width: 250px;
+      background: rgba(30, 32, 54, 0.8);
+      border-radius: 12px;
+      padding: 1rem 2rem;
       cursor: pointer;
-      transition: 0.3s;
+      transition: transform 0.4s ease, background 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
     }
     .card:hover {
       background: #2a2e4b;
       transform: translateY(-5px);
     }
     .card img {
-      width: 100%;
-      border-radius: 10px;
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 0.5rem;
     }
-    .card-title {
-      text-align: center;
-      margin-top: 10px;
+    .card span {
       font-weight: bold;
-    }
-    .loader {
-      margin: 2rem auto;
-      border: 6px solid #333;
-      border-top: 6px solid #ffc107;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .back-btn {
-      margin: 10px 0;
-      display: block;
-      text-align: left;
       color: #ffc107;
-      cursor: pointer;
+      font-size: 1.1rem;
     }
-    input[type="text"] {
-      padding: 10px;
-      width: 80%;
-      margin: 10px auto;
-      display: block;
-      border-radius: 5px;
-      border: none;
+    .dragonfly {
+      position: absolute;
+      right: 10%;
+      top: 20%;
+      width: 280px;
+      z-index: 2;
+      animation: flap 1s infinite ease-in-out;
+      transition: transform 2s ease-out;
     }
-    .today-classes-wrapper {
-      margin: 10px 0;
+    @keyframes flap {
+      0%, 100% { transform: scale(1) rotateZ(0deg); }
+      50% { transform: scale(1.02) rotateZ(2deg); }
     }
-    .today-classes-title {
-      color: #ffc107;
-      font-size: 1.2rem;
-      margin: 0 0 10px 10px;
+    .fly-away {
+      transform: translateX(100vw) translateY(-50vh) rotateZ(720deg) scale(0.3);
     }
-    .today-classes-container {
-      overflow-x: auto;
-      white-space: nowrap;
-      padding: 10px;
-      background: #1a1c2d;
-      border-radius: 10px;
-    }
-    .today-card {
-      display: inline-block;
-      background: #26294d;
-      margin-right: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      width: 220px;
-      vertical-align: top;
-      cursor: pointer;
-    }
-    .today-card-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-      white-space: normal;
-    }
-    .lecture-tabs {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      width: 100%;
-    }
- .gear {
-  animation: gear-spin 1.5s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.5));
-}
-
-@keyframes gear-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-
-
-    .lecture-tabs button {
-      background: #ffc107;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .lecture-tabs button.active {
-      background: #e0a800;
-      color: white;
-    }
-    #lectureSection button {
-      background: #ffc107;
-      border: none;
-      margin: 0 5px;
-      padding: 10px 15px;
-      border-radius: 5px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    #lectureSection button.active {
-      background: #e0a800;
-      color: white;
-    }
-    .overlay {
+    .rain {
       position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.85);
-      color: #ffc107;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 1.5rem;
-      z-index: 9999;
-      display: none;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url('https://cdnb.artstation.com/p/assets/images/images/040/130/771/large/iqnatius-budi-camavoran-dragon.jpg?1627958100');
+      background-size: cover;
+      background-repeat: repeat;
+      opacity: 0.4;
+    }
+    .svg-thunderbolt {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0;
+      animation: boltFlash 5s infinite;
+    }
+    @keyframes boltFlash {
+      0%, 96%, 100% { opacity: 0; }
+      97% { opacity: 1; }
+      98% { opacity: 0.8; }
+      99% { opacity: 0; }
+    }
+      .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat;
+      z-index: -1;
+      animation: scrollStars 60s linear infinite;
+    }
+    @keyframes scrollStars {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 1000px; }
     }
   </style>
 </head>
-<body> 
- <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem;">
-    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="PW THOR Logo" style="height: 60px;" />
-    <h1 style="color: #ffc107; font-size: 2rem; margin: 0;">PW THOR</h1>
-  </div>
-  <input type="text" id="searchInput" placeholder="Search batch by name..." />
-<div id="overlay" class="overlay">
-  <svg class="gear" viewBox="0 0 100 100" width="80" height="80">
-    <path fill="#ffc107" d="M94 56.6v-13.2l-10.4-2.1c-.6-2-1.4-3.8-2.4-5.6l6-8.8-9.3-9.3-8.8 6c-1.8-1-3.6-1.8-5.6-2.4L56.6 6h-13.2l-2.1 10.4c-2 .6-3.8 1.4-5.6 2.4l-8.8-6-9.3 9.3 6 8.8c-1 1.8-1.8 3.6-2.4 5.6L6 43.4v13.2l10.4 2.1c.6 2 1.4 3.8 2.4 5.6l-6 8.8 9.3 9.3 8.8-6c1.8 1 3.6 1.8 5.6 2.4L43.4 94h13.2l2.1-10.4c2-.6 3.8-1.4 5.6-2.4l8.8 6 9.3-9.3-6-8.8c1-1.8 1.8-3.6 2.4-5.6L94 56.6zM50 66a16 16 0 1 1 0-32 16 16 0 0 1 0 32z"/>
+$1<div class="stars"></div>
+<div class="rain"></div>
+
+  <svg class="svg-thunderbolt" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <polyline points="50,0 45,30 55,30 48,60 60,60 40,100" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
-</div>
 
-
-  <div class="grid" id="main"></div>
-  <div class="back-btn" id="backBtn" style="display:none;">← Back</div>
-  <div class="today-classes-wrapper" id="todayWrapper" style="display: none;">
-    <div class="today-classes-title">📅 Today Classes</div>
-    <div class="today-classes-container" id="todayClasses"></div>
-  </div>
-  <div class="grid" id="subjects" style="display: none;"></div>
-  <div class="grid" id="chapters" style="display: none;"></div>
-  <div id="lectureSection" style="display:none;">
-    <div class="lecture-tabs">
-      <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
-      <button id="tab-notes" onclick="switchLectureTab('notes')">Notes</button>
-      <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">DPPs</button>
-      <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">DPP Lecture</button>
+  <div class="container">
+    <h1>Welcome to PWTHOR</h1>
+    <p class="quote">Education must be free for everyone</p>
+    <div class="apps">
+      <div class="card" onclick="flyDragonAndRedirect('pw.html')">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Physics_wallah_logo.jpg/640px-Physics_wallah_logo.jpg" alt="Physics Wallah Logo">
+        <span>Physics Wallah</span>
+      </div>
+      <div class="card" onclick="flyDragonAndRedirect('kgs.html')">
+        <img src="https://media.licdn.com/dms/image/v2/D4D0BAQH7xukMCivyTQ/company-logo_200_200/company-logo_200_200/0/1683371069173?e=2147483647&v=beta&t=ym_-zwS6YxRb7dEDfErB_VBoLzD7ed2srkhC_xIZ2hg" alt="Khan Global Studies Logo">
+        <span>Khan Global Studies</span>
+      </div>
     </div>
-    <div class="grid" id="lectureContent"></div>
+    <img src="ChatGPT Image Jun 23, 2025, 10_03_56 PM-bg-removed-Pacdora.png" alt="Dragonfly" class="dragonfly" id="dragonfly">
   </div>
- <div id="popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: #1e2036; color: white; padding: 20px; box-shadow: 0 0 20px #ffc10766; z-index: 9999; width: 320px; border-radius: 12px; text-align: center;">
-    <button onclick="document.getElementById('popup').style.display='none'" 
-      style="position: absolute; top: 5px; right: 10px; background: transparent; border: none; font-size: 20px; color: white;">&times;</button>
-    <img id="popupImage" src="" alt="Popup Image" style="max-width: 100%; height: auto; border-radius: 8px;">
-    <p id="popupText" style="margin: 15px 0;"></p>
-    <a id="popupLink" href="#" target="_blank" 
-       style="display: inline-block; padding: 10px 15px; background-color: #ffc107; color: #111; font-weight: bold; text-decoration: none; border-radius: 5px;">
-       Join Telegram
-    </a>
-  </div>
-  
+
   <script>
-   function _0xda35(_0x28e85f,_0x189413){const _0xc58cb9=_0xc58c();return _0xda35=function(_0xda35a4,_0x477297){_0xda35a4=_0xda35a4-0x13d;let _0x5e1124=_0xc58cb9[_0xda35a4];return _0x5e1124;},_0xda35(_0x28e85f,_0x189413);}const _0x1844ce=_0xda35;(function(_0x556c7f,_0x11bbde){const _0x1fc054=_0xda35,_0x14f917=_0x556c7f();while(!![]){try{const _0x5bc8a1=-parseInt(_0x1fc054(0x146))/0x1+parseInt(_0x1fc054(0x150))/0x2*(-parseInt(_0x1fc054(0x17f))/0x3)+-parseInt(_0x1fc054(0x14c))/0x4*(-parseInt(_0x1fc054(0x153))/0x5)+parseInt(_0x1fc054(0x170))/0x6+parseInt(_0x1fc054(0x183))/0x7*(-parseInt(_0x1fc054(0x15b))/0x8)+parseInt(_0x1fc054(0x1a1))/0x9+parseInt(_0x1fc054(0x181))/0xa;if(_0x5bc8a1===_0x11bbde)break;else _0x14f917['push'](_0x14f917['shift']());}catch(_0x12f004){_0x14f917['push'](_0x14f917['shift']());}}}(_0xc58c,0x40de5));const API_BASE='https://pw-api-75332756c41b.herokuapp.com',overlay=document[_0x1844ce(0x171)](_0x1844ce(0x159)),main=document[_0x1844ce(0x171)](_0x1844ce(0x148)),subjectsDiv=document[_0x1844ce(0x171)](_0x1844ce(0x15a)),chaptersDiv=document[_0x1844ce(0x171)](_0x1844ce(0x184)),loader=document[_0x1844ce(0x171)](_0x1844ce(0x1a2)),backBtn=document[_0x1844ce(0x171)]('backBtn'),searchInput=document[_0x1844ce(0x171)](_0x1844ce(0x191)),todayWrapper=document[_0x1844ce(0x171)](_0x1844ce(0x16e)),todayClassesDiv=document['getElementById'](_0x1844ce(0x1a6));let viewStack=[],allBatches=[],currentLectureUrl='';function showLoader(_0x5ad5ba){const _0x384ecb=_0x1844ce;overlay['style'][_0x384ecb(0x18c)]=_0x5ad5ba?_0x384ecb(0x17e):_0x384ecb(0x187);}function clearAll(){const _0x3e87b5=_0x1844ce;main[_0x3e87b5(0x15d)][_0x3e87b5(0x18c)]=_0x3e87b5(0x187),subjectsDiv[_0x3e87b5(0x15d)][_0x3e87b5(0x18c)]='none',chaptersDiv[_0x3e87b5(0x15d)]['display']=_0x3e87b5(0x187),backBtn[_0x3e87b5(0x15d)][_0x3e87b5(0x18c)]=viewStack[_0x3e87b5(0x172)]?'block':_0x3e87b5(0x187),todayWrapper[_0x3e87b5(0x15d)]['display']=_0x3e87b5(0x187),document['getElementById'](_0x3e87b5(0x175))['style']['display']=_0x3e87b5(0x187);}function show(_0x4566f0){const _0x4d75db=_0x1844ce;clearAll(),_0x4566f0[_0x4d75db(0x15d)][_0x4d75db(0x18c)]=_0x4566f0['id']===_0x4d75db(0x175)?_0x4d75db(0x17c):'flex';}function appendCard(_0x147e2b,_0x3ac886,_0x56e789,_0x3f4b06){const _0x1cc4bc=_0x1844ce,_0x320e54=document['createElement']('div');_0x320e54['className']=_0x1cc4bc(0x19a),_0x320e54[_0x1cc4bc(0x140)]=_0x1cc4bc(0x145)+(_0x56e789?_0x1cc4bc(0x164)+_0x56e789+'\x22\x20alt=\x22'+_0x3ac886+_0x1cc4bc(0x19d):'')+_0x1cc4bc(0x18f)+_0x3ac886+_0x1cc4bc(0x178),_0x320e54[_0x1cc4bc(0x193)]=_0x3f4b06,_0x147e2b['appendChild'](_0x320e54);}async function loadBatches(){const _0xf8bb02=_0x1844ce;showLoader(!![]);try{const _0x4f00a7=await fetch(API_BASE+_0xf8bb02(0x157)),_0x1ce324=await _0x4f00a7['json']();allBatches=_0x1ce324,renderBatches(_0x1ce324);}catch(_0x578259){console[_0xf8bb02(0x13e)](_0xf8bb02(0x18a),_0x578259);}finally{showLoader(![]);}}function renderBatches(_0x1f0791){const _0x501f70=_0x1844ce;main['innerHTML']='',show(main),searchInput[_0x501f70(0x15d)][_0x501f70(0x18c)]='block',_0x1f0791['forEach'](_0x20f88f=>{const _0x4bbc2b=_0x501f70;appendCard(main,_0x20f88f[_0x4bbc2b(0x1a7)],_0x20f88f[_0x4bbc2b(0x185)],()=>{const _0x32c856=_0x4bbc2b;viewStack[_0x32c856(0x14a)](()=>renderBatches(_0x1f0791)),loadSubjects(API_BASE+_0x20f88f[_0x32c856(0x190)],_0x20f88f['url']);});});}async function loadSubjects(_0x8f2230,_0x36fd5b){const _0x830408=_0x1844ce;showLoader(!![]),subjectsDiv[_0x830408(0x140)]='',searchInput[_0x830408(0x15d)][_0x830408(0x18c)]=_0x830408(0x187);try{const _0x14f311=await fetch(_0x8f2230),_0x196e6c=await _0x14f311['json']();show(subjectsDiv),_0x196e6c[_0x830408(0x17b)](_0x1671a4=>{appendCard(subjectsDiv,_0x1671a4['name'],null,()=>{const _0x168ae1=_0xda35;viewStack[_0x168ae1(0x14a)](()=>loadSubjects(_0x8f2230,_0x36fd5b)),loadChapters(API_BASE+_0x1671a4[_0x168ae1(0x190)]);});});const _0x54c524=await fetch(API_BASE+'/api/pw/todayclass?batchId='+encodeURIComponent(decodeURIComponent(_0x36fd5b[_0x830408(0x16f)]('=')[0x1]))),_0x2d6ca0=await _0x54c524[_0x830408(0x1a5)]();todayWrapper[_0x830408(0x15d)][_0x830408(0x18c)]='block',todayClassesDiv[_0x830408(0x140)]=_0x2d6ca0[_0x830408(0x172)]===0x0?'<div\x20style=\x22color:\x20gray;\x20padding:\x2010px;\x22>No\x20live\x20classes\x20today.</div>':'',_0x2d6ca0[_0x830408(0x17b)](_0x251e94=>{const _0x18fd14=_0x830408,_0x38aa95=document[_0x18fd14(0x15f)](_0x18fd14(0x155));_0x38aa95['className']='today-card',_0x38aa95[_0x18fd14(0x140)]=_0x18fd14(0x192)+(_0x251e94[_0x18fd14(0x185)]?'<img\x20src=\x22'+_0x251e94['image']+_0x18fd14(0x14b):'')+_0x18fd14(0x158)+_0x251e94['title']+_0x18fd14(0x195),_0x38aa95[_0x18fd14(0x193)]=async()=>{const _0x387985=_0x18fd14,_0x352a83=_0x251e94[_0x387985(0x190)];if(_0x352a83[_0x387985(0x14e)]('.pdf')||_0x352a83[_0x387985(0x196)]('youtube.com')||_0x352a83['includes'](_0x387985(0x13d))){window[_0x387985(0x173)](_0x352a83,_0x387985(0x197));return;}overlay[_0x387985(0x15d)]['display']='flex';try{const _0xef0a0b=await fetch(API_BASE+_0x387985(0x15c)+encodeURIComponent(_0x352a83)),_0x319231=await _0xef0a0b[_0x387985(0x1a5)]();let _0xb5fa3e='';if(typeof _0x319231===_0x387985(0x16b))_0xb5fa3e=_0x387985(0x194)+encodeURIComponent(_0x319231);else{if(typeof _0x319231===_0x387985(0x151)&&_0x319231[_0x387985(0x190)]&&!_0x319231[_0x387985(0x165)])_0xb5fa3e='?type=live&url='+encodeURIComponent(_0x319231[_0x387985(0x190)]);else{if(_0x319231[_0x387985(0x190)]&&_0x319231[_0x387985(0x165)]?.[_0x387985(0x172)]){const [_0x4174df,_0x40727e]=_0x319231[_0x387985(0x165)][0x0][_0x387985(0x16f)](':');_0xb5fa3e='?type=drm&url='+encodeURIComponent(_0x319231[_0x387985(0x190)])+_0x387985(0x142)+_0x4174df+_0x387985(0x19b)+_0x40727e;if(_0x319231[_0x387985(0x141)])_0xb5fa3e+='&pssh='+encodeURIComponent(_0x319231[_0x387985(0x141)]);}else{alert('Unsupported\x20video\x20format.');return;}}}window[_0x387985(0x144)][_0x387985(0x1a3)]=_0x387985(0x182)+_0xb5fa3e;}catch(_0x18f3b2){console['error'](_0x387985(0x154),_0x18f3b2),alert('Failed\x20to\x20load\x20video.');}finally{overlay[_0x387985(0x15d)][_0x387985(0x18c)]='none';}},todayClassesDiv[_0x18fd14(0x152)](_0x38aa95);});}catch(_0x5df2b2){console['error']('Failed\x20to\x20load\x20subjects\x20or\x20todayclass:',_0x5df2b2);}finally{showLoader(![]);}}async function loadChapters(_0x36c412){const _0x3003eb=_0x1844ce;showLoader(!![]),chaptersDiv['innerHTML']='';try{const _0x46fd4a=await fetch(_0x36c412),_0x4e65f9=await _0x46fd4a[_0x3003eb(0x1a5)]();show(chaptersDiv),_0x4e65f9[_0x3003eb(0x17b)](_0x25bf9c=>{const _0x5dda04=_0x3003eb;appendCard(chaptersDiv,_0x25bf9c[_0x5dda04(0x1a7)],null,()=>{const _0x33f711=_0x5dda04;viewStack['push'](()=>loadChapters(_0x36c412)),loadLectures(API_BASE+_0x25bf9c[_0x33f711(0x190)]);});});}catch(_0x998a9d){console['error'](_0x3003eb(0x16d),_0x998a9d);}finally{showLoader(![]);}}function loadLectures(_0xde9886){const _0x2a0824=_0x1844ce;currentLectureUrl=_0xde9886,switchLectureTab(_0x2a0824(0x18b));}function switchLectureTab(_0x1b8037){const _0x2c3ee7=_0x1844ce,_0x1accfa={'lectures':_0x2c3ee7(0x188),'notes':_0x2c3ee7(0x161),'dppnotes':_0x2c3ee7(0x16c),'dpplecture':_0x2c3ee7(0x147)},_0x355dce={'notes':_0x2c3ee7(0x19e),'dppnotes':_0x2c3ee7(0x162),'dpplecture':_0x2c3ee7(0x1a0)},_0x278660=new URLSearchParams(currentLectureUrl['split']('?')[0x1])[_0x2c3ee7(0x180)]('chapterId')||'',_0x45ff08=_0x278660['replace'](_0x2c3ee7(0x14f),_0x355dce[_0x1b8037]||_0x2c3ee7(0x14f));[_0x2c3ee7(0x18b),'notes',_0x2c3ee7(0x167),'dpplecture']['forEach'](_0xbdbbc2=>{const _0x3ef232=_0x2c3ee7;document[_0x3ef232(0x171)](_0x3ef232(0x163)+_0xbdbbc2)[_0x3ef232(0x160)][_0x3ef232(0x17a)]('active');}),document[_0x2c3ee7(0x171)](_0x2c3ee7(0x163)+_0x1b8037)[_0x2c3ee7(0x160)][_0x2c3ee7(0x19f)]('active');const _0x3779e3=document['getElementById'](_0x2c3ee7(0x199));_0x3779e3['innerHTML']='',showLoader(!![]),fetch(''+API_BASE+_0x1accfa[_0x1b8037]+_0x2c3ee7(0x174)+encodeURIComponent(_0x45ff08))[_0x2c3ee7(0x179)](_0x515e6c=>_0x515e6c[_0x2c3ee7(0x1a5)]())['then'](_0x2e9d04=>{const _0x3dc4ad=_0x2c3ee7;show(document[_0x3dc4ad(0x171)](_0x3dc4ad(0x175)));if(!_0x2e9d04||_0x2e9d04[_0x3dc4ad(0x172)]===0x0){_0x3779e3[_0x3dc4ad(0x140)]=_0x3dc4ad(0x14d);return;}_0x2e9d04[_0x3dc4ad(0x17b)](_0xf57269=>{const _0x559407=_0x3dc4ad,_0x479fb6=document[_0x559407(0x15f)]('div');_0x479fb6['className']='card',_0x479fb6[_0x559407(0x140)]=_0x559407(0x198)+(_0xf57269[_0x559407(0x185)]||_0xf57269[_0x559407(0x143)]?_0x559407(0x164)+(_0xf57269[_0x559407(0x185)]||_0xf57269[_0x559407(0x143)])+_0x559407(0x149)+_0xf57269[_0x559407(0x15e)]+_0x559407(0x19d):'')+_0x559407(0x18d)+_0xf57269[_0x559407(0x15e)]+_0x559407(0x168),_0x479fb6['onclick']=async()=>{const _0x31260b=_0x559407,_0x329b99=_0xf57269[_0x31260b(0x190)];if(_0x329b99['endsWith'](_0x31260b(0x19c))||_0x329b99['includes'](_0x31260b(0x177))||_0x329b99[_0x31260b(0x196)](_0x31260b(0x13d))){window[_0x31260b(0x173)](_0x329b99,_0x31260b(0x197));return;}overlay[_0x31260b(0x15d)][_0x31260b(0x18c)]=_0x31260b(0x17e);try{const _0x30d8b3=await fetch(API_BASE+'/api/pw/video?url='+encodeURIComponent(_0x329b99)),_0x4eb6ec=await _0x30d8b3[_0x31260b(0x1a5)]();let _0x8ed785='';if(typeof _0x4eb6ec===_0x31260b(0x16b))_0x8ed785=_0x31260b(0x194)+encodeURIComponent(_0x4eb6ec);else{if(typeof _0x4eb6ec==='object'&&_0x4eb6ec[_0x31260b(0x190)]&&!_0x4eb6ec[_0x31260b(0x165)])_0x8ed785=_0x31260b(0x194)+encodeURIComponent(_0x4eb6ec[_0x31260b(0x190)]);else{if(_0x4eb6ec[_0x31260b(0x190)]&&_0x4eb6ec[_0x31260b(0x165)]?.[_0x31260b(0x172)]){const [_0x2e7a4b,_0x53c1b4]=_0x4eb6ec[_0x31260b(0x165)][0x0][_0x31260b(0x16f)](':');_0x8ed785=_0x31260b(0x1a4)+encodeURIComponent(_0x4eb6ec[_0x31260b(0x190)])+_0x31260b(0x142)+_0x2e7a4b+_0x31260b(0x19b)+_0x53c1b4;if(_0x4eb6ec['pssh'])_0x8ed785+='&pssh='+encodeURIComponent(_0x4eb6ec['pssh']);}else{alert(_0x31260b(0x176));return;}}}window['location']['href']='pwplayer.html'+_0x8ed785;}catch(_0x203a2b){console['error'](_0x31260b(0x154),_0x203a2b),alert(_0x31260b(0x13f));}finally{overlay[_0x31260b(0x15d)][_0x31260b(0x18c)]=_0x31260b(0x187);}},_0x3779e3['appendChild'](_0x479fb6);});})['catch'](_0x30d149=>console[_0x2c3ee7(0x13e)](_0x2c3ee7(0x18e),_0x30d149))[_0x2c3ee7(0x189)](()=>showLoader(![]));}backBtn[_0x1844ce(0x193)]=()=>{const _0x59cf12=_0x1844ce;if(viewStack[_0x59cf12(0x172)]){const _0x43e6af=viewStack[_0x59cf12(0x156)]();_0x43e6af();}},searchInput[_0x1844ce(0x186)](_0x1844ce(0x166),()=>{const _0x33cce3=_0x1844ce,_0x301780=searchInput[_0x33cce3(0x17d)][_0x33cce3(0x169)](),_0x475a4f=allBatches[_0x33cce3(0x16a)](_0x121548=>_0x121548[_0x33cce3(0x1a7)][_0x33cce3(0x169)]()[_0x33cce3(0x196)](_0x301780));renderBatches(_0x475a4f);}),loadBatches();function _0xc58c(){const _0x5c967c=['pssh','&keyid=','thumbnail','location','\x0a\x20\x20\x20\x20\x20\x20\x20\x20','144380sZgFcM','/api/pw/dpplecture','main','\x22\x20alt=\x22','push','\x22\x20style=\x22width:\x20100%;\x20border-radius:\x206px;\x20margin-bottom:\x205px;\x22>','108152bgeRsS','<div\x20style=\x22color:\x20gray;\x20font-size:\x201.1rem;\x20margin-top:\x2020px;\x20text-align:\x20center;\x22>No\x20content\x20found.</div>','endsWith','/videos','4286yFyfck','object','appendChild','50FLZKFZ','Video\x20load\x20failed:','div','pop','/api/pw/batches','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22today-card-title\x22>','overlay','subjects','136HvvjLK','/api/pw/video?url=','style','title','createElement','classList','/api/pw/notes','/DppNotes','tab-','<img\x20src=\x22','keys','input','dppnotes','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','toLowerCase','filter','string','/api/pw/dppnotes','Failed\x20to\x20load\x20chapters:','todayWrapper','split','377520cvhTNv','getElementById','length','open','?chapterId=','lectureSection','Unsupported\x20video\x20format.','youtube.com','</div>\x0a\x20\x20\x20\x20\x20\x20','then','remove','forEach','block','value','flex','291zsyRiM','get','3970070rsqTmj','pwplayer.html','191667dWeIZL','chapters','image','addEventListener','none','/api/pw/lectures','finally','Failed\x20to\x20load\x20batches:','lectures','display','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-title\x22>','Failed\x20to\x20load\x20section:','\x0a\x20\x20\x20\x20\x20\x20\x20\x20<div\x20class=\x22card-title\x22>','url','searchInput','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','onclick','?type=live&url=','</div>\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','includes','_blank','\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20','lectureContent','card','&key=','.pdf','\x22\x20/>','/notes','add','/DppVideos','3178098VdaCbF','loader','href','?type=drm&url=','json','todayClasses','name','youtu.be','error','Failed\x20to\x20load\x20video.','innerHTML'];_0xc58c=function(){return _0x5c967c;};return _0xc58c();}
+    function flyDragonAndRedirect(url) {
+      const dragon = document.getElementById('dragonfly');
+      dragon.classList.add('fly-away');
+      setTimeout(() => {
+        window.location.href = url;
+      }, 2000);
+    }
   </script>
-  
-  <script>
-  fetch('/popup.json')
-    .then(res => res.json())
-    .then(popup => {
-      if (popup.show) {
-        document.getElementById('popupImage').src = popup.image;
-        document.getElementById('popupText').textContent = popup.text;
-        document.getElementById('popupLink').href = popup.link;
-        document.getElementById('popup').style.display = 'block';
-      }
-    })
-    .catch(err => console.error('Error loading popup data:', err));
-</script>
-  <script>
-    // Disable right-click and DevTools (unchanged)
-    document.addEventListener('contextmenu', event => event.preventDefault());
-    document.addEventListener('keydown', function (event) {
-      if (
-        event.key === "F12" ||
-        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
-        (event.ctrlKey && event.key === 'U')
-      ) {
-        event.preventDefault();
-      }
-    });
-    (function() {
-      const element = new Image();
-      Object.defineProperty(element, 'id', {
-        get: function() {
-          document.location.href = 'about:blank';
-        }
-      });
-      console.log(element);
-    })();
-  </script>
- <a href="https://t.me/pwthor_support" target="_blank" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-    <img src="download.png" alt="Telegram Support" style="width: 50px; height: 50px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
-  </a>
 </body>
 </html>
