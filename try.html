@@ -5,17 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KGS Heroku Courses</title>
   <style>
-    body { font-family: Arial; background: #0e0f1b; color: white; padding: 20px; }
-    h1 { color: #ffc107; text-align: center; }
-    .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+    body { font-family: Arial; background: #0e0f1b; color: white; padding: 0; margin: 0; }
+    h1 { color: #ffc107; text-align: center; padding: 20px 0; }
+    .grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; padding: 20px; }
     .card { background: #1e2036; padding: 1rem; border-radius: 10px; width: 250px; cursor: pointer; transition: 0.3s; position: relative; }
     .card:hover { background: #2a2e4b; transform: translateY(-5px); }
-    .card img { width: 100%; border-radius: 10px; cursor: pointer; }
+    .card img { width: 100%; border-radius: 10px; }
     .card-title { text-align: center; margin-top: 10px; font-weight: bold; }
     .btn { background: #ffc107; color: #111; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; margin: 8px auto 0; display: block; text-align: center; font-weight: bold; text-decoration: none; }
-    iframe { width: 100%; height: 300px; border: none; border-radius: 10px; margin-top: 10px; }
     .loader { border: 6px solid #333; border-top: 6px solid #ffc107; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 2rem auto; display: none; }
+    .video-player { display: none; flex-direction: column; align-items: center; background: #000; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; padding: 10px; }
+    .video-header { width: 100%; display: flex; align-items: center; justify-content: space-between; color: #fff; padding: 10px; }
+    .video-header h2 { flex: 1; text-align: center; font-size: 1.2rem; margin: 0; }
+    .video-header button { background: #ffc107; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    iframe { width: 100%; height: 60vh; border: none; border-radius: 10px; margin-top: 10px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @media screen and (orientation: landscape) {
+      iframe { height: 100vh; }
+    }
   </style>
 </head>
 <body>
@@ -25,12 +32,24 @@
   <div class="grid" id="subjects" style="display:none;"></div>
   <div class="grid" id="lectureContent" style="display:none;"></div>
 
+  <div class="video-player" id="videoPlayer">
+    <div class="video-header">
+      <button onclick="closePlayer()">← Back</button>
+      <h2 id="videoTitle"></h2>
+      <div style="width: 60px;"></div>
+    </div>
+    <iframe id="playerFrame" allowfullscreen allow="fullscreen; autoplay; encrypted-media;"></iframe>
+  </div>
+
   <script>
     const API_BASE = "https://api-kgs-ff20d78e287f.herokuapp.com";
     const main = document.getElementById("main");
     const subjectsDiv = document.getElementById("subjects");
     const lectureContent = document.getElementById("lectureContent");
     const loader = document.getElementById("loader");
+    const videoPlayer = document.getElementById("videoPlayer");
+    const playerFrame = document.getElementById("playerFrame");
+    const videoTitle = document.getElementById("videoTitle");
     let viewStack = [];
 
     function showLoader(show) { loader.style.display = show ? "block" : "none"; }
@@ -104,48 +123,32 @@
           return;
         }
 
-        data.videos.forEach(async video => {
+        data.videos.forEach(video => {
           const div = document.createElement("div");
           div.className = "card";
 
           const thumb = document.createElement("img");
           thumb.src = video.thumb;
-          thumb.onclick = async () => {
-            showLoader(true);
-            try {
-              const resolveRes = await fetch(`${API_BASE}/api/resolve-video?video_type=kgs&video_url=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.name)}&poster=${encodeURIComponent(video.thumb)}&course_id=${batchId}&batch_id=${batchId}`);
-              const resolveData = await resolveRes.json();
-              const iframe = document.createElement("iframe");
-              iframe.src = resolveData.redirected_to;
-              div.appendChild(iframe);
-            } catch (e) {
-              alert("Failed to resolve video");
-            } finally {
-              showLoader(false);
-            }
-          };
+          thumb.onclick = () => openVideoPlayer(video, batchId);
 
           const title = document.createElement("div");
           title.className = "card-title";
           title.textContent = video.name;
 
-          const downloadBtn = document.createElement("a");
-          downloadBtn.href = video.video_url;
-          downloadBtn.className = "btn";
-          downloadBtn.target = "_blank";
-
-          const noteBtn = document.createElement("a");
-          if (video.pdfs && video.pdfs.length > 0) {
-            noteBtn.href = video.pdfs[0].url;
-            noteBtn.textContent = "Notes";
-            noteBtn.className = "btn";
-            noteBtn.target = "_blank";
-          }
-
           div.appendChild(thumb);
           div.appendChild(title);
-          if (noteBtn.href) div.appendChild(noteBtn);
-          div.appendChild(downloadBtn);
+
+          if (video.pdfs && video.pdfs.length > 0) {
+            video.pdfs.forEach(pdf => {
+              const noteBtn = document.createElement("a");
+              noteBtn.href = pdf.url;
+              noteBtn.textContent = pdf.title || "Notes";
+              noteBtn.className = "btn";
+              noteBtn.target = "_blank";
+              div.appendChild(noteBtn);
+            });
+          }
+
           lectureContent.appendChild(div);
         });
 
@@ -154,6 +157,26 @@
       } finally {
         showLoader(false);
       }
+    }
+
+    async function openVideoPlayer(video, batchId) {
+      showLoader(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/resolve-video?video_type=kgs&video_url=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.name)}&poster=${encodeURIComponent(video.thumb)}&course_id=${batchId}&batch_id=${batchId}`);
+        const result = await res.json();
+        playerFrame.src = result.redirected_to;
+        videoTitle.textContent = video.name;
+        videoPlayer.style.display = "flex";
+      } catch (e) {
+        alert("Failed to load video.");
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function closePlayer() {
+      playerFrame.src = "";
+      videoPlayer.style.display = "none";
     }
 
     window.onload = loadBatches;
