@@ -261,19 +261,17 @@ function showLoader(show) {
       container.appendChild(div);
     }
 
+     // ←— UPDATED! —→
     async function loadBatches() {
       showLoader(true);
       try {
         const res = await fetch(`${API_BASE}/api/batches`);
         const data = await res.json();
-
-        // Transform API shape to what renderBatches expects:
         allBatches = data.batches.map(b => ({
           name: b.name,
           image: b.previewImage,
           url: `/api/pw/subjects?batchId=${b.encoded_id}`
         }));
-
         renderBatches(allBatches);
       } catch (err) {
         console.error("Failed to load batches:", err);
@@ -286,7 +284,6 @@ function showLoader(show) {
       main.innerHTML = "";
       show(main);
       searchInput.style.display = "block";
-
       batches.forEach(batch => {
         appendCard(main, batch.name, batch.image, () => {
           viewStack.push(() => renderBatches(batches));
@@ -294,6 +291,7 @@ function showLoader(show) {
         });
       });
     }
+
 
     async function loadSubjects(subjectUrl, rawBatchUrl) {
       showLoader(true);
