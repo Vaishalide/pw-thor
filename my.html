@@ -235,6 +235,13 @@ let chapterTotal = Infinity;
 let chapterLoading = false;
 let currentBatchId = "";
 let currentSubjectSlug = "";
+let lecturePage = 1;
+let lectureTotal = Infinity;
+let lectureLoading = false;
+let currentBatchId = "";
+let currentSubjectSlug = "";
+let currentTopicId = "";
+let currentContentType = "vidoes";
 
 function showLoader(show) {
   overlay.style.display = show ? "flex" : "none";
@@ -428,35 +435,45 @@ loadChapters(batchId, sub.slug, chapterPage);
   }
 }
 
-   async function loadLecturesContent(batchId, subjectSlug, topicId) {
-  currentLectureUrl = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=vidoes`;
-  showLoader(true);
-  const lectureContent = document.getElementById("lectureContent");
-  lectureContent.innerHTML = "";
+ async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes", page = 1) {
+  if (lectureLoading || page > Math.ceil(lectureTotal / 20)) return;
+
+  lectureLoading = true;
+  if (page === 1) document.getElementById("lectureContent").innerHTML = "";
   show(document.getElementById("lectureSection"));
+  showLoader(true);
 
+  currentBatchId = batchId;
+  currentSubjectSlug = subjectSlug;
+  currentTopicId = topicId;
+  currentContentType = contentType;
+
+  const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}&page=${page}`;
   try {
-    const res = await fetch(currentLectureUrl);
+    const res = await fetch(url);
     const data = await res.json();
-
     const items = data.items || [];
-    if (items.length === 0) {
+    lectureTotal = data.total || items.length;
+
+    const lectureContent = document.getElementById("lectureContent");
+    if (page === 1 && items.length === 0) {
       lectureContent.innerHTML = `<div style="color: gray; text-align: center; margin-top: 20px;">No content found.</div>`;
       return;
     }
 
     items.forEach(item => {
-      const vid = item.videoDetails;
-      if (!vid) return;
+      const vid = item.videoDetails || item;
+      const title = vid.name || item.title || "Untitled";
+      const image = vid.image || item.image || item.thumbnail;
+      const url = vid.hls_url || item.url || "";
 
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
-        ${vid.image ? `<img src="${vid.image}" alt="${vid.name}" />` : ""}
-        <div class="card-title">${vid.name}</div>
+        ${image ? `<img src="${image}" alt="${title}" />` : ""}
+        <div class="card-title">${title}</div>
       `;
       div.onclick = async () => {
-        const url = vid.hls_url || item.url || "";
         if (!url) {
           alert("No video URL available.");
           return;
@@ -492,21 +509,36 @@ loadChapters(batchId, sub.slug, chapterPage);
 
       lectureContent.appendChild(div);
     });
+
+    lecturePage++;
   } catch (err) {
-    console.error("Failed to load lectures:", err);
-    lectureContent.innerHTML = `<div style="color: red; text-align: center; margin-top: 20px;">Error loading lectures.</div>`;
+    console.error("Failed to load content:", err);
   } finally {
+    lectureLoading = false;
     showLoader(false);
   }
 }
 
-    function switchLectureTab(type) {
-      const apiMap = {
-        lectures: '/api/pw/lectures',
-        notes: '/api/pw/notes',
-        dppnotes: '/api/pw/dppnotes',
-        dpplecture: '/api/pw/dpplecture',
-      };
+   function switchLectureTab(tab) {
+  const typeMap = {
+    lectures: "vidoes",
+    notes: "notes",
+    dppnotes: "DppNotes",
+    dpplecture: "DppVideos"
+  };
+
+  currentContentType = typeMap[tab] || "vidoes";
+  lecturePage = 1;
+  lectureTotal = Infinity;
+
+  ["lectures", "notes", "dppnotes", "dpplecture"].forEach(t => {
+    document.getElementById("tab-" + t).classList.remove("active");
+  });
+  document.getElementById("tab-" + tab).classList.add("active");
+
+  loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
+}
+
 
       const replacements = {
         notes: "/notes",
