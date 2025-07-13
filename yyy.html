@@ -76,23 +76,22 @@
     }
 
     // 2) Load and render subjects for a batch
-  async function loadSubjects(batchId) {
-  // 1) Hide everything else and show the subjects grid
+ async function loadSubjects(batchId) {
+  // Hide other views & show subjects
   show(subsDiv);
   backBtn.style.display = "block";
   backBtn.onclick = () => viewStack.pop()();
 
-  // 2) Clear old cards and hide the search box
+  // Clear previous & hide search
   subsDiv.innerHTML = "";
   searchI.style.display = "none";
 
   try {
-    // 3) Fetch subjects list
     const res  = await fetch(`${API}/api/batch/${encodeURIComponent(batchId)}`);
-    const data = await res.json();
-    const subs = data.subjects || [];
+    const json = await res.json();
+    // Subjects now live under json.data.subjects
+    const subs = (json.data && json.data.subjects) || [];
 
-    // 4) Render each subject
     subs.forEach(sub => {
       const imgUrl = sub.imageId
         ? `${sub.imageId.baseUrl}${sub.imageId.key}`
@@ -100,7 +99,7 @@
 
       appendCard(
         subsDiv,
-        sub.subject,      // e.g. "Physics"
+        sub.subject,   // e.g. "Physics"
         imgUrl,
         () => {
           viewStack.push(() => loadSubjects(batchId));
