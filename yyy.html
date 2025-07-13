@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>PW THOR</title>
+  <style>
+    body { background: #0e0f1b; color: white; font-family: Arial, sans-serif; margin:0; padding:20px }
+    .grid { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin-top:20px }
+    .card { background:#1e2036; border-radius:10px; width:250px; padding:1rem; cursor:pointer;
+            transition:.3s; text-align:center }
+    .card:hover { background:#2a2e4b; transform:translateY(-5px) }
+    .card img { width:100%; border-radius:8px; margin-bottom:8px }
+    .back { color:#ffc107; cursor:pointer; margin-bottom:10px; display:none }
+    #searchInput { padding:10px; width:80%; margin:10px auto; display:block; border-radius:5px; border:none }
+  </style>
+</head>
+<body>
+  <h1 style="text-align:center; color:#ffc107">PW THOR</h1>
+  <input id="searchInput" placeholder="Search batches…" />
+  <div class="back" id="backBtn">← Back</div>
+
+  <div id="main" class="grid"></div>
+  <div id="subjects" class="grid" style="display:none"></div>
+  <div id="chapters" class="grid" style="display:none"></div>
+  <div id="lectures" class="grid" style="display:none"></div>
+
+  <script>
+  const API_BASE = "https://pw-api-75332756c41b.herokuapp.com";
+  const main       = document.getElementById("main");
+  const subjects   = document.getElementById("subjects");
+  const chapters   = document.getElementById("chapters");
+  const lectures   = document.getElementById("lectures");
+  const backBtn    = document.getElementById("backBtn");
+  const searchIn   = document.getElementById("searchInput");
+
+  let viewStack = [], allBatches = [];
+
+  function show(div){ [main,subjects,chapters,lectures].forEach(d=>d.style.display="none"); div.style.display="flex" }
+  function appendCard(container,title,img,onClick){
+    const c=document.createElement("div"); c.className="card";
+    c.innerHTML = `${img?`<img src="${img}"/>`:''}<div>${title}</div>`;
+    c.onclick=onClick; container.appendChild(c);
+  }
+
+  async function loadBatches(){
+    const res = await fetch(`${API_BASE}/api/batches`);
+    const { batches } = await res.json();
+    allBatches = batches.map(b=>({
+      id: b._id, name: b.name, img: b.previewImage
+    }));
+    renderBatches(allBatches);
+  }
+
+  function renderBatches(list){
+    main.innerHTML=""; show(main); backBtn.style.display="none"; searchIn.style.display="block";
+    list.forEach(b=>{
+      appendCard(main,b.name,b.img,()=>{
+        viewStack.push(()=>renderBatches(list));
+        loadSubjects(b.id);
+      });
+    });
+  }
+
+  async function loadSubjects(batchId){
+    searchIn.style.display="none"; subjects.innerHTML=""; show(subjects); backBtn.style.display="block";
+    backBtn.onclick=()=>{ viewStack.pop()(); };
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}`);
+    const data = await res.json();
+    const subs = data.subjects || [];
+    subs.forEach(s=>{
+      const img = s.imageId? `${s.imageId.baseUrl}${s.imageId.key}`: null;
+      appendCard(subjects, s.subject, img, ()=>{
+        viewStack.push(()=>loadSubjects(batchId));
+        loadChapters(batchId, s.slug);
+      });
+    });
+  }
+
+  async function loadChapters(batchId, subjSlug){
+    chapters.innerHTML=""; show(chapters); backBtn.style.display="block";
+    backBtn.onclick=()=>{ viewStack.pop()(); };
+    const res  = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjSlug}/topics`);
+    const data = await res.json();
+    // v2 topics may live in data.data, or returned directly as array
+    const tops = Array.isArray(data)? data : (data.data || []);
+    tops.forEach(t=>{
+      appendCard(chapters, t.name||t.subject||t.slug, null, ()=>{
+        viewStack.push(()=>loadChapters(batchId,subjSlug));
+        loadLectures(batchId, subjSlug, t._id);
+      });
+    });
+  }
+
+  async function loadLectures(batchId, subjSlug, topicId){
+    lectures.innerHTML=""; show(lectures); backBtn.style.display="block";
+    backBtn.onclick=()=>{ viewStack.pop()(); };
+    const res  = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjSlug}/topic/${topicId}/videos`);
+    const data = await res.json();
+    // video items in data.items
+    const vids = data.items || data.data || [];
+    vids.forEach(v=>{
+      appendCard(lectures, v.title||v.name||v.slug, v.thumbnail||v.poster||null, ()=>{
+        // open or handle v.url / v.externalUrl
+        window.open(v.url||v.video_url, "_blank");
+      });
+    });
+  }
+
+  // search filter
+  searchIn.addEventListener("input", e=>{
+    const kw=e.target.value.toLowerCase();
+    renderBatches(allBatches.filter(b=>b.name.toLowerCase().includes(kw)));
+  });
+
+  // start
+  loadBatches();
+  </script>
+</body>
+</html>
