@@ -293,20 +293,50 @@ function showLoader(show) {
     }
 
 
-    async function loadSubjects(subjectUrl, rawBatchUrl) {
-      showLoader(true);
-      subjectsDiv.innerHTML = "";
-      searchInput.style.display = "none";
-      try {
-        const res = await fetch(subjectUrl);
-        const subjects = await res.json();
-        show(subjectsDiv);
-        subjects.forEach(subject => {
-          appendCard(subjectsDiv, subject.name, null, () => {
-            viewStack.push(() => loadSubjects(subjectUrl, rawBatchUrl));
-            loadChapters(API_BASE + subject.url);
-          });
-        });
+   async function loadSubjects(batchUrl, rawBatchUrl) {
+  showLoader(true);
+  subjectsDiv.innerHTML = "";
+  searchInput.style.display = "none";
+  try {
+    // Extract the batchId you encoded in the URL
+    const batchId = decodeURIComponent(rawBatchUrl.split("batchId=")[1]);
+
+    // Fetch your new endpoint
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}`);
+    const data = await res.json();
+
+    // data.subjects is the array you showed
+    const subjects = data.subjects;
+
+    show(subjectsDiv);
+
+    // Map each subject.subject → display title, and build the next-URL
+    subjects.forEach(s => {
+      appendCard(subjectsDiv,
+        s.subject,                              // use s.subject
+        s.imageId                              // optional: you can show s.imageId.baseUrl + s.imageId.key
+          ? `${s.imageId.baseUrl}${s.imageId.key}`
+          : null,
+        () => {
+          viewStack.push(() => loadSubjects(batchUrl, rawBatchUrl));
+
+          // Build your chapter URL however your backend expects it.
+          // If it’s /api/pw/chapters?subjectSlug=…
+          loadChapters(`${API_BASE}/api/pw/chapters?subjectSlug=${s.slug}`);
+        }
+      );
+    });
+
+    // …then your today‑classes logic stays the same…
+  }
+  catch (err) {
+    console.error("Failed to load subjects:", err);
+  }
+  finally {
+    showLoader(false);
+  }
+}
+
 
         const todayRes = await fetch(`${API_BASE}/api/pw/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
         const todayClasses = await todayRes.json();
