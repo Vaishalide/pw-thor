@@ -299,20 +299,17 @@ async function loadBatches() {
 }
 
 
- async function loadSubjects(batchId) {
-  // Hide other views & show subjects
+async function loadSubjects(batchId) {
   show(subjectsDiv);
   backBtn.style.display = "block";
   backBtn.onclick = () => viewStack.pop()();
 
-  // Clear previous & hide search
   subjectsDiv.innerHTML = "";
   searchInput.style.display = "none";
 
   try {
     const res  = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
     const json = await res.json();
-    // Subjects now live under json.data.subjects
     const subs = (json.data && json.data.subjects) || [];
 
     subs.forEach(sub => {
@@ -321,8 +318,8 @@ async function loadBatches() {
         : null;
 
       appendCard(
-        subsDiv,
-        sub.subject,   // e.g. "Physics"
+        subjectsDiv, // ← fixed from subsDiv
+        sub.subject,
         imgUrl,
         () => {
           viewStack.push(() => loadSubjects(batchId));
@@ -331,63 +328,62 @@ async function loadBatches() {
       );
     });
 
+    const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
+    const todayClasses = await todayRes.json();
+    todayWrapper.style.display = "block";
+    todayClassesDiv.innerHTML = todayClasses.length === 0
+      ? '<div style="color: gray; padding: 10px;">No live classes today.</div>'
+      : "";
 
-        const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
-        const todayClasses = await todayRes.json();
-        todayWrapper.style.display = "block";
-        todayClassesDiv.innerHTML = todayClasses.length === 0
-          ? '<div style="color: gray; padding: 10px;">No live classes today.</div>'
-          : "";
+    todayClasses.forEach(cls => {
+      const card = document.createElement("div");
+      card.className = "today-card";
+      card.innerHTML = `
+        ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
+        <div class="today-card-title">${cls.title}</div>
+      `;
+      card.onclick = async () => {
+        const url = cls.url;
+        if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
+          window.open(url, "_blank");
+          return;
+        }
+        overlay.style.display = "flex";
+        try {
+          const res = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(url)}`);
+          const data = await res.json();
+          let query = "";
 
-        todayClasses.forEach(cls => {
-          const card = document.createElement("div");
-          card.className = "today-card";
-          card.innerHTML = `
-            ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
-            <div class="today-card-title">${cls.title}</div>
-          `;
-          card.onclick = async () => {
-            const url = cls.url;
-            if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
-              window.open(url, "_blank");
-              return;
-            }
-            overlay.style.display = "flex";
-            try {
-              const res = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(url)}`);
-              const data = await res.json();
-              let query = "";
+          if (typeof data === "string") {
+            query = `?type=live&url=${encodeURIComponent(data)}`;
+          } else if (typeof data === "object" && data.url && !data.keys) {
+            query = `?type=live&url=${encodeURIComponent(data.url)}`;
+          } else if (data.url && data.keys?.length) {
+            const [keyid, key] = data.keys[0].split(":");
+            query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
+            if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
+          } else {
+            alert("Unsupported video format.");
+            return;
+          }
 
-             if (typeof data === "string") {
-  query = `?type=live&url=${encodeURIComponent(data)}`;
-} else if (typeof data === "object" && data.url && !data.keys) {
-  // Object with just a URL → live stream
-  query = `?type=live&url=${encodeURIComponent(data.url)}`;
-} else if (data.url && data.keys?.length) {
-  const [keyid, key] = data.keys[0].split(":");
-  query = `?type=drm&url=${encodeURIComponent(data.url)}&keyid=${keyid}&key=${key}`;
-  if (data.pssh) query += `&pssh=${encodeURIComponent(data.pssh)}`;
-} else {
-  alert("Unsupported video format.");
-  return;
+          window.location.href = `dipesh.html${query}`;
+        } catch (err) {
+          console.error("Video load failed:", err);
+          alert("Failed to load video.");
+        } finally {
+          overlay.style.display = "none";
+        }
+      };
+      todayClassesDiv.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Failed to load subjects or todayclass:", err);
+  } finally {
+    showLoader(false);
+  }
 }
 
-              window.location.href = `dipesh.html${query}`;
-            } catch (err) {
-              console.error("Video load failed:", err);
-              alert("Failed to load video.");
-            } finally {
-              overlay.style.display = "none";
-            }
-          };
-          todayClassesDiv.appendChild(card);
-        });
-      } catch (err) {
-        console.error("Failed to load subjects or todayclass:", err);
-      } finally {
-        showLoader(false);
-      }
-    }
 
     async function loadChapters(chapterUrl) {
       showLoader(true);
