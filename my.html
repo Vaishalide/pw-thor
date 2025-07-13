@@ -301,13 +301,13 @@ async function loadBatches() {
 
  async function loadSubjects(batchId) {
   // Hide other views & show subjects
-  show(subsDiv);
+  show(subjectsDiv);
   backBtn.style.display = "block";
   backBtn.onclick = () => viewStack.pop()();
 
   // Clear previous & hide search
-  subsDiv.innerHTML = "";
-  searchI.style.display = "none";
+  subjectsDiv.innerHTML = "";
+  searchInput.style.display = "none";
 
   try {
     const res  = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
@@ -332,7 +332,7 @@ async function loadBatches() {
     });
 
 
-        const todayRes = await fetch(`${API_BASE}/api/pw/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
+        const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
         const todayClasses = await todayRes.json();
         todayWrapper.style.display = "block";
         todayClassesDiv.innerHTML = todayClasses.length === 0
