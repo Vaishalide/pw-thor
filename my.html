@@ -270,7 +270,7 @@ function showLoader(show) {
         allBatches = data.batches.map(b => ({
           name: b.name,
           image: b.previewImage,
-          url: `/api/pw/subjects?batchId=${b.encoded_id}`
+         url: `/api/batch/${encodeURIComponent(b.encoded_id)}`
         }));
         renderBatches(allBatches);
       } catch (err) {
