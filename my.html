@@ -310,7 +310,7 @@ async function loadBatches() {
   searchI.style.display = "none";
 
   try {
-    const res  = await fetch(`${API}/api/batch/${encodeURIComponent(batchId)}`);
+    const res  = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
     const json = await res.json();
     // Subjects now live under json.data.subjects
     const subs = (json.data && json.data.subjects) || [];
@@ -330,11 +330,6 @@ async function loadBatches() {
         }
       );
     });
-  } catch (err) {
-    console.error("Failed to load subjects:", err);
-  }
-}
-   
 
 
         const todayRes = await fetch(`${API_BASE}/api/pw/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
