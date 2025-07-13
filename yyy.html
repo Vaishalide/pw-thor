@@ -76,51 +76,40 @@
     }
 
     // 2) Load and render subjects for a batch
-    async function loadSubjects(batchId) {
-  // 1) Block the UI
-  showLoader(true);
+  async function loadSubjects(batchId) {
+  // 1) Hide everything else and show the subjects grid
+  show(subsDiv);
+  backBtn.style.display = "block";
+  backBtn.onclick = () => viewStack.pop()();
 
-  // 2) Clear out any old subjects & hide search
-  subjectsDiv.innerHTML = "";
-  searchInput.style.display = "none";
+  // 2) Clear old cards and hide the search box
+  subsDiv.innerHTML = "";
+  searchI.style.display = "none";
 
   try {
-    // 3) Fetch the batch details (your response has a top‑level `subjects` array)
-    const res  = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
+    // 3) Fetch subjects list
+    const res  = await fetch(`${API}/api/batch/${encodeURIComponent(batchId)}`);
     const data = await res.json();
-
-    // 4) Grab the array
     const subs = data.subjects || [];
 
-    // 5) Show the container
-    show(subjectsDiv);
-
-    // 6) Render each subject
+    // 4) Render each subject
     subs.forEach(sub => {
-      // Build an optional image URL if present
       const imgUrl = sub.imageId
         ? `${sub.imageId.baseUrl}${sub.imageId.key}`
         : null;
 
-      // Use sub.subject for the title, sub.slug for navigation
       appendCard(
-        subjectsDiv,
-        sub.subject,     // ← E.g. "Physics"
+        subsDiv,
+        sub.subject,      // e.g. "Physics"
         imgUrl,
         () => {
-          // save for back‑button
           viewStack.push(() => loadSubjects(batchId));
-
-          // load chapters via your topics endpoint
           loadChapters(batchId, sub.slug);
         }
       );
     });
   } catch (err) {
     console.error("Failed to load subjects:", err);
-  } finally {
-    // 7) Un‑block the UI
-    showLoader(false);
   }
 }
 
