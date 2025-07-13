@@ -385,25 +385,29 @@ async function loadSubjects(batchId) {
 }
 
 
-    async function loadChapters(chapterUrl) {
-      showLoader(true);
-      chaptersDiv.innerHTML = "";
-      try {
-        const res = await fetch(chapterUrl);
-        const chapters = await res.json();
-        show(chaptersDiv);
-        chapters.forEach(ch => {
-          appendCard(chaptersDiv, ch.name, null, () => {
-            viewStack.push(() => loadChapters(chapterUrl));
-            loadLectures(API_BASE + ch.url);
-          });
-        });
-      } catch (err) {
-        console.error("Failed to load chapters:", err);
-      } finally {
-        showLoader(false);
-      }
-    }
+   async function loadChapters(batchId, subjectSlug) {
+  showLoader(true);
+  chaptersDiv.innerHTML = "";
+  try {
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics`);
+    const result = await res.json();
+
+    const chapters = result.data || [];
+    show(chaptersDiv);
+
+    chapters.forEach(ch => {
+      appendCard(chaptersDiv, ch.name, null, () => {
+        viewStack.push(() => loadChapters(batchId, subjectSlug));
+        loadLectures(`${API_BASE}${ch.url}`); // Or handle `ch._id` depending on your API
+      });
+    });
+  } catch (err) {
+    console.error("Failed to load chapters:", err);
+  } finally {
+    showLoader(false);
+  }
+}
+
 
     function loadLectures(lectureUrl) {
       currentLectureUrl = lectureUrl;
