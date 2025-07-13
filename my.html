@@ -262,23 +262,27 @@ function showLoader(show) {
     }
 
      // ←— UPDATED! —→
-    async function loadBatches() {
-      showLoader(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/batches`);
-        const data = await res.json();
-        allBatches = data.batches.map(b => ({
-          name: b.name,
-          image: b.previewImage,
-         url: `/api/batch/${encodeURIComponent(b.encoded_id)}`
-        }));
-        renderBatches(allBatches);
-      } catch (err) {
-        console.error("Failed to load batches:", err);
-      } finally {
-        showLoader(false);
-      }
-    }
+   async function loadBatches() {
+  showLoader(true);
+  try {
+    const res  = await fetch(`${API_BASE}/api/batches`);
+    const data = await res.json();
+
+    allBatches = data.batches.map(b => ({
+      name : b.name,
+      image: b.previewImage,
+      // ← use /api/batch/:batchId now:
+      url  : `/api/batch/${encodeURIComponent(b.encoded_id)}`
+    }));
+
+    renderBatches(allBatches);
+  } catch (err) {
+    console.error("Failed to load batches:", err);
+  } finally {
+    showLoader(false);
+  }
+}
+
 
     function renderBatches(batches) {
       main.innerHTML = "";
