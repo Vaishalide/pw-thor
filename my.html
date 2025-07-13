@@ -413,10 +413,10 @@ loadChapters(batchId, sub.slug, chapterPage);
     chapterTotal = result.paginate?.totalCount || chapters.length;
 
     chapters.forEach(ch => {
-      appendCard(chaptersDiv, ch.name, null, () => {
-        viewStack.push(() => loadChapters(batchId, subjectSlug));
-        loadLectures(`${API_BASE}${ch.url}`);
-      });
+     appendCard(chaptersDiv, ch.name, null, () => {
+  viewStack.push(() => loadChapters(batchId, subjectSlug));
+  loadLecturesContent(batchId, subjectSlug, ch._id);
+});
     });
 
     chapterPage++;
