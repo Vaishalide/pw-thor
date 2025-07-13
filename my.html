@@ -433,22 +433,30 @@ loadChapters(batchId, sub.slug, chapterPage);
   }
 }
 
- async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes", page = 1) {
+async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes", page = 1) {
+  // Prevent duplicate loads or overflow pages
   if (lectureLoading || page > Math.ceil(lectureTotal / 20)) return;
-
   lectureLoading = true;
-  if (page === 1) document.getElementById("lectureContent").innerHTML = "";
+
+  // Reset on first page
+  if (page === 1) {
+    document.getElementById("lectureContent").innerHTML = "";
+  }
   show(document.getElementById("lectureSection"));
   showLoader(true);
 
-  currentBatchId = batchId;
+  // Track current context
+  currentBatchId     = batchId;
   currentSubjectSlug = subjectSlug;
-  currentTopicId = topicId;
+  currentTopicId     = topicId;
   currentContentType = contentType;
 
+  // Build URL with page & type
   const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}&page=${page}`;
+  console.log("Fetching lectures content:", url);
+
   try {
-    const res = await fetch(url);
+    const res  = await fetch(url);
     const data = await res.json();
     const items = data.items || [];
     lectureTotal = data.total || items.length;
@@ -460,50 +468,71 @@ loadChapters(batchId, sub.slug, chapterPage);
     }
 
     items.forEach(item => {
-      const vid = item.videoDetails || item;
-      const title = vid.name || item.title || "Untitled";
-      const image = vid.image || item.image || item.thumbnail;
-      const url = vid.hls_url || item.url || "";
-
       const div = document.createElement("div");
       div.className = "card";
-      div.innerHTML = `
-        ${image ? `<img src="${image}" alt="${title}" />` : ""}
-        <div class="card-title">${title}</div>
-      `;
-      div.onclick = async () => {
-        if (!url) {
-          alert("No video URL available.");
-          return;
-        }
 
-        overlay.style.display = "flex";
-        try {
-          const res = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(url)}`);
-          const videoData = await res.json();
-          let query = "";
+      if (contentType === "notes" || contentType === "DppNotes") {
+        // --- NOTES / DPP NOTES RENDERING ---
+        const topicTitle = item.topic || "Untitled Note";
+        // Flatten all attachmentIds
+        const buttonsHtml = (item.homeworkIds || []).flatMap(hw =>
+          (hw.attachmentIds || []).map(att =>
+            `<button onclick="window.open('${att.baseUrl + att.key}','_blank')">
+               ${att.name}
+             </button>`
+          )
+        ).join("");
 
-          if (typeof videoData === "string") {
-            query = `?type=live&url=${encodeURIComponent(videoData)}`;
-          } else if (videoData.url && !videoData.keys) {
-            query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
-          } else if (videoData.url && videoData.keys?.length) {
-            const [keyid, key] = videoData.keys[0].split(":");
-            query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
-            if (videoData.pssh) query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
-          } else {
-            alert("Unsupported video format.");
+        div.innerHTML = `
+          <div class="card-title">${topicTitle}</div>
+          <div class="note-buttons">${buttonsHtml}</div>
+        `;
+      } else {
+        // --- VIDEO / DPP VIDEOS RENDERING ---
+        const vid   = item.videoDetails || item;
+        const title = vid.name || "Untitled Video";
+        const image = vid.image || vid.thumbnail || "";
+        const mediaUrl = vid.hls_url || item.url || "";
+
+        div.innerHTML = `
+          ${image ? `<img src="${image}" alt="${title}" />` : ""}
+          <div class="card-title">${title}</div>
+        `;
+        div.onclick = async () => {
+          if (!mediaUrl) {
+            alert("No video URL available.");
             return;
           }
+          overlay.style.display = "flex";
+          try {
+            const resp = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(mediaUrl)}`);
+            const videoData = await resp.json();
+            let query = "";
 
-          window.location.href = `dipesh.html${query}`;
-        } catch (err) {
-          console.error("Video load failed:", err);
-          alert("Failed to load video.");
-        } finally {
-          overlay.style.display = "none";
-        }
-      };
+            if (typeof videoData === "string") {
+              query = `?type=live&url=${encodeURIComponent(videoData)}`;
+            } else if (videoData.url && !videoData.keys) {
+              query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
+            } else if (videoData.url && videoData.keys?.length) {
+              const [keyid, key] = videoData.keys[0].split(":");
+              query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
+              if (videoData.pssh) {
+                query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
+              }
+            } else {
+              alert("Unsupported video format.");
+              return;
+            }
+
+            window.location.href = `dipesh.html${query}`;
+          } catch (err) {
+            console.error("Video load failed:", err);
+            alert("Failed to load video.");
+          } finally {
+            overlay.style.display = "none";
+          }
+        };
+      }
 
       lectureContent.appendChild(div);
     });
@@ -516,6 +545,7 @@ loadChapters(batchId, sub.slug, chapterPage);
     showLoader(false);
   }
 }
+
 
    function switchLectureTab(tab) {
   const typeMap = {
