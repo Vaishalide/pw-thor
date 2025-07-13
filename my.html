@@ -331,15 +331,7 @@ function showLoader(show) {
       );
     });
 
-    // …then your today‑classes logic stays the same…
-  }
-  catch (err) {
-    console.error("Failed to load subjects:", err);
-  }
-  finally {
-    showLoader(false);
-  }
-}
+   
 
 
         const todayRes = await fetch(`${API_BASE}/api/pw/todayclass?batchId=${encodeURIComponent(decodeURIComponent(rawBatchUrl.split("=")[1]))}`);
