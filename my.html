@@ -230,6 +230,11 @@
     let viewStack = [];
     let allBatches = [];
     let currentLectureUrl = "";
+    let chapterPage = 1;
+let chapterTotal = Infinity;
+let chapterLoading = false;
+let currentBatchId = "";
+let currentSubjectSlug = "";
 
 function showLoader(show) {
   overlay.style.display = show ? "flex" : "none";
@@ -323,7 +328,11 @@ async function loadSubjects(batchId) {
         imgUrl,
         () => {
           viewStack.push(() => loadSubjects(batchId));
-          loadChapters(batchId, sub.slug);
+          chapterPage = 1;
+chapterTotal = Infinity;
+chapterLoading = false;
+loadChapters(batchId, sub.slug, chapterPage);
+
         }
       );
     });
@@ -385,29 +394,39 @@ async function loadSubjects(batchId) {
 }
 
 
-   async function loadChapters(batchId, subjectSlug) {
-  showLoader(true);
-  chaptersDiv.innerHTML = "";
-  try {
-    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics`);
-    const result = await res.json();
+ async function loadChapters(batchId, subjectSlug, page = 1) {
+  if (chapterLoading || page > Math.ceil(chapterTotal / 20)) return;
 
+  chapterLoading = true;
+  showLoader(true);
+
+  currentBatchId = batchId;
+  currentSubjectSlug = subjectSlug;
+
+  if (page === 1) chaptersDiv.innerHTML = "";
+  show(chaptersDiv);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
+    const result = await res.json();
     const chapters = result.data || [];
-    show(chaptersDiv);
+    chapterTotal = result.paginate?.totalCount || chapters.length;
 
     chapters.forEach(ch => {
       appendCard(chaptersDiv, ch.name, null, () => {
         viewStack.push(() => loadChapters(batchId, subjectSlug));
-        loadLectures(`${API_BASE}${ch.url}`); // Or handle `ch._id` depending on your API
+        loadLectures(`${API_BASE}${ch.url}`);
       });
     });
+
+    chapterPage++;
   } catch (err) {
     console.error("Failed to load chapters:", err);
   } finally {
     showLoader(false);
+    chapterLoading = false;
   }
 }
-
 
     function loadLectures(lectureUrl) {
       currentLectureUrl = lectureUrl;
@@ -509,6 +528,15 @@ async function loadSubjects(batchId) {
       const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
       renderBatches(filtered);
     });
+     
+  window.addEventListener("scroll", () => {
+  if (
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
+    chaptersDiv.style.display !== "none"
+  ) {
+    loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
+  }
+});
 
     loadBatches();
   </script>
