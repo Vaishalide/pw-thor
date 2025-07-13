@@ -428,10 +428,77 @@ loadChapters(batchId, sub.slug, chapterPage);
   }
 }
 
-    function loadLectures(lectureUrl) {
-      currentLectureUrl = lectureUrl;
-      switchLectureTab('lectures');
+   async function loadLecturesContent(batchId, subjectSlug, topicId) {
+  currentLectureUrl = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=vidoes`;
+  showLoader(true);
+  const lectureContent = document.getElementById("lectureContent");
+  lectureContent.innerHTML = "";
+  show(document.getElementById("lectureSection"));
+
+  try {
+    const res = await fetch(currentLectureUrl);
+    const data = await res.json();
+
+    const items = data.items || [];
+    if (items.length === 0) {
+      lectureContent.innerHTML = `<div style="color: gray; text-align: center; margin-top: 20px;">No content found.</div>`;
+      return;
     }
+
+    items.forEach(item => {
+      const vid = item.videoDetails;
+      if (!vid) return;
+
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        ${vid.image ? `<img src="${vid.image}" alt="${vid.name}" />` : ""}
+        <div class="card-title">${vid.name}</div>
+      `;
+      div.onclick = async () => {
+        const url = vid.hls_url || item.url || "";
+        if (!url) {
+          alert("No video URL available.");
+          return;
+        }
+
+        overlay.style.display = "flex";
+        try {
+          const res = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(url)}`);
+          const videoData = await res.json();
+          let query = "";
+
+          if (typeof videoData === "string") {
+            query = `?type=live&url=${encodeURIComponent(videoData)}`;
+          } else if (videoData.url && !videoData.keys) {
+            query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
+          } else if (videoData.url && videoData.keys?.length) {
+            const [keyid, key] = videoData.keys[0].split(":");
+            query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
+            if (videoData.pssh) query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
+          } else {
+            alert("Unsupported video format.");
+            return;
+          }
+
+          window.location.href = `dipesh.html${query}`;
+        } catch (err) {
+          console.error("Video load failed:", err);
+          alert("Failed to load video.");
+        } finally {
+          overlay.style.display = "none";
+        }
+      };
+
+      lectureContent.appendChild(div);
+    });
+  } catch (err) {
+    console.error("Failed to load lectures:", err);
+    lectureContent.innerHTML = `<div style="color: red; text-align: center; margin-top: 20px;">Error loading lectures.</div>`;
+  } finally {
+    showLoader(false);
+  }
+}
 
     function switchLectureTab(type) {
       const apiMap = {
