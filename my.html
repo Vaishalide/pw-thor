@@ -305,28 +305,28 @@ async function loadSubjects(batchId) {
   searchInput.style.display = "none";
 
   try {
-    // Now use the raw _id in the URL
     const res  = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
     const data = await res.json();
-
     const subjects = data.subjects || [];
+
     show(subjectsDiv);
 
-    subjects.forEach(s => {
-      const imgUrl = s.imageId
-        ? `${s.imageId.baseUrl}${s.imageId.key}`
+    subjects.forEach(sub => {
+      const imgUrl = sub.imageId
+        ? `${sub.imageId.baseUrl}${sub.imageId.key}`
         : null;
 
-      appendCard(subjectsDiv,
-        s.subject,
+      appendCard(
+        subjectsDiv,
+        sub.subject,        // display the subject name
         imgUrl,
         () => {
           viewStack.push(() => loadSubjects(batchId));
-          loadChapters(`${API_BASE}/api/pw/chapters?subjectSlug=${s.slug}`);
+          // ← call your chapters API:
+          loadChapters(batchId, sub.slug);
         }
       );
     });
-
 
    
 
