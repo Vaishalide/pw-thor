@@ -262,17 +262,17 @@ function showLoader(show) {
     }
 
      // ←— UPDATED! —→
-   async function loadBatches() {
+async function loadBatches() {
   showLoader(true);
   try {
     const res  = await fetch(`${API_BASE}/api/batches`);
     const data = await res.json();
 
+    // Use b._id (not encoded_id) for the subjects URL
     allBatches = data.batches.map(b => ({
-      name : b.name,
-      image: b.previewImage,
-      // ← use /api/batch/:batchId now:
-      url  : `/api/batch/${encodeURIComponent(b.encoded_id)}`
+      name:    b.name,
+      image:   b.previewImage,
+      batchId: b._id
     }));
 
     renderBatches(allBatches);
@@ -284,52 +284,49 @@ function showLoader(show) {
 }
 
 
-    function renderBatches(batches) {
-      main.innerHTML = "";
-      show(main);
-      searchInput.style.display = "block";
-      batches.forEach(batch => {
-        appendCard(main, batch.name, batch.image, () => {
-          viewStack.push(() => renderBatches(batches));
-          loadSubjects(API_BASE + batch.url, batch.url);
-        });
-      });
-    }
+  function renderBatches(batches) {
+  main.innerHTML = "";
+  show(main);
+  searchInput.style.display = "block";
+
+  batches.forEach(batch => {
+    appendCard(main, batch.name, batch.image, () => {
+      viewStack.push(() => renderBatches(batches));
+      // pass the raw Mongo _id
+      loadSubjects(batch.batchId);
+    });
+  });
+}
 
 
-   async function loadSubjects(batchUrl, rawBatchUrl) {
+async function loadSubjects(batchId) {
   showLoader(true);
   subjectsDiv.innerHTML = "";
   searchInput.style.display = "none";
-  try {
-    // Extract the batchId you encoded in the URL
-    const batchId = decodeURIComponent(rawBatchUrl.split("batchId=")[1]);
 
-    // Fetch your new endpoint
-    const res = await fetch(`${API_BASE}/api/batch/${batchId}`);
+  try {
+    // Now use the raw _id in the URL
+    const res  = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
     const data = await res.json();
 
-    // data.subjects is the array you showed
-    const subjects = data.subjects;
-
+    const subjects = data.subjects || [];
     show(subjectsDiv);
 
-    // Map each subject.subject → display title, and build the next-URL
     subjects.forEach(s => {
-      appendCard(subjectsDiv,
-        s.subject,                              // use s.subject
-        s.imageId                              // optional: you can show s.imageId.baseUrl + s.imageId.key
-          ? `${s.imageId.baseUrl}${s.imageId.key}`
-          : null,
-        () => {
-          viewStack.push(() => loadSubjects(batchUrl, rawBatchUrl));
+      const imgUrl = s.imageId
+        ? `${s.imageId.baseUrl}${s.imageId.key}`
+        : null;
 
-          // Build your chapter URL however your backend expects it.
-          // If it’s /api/pw/chapters?subjectSlug=…
+      appendCard(subjectsDiv,
+        s.subject,
+        imgUrl,
+        () => {
+          viewStack.push(() => loadSubjects(batchId));
           loadChapters(`${API_BASE}/api/pw/chapters?subjectSlug=${s.slug}`);
         }
       );
     });
+
 
    
 
