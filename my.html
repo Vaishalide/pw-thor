@@ -196,6 +196,12 @@
 <div class="grid" id="chapters" style="display: none;">
   <div id="loadMoreChapters" style="width: 100%; height: 1px;"></div>
 </div>
+<div style="text-align:center; margin-top: 20px; display:none;" id="chapterLoadMoreWrapper">
+  <button id="chapterLoadMoreBtn" style="padding: 10px 20px; background-color: #ffc107; border: none; color: #111; font-weight: bold; border-radius: 5px; cursor: pointer;">
+    Load More Chapters
+  </button>
+</div>
+
 
   <div id="lectureSection" style="display:none;">
     <div class="lecture-tabs">
@@ -432,6 +438,14 @@ loadChapters(batchId, sub.slug, chapterPage);
     console.error("Failed to load chapters:", err);
   } finally {
     showLoader(false);
+     // Show or hide Load More button
+const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
+if (chapterPage <= Math.ceil(chapterTotal / 20)) {
+  loadMoreWrapper.style.display = "block";
+} else {
+  loadMoreWrapper.style.display = "none";
+}
+
     chapterLoading = false;
   }
 }
@@ -593,7 +607,10 @@ lectureTotal = data.paginate?.totalCount || items.length;
     loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
   }
 });
-     
+  document.getElementById("chapterLoadMoreBtn").onclick = () => {
+  loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
+};
+   
 window.addEventListener("scroll", () => {
   if (
     window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
