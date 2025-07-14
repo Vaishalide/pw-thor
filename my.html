@@ -520,66 +520,66 @@ lectureTotal = data.paginate?.totalCount || items.length;
       ${image ? `<img src="${image}" alt="${title}" />` : ""}
       <div class="card-title">${title}</div>
     `;
-div.onclick = async () => {
-  overlay.style.display = "flex";
-  try {
-    let finalUrl = mediaUrl;
+ div.onclick = async () => {
+          overlay.style.display = "flex";
+          try {
+            let finalUrl = mediaUrl;
 
-    // Check if direct URL is YouTube → open directly
-    if (finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'))) {
-      window.open(finalUrl, '_blank');
-      return;
-    }
+            // Check if direct URL is YouTube → open directly
+            if (finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'))) {
+              window.open(finalUrl, '_blank');
+              return;
+            }
 
-    // If no direct URL, call backend to get signed m3u8
-    if (!finalUrl || finalUrl.trim() === "") {
-      const realVid = item.videoDetails || item;
+            // If no direct URL, call backend to get signed m3u8
+            if (!finalUrl || finalUrl.trim() === "") {
+              const realVid = item.videoDetails || item;
 
-      // Build flat query string as you wanted
-      const params = [
-        `video_url=`,
-        `title=${encodeURIComponent(realVid.name || '')}`,
-        `poster=${encodeURIComponent(realVid.image || realVid.thumbnail || '')}`,
-        `video_type=pw`,
-        `video_id=${item._id || ''}`,
-        `subject_id=${currentSubjectId || ''}`,
-        `batch_id=${currentBatchId || ''}`
-      ].join('&');
+              const params = [
+                `video_url=`,
+                `title=${encodeURIComponent(realVid.name || '')}`,
+                `poster=${encodeURIComponent(realVid.image || realVid.thumbnail || '')}`,
+                `video_type=pw`,
+                `video_id=${item._id || ''}`,
+                `subject_id=${currentSubjectId || ''}`,
+                `batch_id=${currentBatchId || ''}`
+              ].join('&');
 
-      console.log("Calling final-stream with:", params);
+              console.log("Calling final-stream with:", params);
 
-      const resp = await fetch(`${API_BASE}/api/video/final-stream?${params}`);
-      const data = await resp.json();
-      console.log("final-stream response:", data);
+              const resp = await fetch(`${API_BASE}/api/video/final-stream?${params}`);
+              const data = await resp.json();
+              console.log("final-stream response:", data);
 
-      if (!data.success || !data.m3u8_url) {
-        alert("Video stream not available.");
-        return;
+              if (!data.success || !data.m3u8_url) {
+                alert("Video stream not available.");
+                return;
+              }
+
+              finalUrl = data.m3u8_url;
+            }
+
+            // Safety: check again if finalUrl is YouTube
+            if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
+              window.open(finalUrl, '_blank');
+              return;
+            }
+
+            // Redirect to player page with playurl param
+            const encoded = encodeURIComponent(finalUrl);
+            window.location.href = `pwplayer.html?playurl=${encoded}`;
+
+          } catch (err) {
+            console.error("Video load failed:", err);
+            alert("Failed to load video.");
+          } finally {
+            overlay.style.display = "none";
+          }
+        };
       }
 
-      finalUrl = data.m3u8_url;
-    }
-
-    // Safety: check again if finalUrl is YouTube
-    if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
-      window.open(finalUrl, '_blank');
-      return;
-    }
-
-    // Redirect to player page with playurl param
-    const encoded = encodeURIComponent(finalUrl);
-    window.location.href = `pwplayer.html?playurl=${encoded}`;
-
-  } catch (err) {
-    console.error("Video load failed:", err);
-    alert("Failed to load video.");
-  } finally {
-    overlay.style.display = "none";
-  }
-};
-
-  lectureContent.appendChild(div);
-});
+      lectureContent.appendChild(div);
+    });
 
     lecturePage++;
   } catch (err) {
@@ -589,7 +589,6 @@ div.onclick = async () => {
     showLoader(false);
   }
 }
-
 
 
    function switchLectureTab(tab) {
