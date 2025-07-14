@@ -257,13 +257,15 @@ function showLoader(show) {
 
 
     function clearAll() {
-      main.style.display = "none";
-      subjectsDiv.style.display = "none";
-      chaptersDiv.style.display = "none";
-      backBtn.style.display = viewStack.length ? "block" : "none";
-      todayWrapper.style.display = "none";
-      document.getElementById("lectureSection").style.display = "none";
-    }
+  main.style.display = "none";
+  subjectsDiv.style.display = "none";
+  chaptersDiv.style.display = "none";
+  backBtn.style.display = viewStack.length ? "block" : "none";
+  todayWrapper.style.display = "none";
+  document.getElementById("chapterLoadMoreWrapper").style.display = "none"; // Add this line
+  document.getElementById("lectureSection").style.display = "none";
+}
+
 
     function show(div) {
       clearAll();
@@ -438,9 +440,14 @@ async function loadSubjects(batchId) {
 
     chapters.forEach(ch => {
      appendCard(chaptersDiv, ch.name, null, () => {
+  if (!ch._id) {
+    alert("Chapter ID missing. Cannot load lectures.");
+    return;
+  }
   viewStack.push(() => loadChapters(batchId, subjectSlug));
   loadLecturesContent(batchId, subjectSlug, ch._id);
 });
+
     });
 
     chapterPage++;
