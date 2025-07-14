@@ -619,14 +619,7 @@ lectureTotal = data.paginate?.totalCount || items.length;
   loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
 };
    
-window.addEventListener("scroll", () => {
-  if (
-    window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
-    document.getElementById("lectureSection").style.display !== "none"
-  ) {
-    loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
-  }
-});
+
 window.onload = () => {
   const sentinel = document.getElementById("loadMoreChapters");
   if (sentinel) {
