@@ -698,8 +698,55 @@ window.onload = () => {
     lectureObserver.observe(lectureSentinel);
   }
 
-  loadBatches(); // start app after observers are set
-};
+ window.onload = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const batchId = params.get("batch");
+      const subjectSlug = params.get("subject");
+      const topicId = params.get("topic");
+      const contentType = params.get("type") || "vidoes";
+
+      if (batchId && subjectSlug && topicId && contentType) {
+        loadLecturesContent(batchId, subjectSlug, topicId, contentType);
+      } else if (batchId && subjectSlug) {
+        try {
+          const topicRes = await fetch(`https://pw-api-75332756c41b.herokuapp.com/api/batch/${batchId}/subject/${subjectSlug}/topics?page=1`);
+          const topicJson = await topicRes.json();
+          const topics = topicJson.data || [];
+          if (topics.length > 0) {
+            loadLecturesContent(batchId, subjectSlug, topics[0]._id, contentType);
+          } else {
+            loadChapters(batchId, subjectSlug);
+          }
+        } catch (err) {
+          console.error("Failed to auto-load chapters:", err);
+          loadChapters(batchId, subjectSlug);
+        }
+      } else if (batchId) {
+        try {
+          const res = await fetch(`https://pw-api-75332756c41b.herokuapp.com/api/batch/${encodeURIComponent(batchId)}`);
+          const json = await res.json();
+          const subjects = json.data?.subjects || [];
+          if (subjects.length > 0) {
+            const firstSlug = subjects[0].slug;
+            const topicRes = await fetch(`https://pw-api-75332756c41b.herokuapp.com/api/batch/${batchId}/subject/${firstSlug}/topics?page=1`);
+            const topicJson = await topicRes.json();
+            const topics = topicJson.data || [];
+            if (topics.length > 0) {
+              loadLecturesContent(batchId, firstSlug, topics[0]._id, contentType);
+            } else {
+              loadChapters(batchId, firstSlug);
+            }
+          } else {
+            loadSubjects(batchId);
+          }
+        } catch (e) {
+          console.error("Failed to auto-load subject or chapter:", e);
+          loadSubjects(batchId);
+        }
+      } else {
+        loadBatches();
+      }
+    };
   </script>
   
   <script>
