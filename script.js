@@ -20,11 +20,21 @@ const params = new URLSearchParams(window.location.search);
       return "video/mp4";
     }
 
-    const source = document.createElement("source");
-    source.src = videoURL;
-    source.type = getVideoType(videoURL);
-    video.appendChild(source);
-    video.load();
+    if (Hls.isSupported() && videoURL.endsWith(".m3u8")) {
+  const hls = new Hls();
+  hls.loadSource(videoURL);
+  hls.attachMedia(video);
+  hls.on(Hls.Events.MANIFEST_PARSED, () => {
+    video.play();
+  });
+} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+  video.src = videoURL;
+  video.addEventListener('loadedmetadata', () => {
+    video.play();
+  });
+} else {
+  console.error("This browser can't play the video.");
+}
 
     playPause.addEventListener("click", () => {
       if (video.paused) {
