@@ -458,8 +458,9 @@ async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = 
   try {
     const res  = await fetch(url);
     const data = await res.json();
-    const items = data.items || [];
-    lectureTotal = data.total || items.length;
+    const items = data.data || [];
+lectureTotal = data.paginate?.totalCount || items.length;
+
 
     const lectureContent = document.getElementById("lectureContent");
     if (page === 1 && items.length === 0) {
