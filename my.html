@@ -526,19 +526,19 @@ lectureTotal = data.paginate?.totalCount || items.length;
         let finalUrl = mediaUrl;
 
         if (!finalUrl || finalUrl.trim() === "") {
-  const params = new URLSearchParams({
-  video_id: vid._id || vid.id || item._id || '',
-  batch_id: currentBatchId || '',
-  subject_id: currentSubjectId || '',
-  video_url: '',
-  title: vid.name || '',
-  poster: vid.thumbnail || '',
-  video_type: 'pw'
-});
+  const params = [
+  `video_url=`,
+  `title=${encodeURIComponent(realVid.name || '')}`,
+  `poster=${encodeURIComponent(realVid.image || realVid.thumbnail || '')}`,
+  `video_type=pw`,
+  `video_id=${realVid._id || realVid.id || item._id || ''}`,
+  `subject_id=${currentSubjectId || ''}`,
+  `batch_id=${currentBatchId || ''}`
+].join('&');
 
-  console.log("Calling stream-info with:", params.toString());
 
-  const resp = await fetch(`${API_BASE}/api/video/stream-info?${params.toString()}`);
+ const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+
   const data = await resp.json();
   console.log("stream-info response:", data);
 
