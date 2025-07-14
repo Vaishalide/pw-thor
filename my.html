@@ -249,6 +249,7 @@ let lectureTotal = Infinity;
 let lectureLoading = false;
 let currentTopicId = "";
 let currentContentType = "vidoes";
+let currentSubjectId = "";
 
 function showLoader(show) {
   overlay.style.display = show ? "flex" : "none";
@@ -340,14 +341,14 @@ async function loadSubjects(batchId) {
         subjectsDiv, // ← fixed from subsDiv
         sub.subject,
         imgUrl,
-        () => {
-          viewStack.push(() => loadSubjects(batchId));
-         chapterPage = 1;
-chapterLoading = false;
-loadChapters(batchId, sub.slug, 1);
+       () => {
+  viewStack.push(() => loadSubjects(batchId));
+  chapterPage = 1;
+  chapterLoading = false;
+  currentSubjectId = sub._id;           // ✅ store the subject id
+  loadChapters(batchId, sub.slug, 1);
+}
 
-
-        }
       );
     });
 
@@ -526,14 +527,15 @@ lectureTotal = data.paginate?.totalCount || items.length;
 
         if (!finalUrl || finalUrl.trim() === "") {
   const params = new URLSearchParams({
-    video_id: vid._id || vid.id || item._id || '',
-    batch_id: currentBatchId || '',
-    subject_id: currentSubjectSlug || '',
-    video_url: '',
-    title: vid.name || '',
-    poster: vid.thumbnail || '',
-    video_type: 'pw'
-  });
+  video_id: vid._id || vid.id || item._id || '',
+  batch_id: currentBatchId || '',
+  subject_id: currentSubjectId || '',
+  video_url: '',
+  title: vid.name || '',
+  poster: vid.thumbnail || '',
+  video_type: 'pw'
+});
+
   console.log("Calling stream-info with:", params.toString());
 
   const resp = await fetch(`${API_BASE}/api/video/stream-info?${params.toString()}`);
