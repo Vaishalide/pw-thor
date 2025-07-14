@@ -193,8 +193,10 @@
     <div class="today-classes-container" id="todayClasses"></div>
   </div>
   <div class="grid" id="subjects" style="display: none;"></div>
- <div class="grid" id="chapters" style="display: none;"></div>
-<div id="loadMoreChapters" style="width: 100%; height: 1px;"></div>
+<div class="grid" id="chapters" style="display: none;">
+  <div id="loadMoreChapters" style="width: 100%; height: 1px;"></div>
+</div>
+
   <div id="lectureSection" style="display:none;">
     <div class="lecture-tabs">
       <button id="tab-lectures" onclick="switchLectureTab('lectures')">Lecture</button>
@@ -609,6 +611,18 @@ const chapterObserver = new IntersectionObserver(entries => {
 });
 
 chapterObserver.observe(sentinel);
+const lectureSentinel = document.getElementById("loadMoreLectures");
+
+const lectureObserver = new IntersectionObserver(entries => {
+  if (
+    entries[0].isIntersecting &&
+    document.getElementById("lectureSection").style.display !== "none"
+  ) {
+    loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
+  }
+});
+
+lectureObserver.observe(lectureSentinel);
 
     loadBatches();
   </script>
