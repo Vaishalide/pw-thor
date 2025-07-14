@@ -342,10 +342,10 @@ async function loadSubjects(batchId) {
         imgUrl,
         () => {
           viewStack.push(() => loadSubjects(batchId));
-          chapterPage = 1;
-chapterTotal = Infinity;
+         chapterPage = 1;
 chapterLoading = false;
-loadChapters(batchId, sub.slug, chapterPage);
+loadChapters(batchId, sub.slug, 1);
+
 
         }
       );
@@ -409,17 +409,24 @@ loadChapters(batchId, sub.slug, chapterPage);
 
 
  async function loadChapters(batchId, subjectSlug, page = 1) {
-  if (chapterLoading || page > Math.ceil(chapterTotal / 20)) return;
+  if (chapterLoading) return;
+
+  // Reset everything on new subject or first page
+  if (page === 1) {
+    chapterPage = 1;
+    chapterTotal = Infinity;
+    chaptersDiv.innerHTML = "";
+    document.getElementById("chapterLoadMoreWrapper").style.display = "none";
+  }
+
+  if (page > Math.ceil(chapterTotal / 20)) return;
 
   chapterLoading = true;
   showLoader(true);
 
   currentBatchId = batchId;
   currentSubjectSlug = subjectSlug;
-
-  if (page === 1) chaptersDiv.innerHTML = "";
   show(chaptersDiv);
-
   try {
     const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
     const result = await res.json();
@@ -438,13 +445,14 @@ loadChapters(batchId, sub.slug, chapterPage);
     console.error("Failed to load chapters:", err);
   } finally {
     showLoader(false);
-     // Show or hide Load More button
+// Show or hide Load More button
 const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
 if (chapterPage <= Math.ceil(chapterTotal / 20)) {
   loadMoreWrapper.style.display = "block";
 } else {
   loadMoreWrapper.style.display = "none";
 }
+
 
     chapterLoading = false;
   }
