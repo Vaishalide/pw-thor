@@ -607,14 +607,7 @@ lectureTotal = data.paginate?.totalCount || items.length;
       renderBatches(filtered);
     });
      
-  window.addEventListener("scroll", () => {
-  if (
-    window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
-    chaptersDiv.style.display !== "none"
-  ) {
-    loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
-  }
-});
+ 
   document.getElementById("chapterLoadMoreBtn").onclick = () => {
   loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
 };
