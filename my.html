@@ -547,7 +547,7 @@ lectureTotal = data.paginate?.totalCount || items.length;
 
               console.log("Calling final-stream with:", params);
 
-              const resp = await fetch(`${API_BASE}/api/video/final-stream?${params}`);
+              const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
               const data = await resp.json();
               console.log("final-stream response:", data);
 
