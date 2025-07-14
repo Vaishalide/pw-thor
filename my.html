@@ -345,7 +345,7 @@ async function loadSubjects(batchId) {
   viewStack.push(() => loadSubjects(batchId));
   chapterPage = 1;
   chapterLoading = false;
-  currentSubjectId = sub._id;           // ✅ store the subject id
+  currentSubjectId = sub.subjectId || sub._id;
   loadChapters(batchId, sub.slug, 1);
 }
 
@@ -525,23 +525,22 @@ lectureTotal = data.paginate?.totalCount || items.length;
       try {
         let finalUrl = mediaUrl;
 
-        if (!finalUrl || finalUrl.trim() === "") {
- const realVid = item.videoDetails || vid || item;
-const params = [
-  `video_url=`,
-  `title=${encodeURIComponent(realVid.name || '')}`,
-  `poster=${encodeURIComponent(realVid.image || realVid.thumbnail || '')}`,
-  `video_type=pw`,
-  `video_id=${realVid._id || realVid.id || item._id || ''}`,
-  `subject_id=${currentSubjectId || ''}`,
-  `batch_id=${currentBatchId || ''}`
-].join('&');
+if (!finalUrl || finalUrl.trim() === "") {
+  const realVid = item.videoDetails || item;
+  const params = [
+    `video_url=`,
+    `title=${encodeURIComponent(realVid.name || '')}`,
+    `poster=${encodeURIComponent(realVid.image || realVid.thumbnail || '')}`,
+    `video_type=pw`,
+    `video_id=${item._id || ''}`,
+    `subject_id=${currentSubjectId || ''}`,
+    `batch_id=${currentBatchId || ''}`
+  ].join('&');
 
-console.log("Calling stream-info with:", params);
+  console.log("Calling stream-info with:", params);
 
-const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-const data = await resp.json();
-
+  const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+  const data = await resp.json();
   console.log("stream-info response:", data);
 
   if (data.success && data.data && data.data.length > 0) {
@@ -556,6 +555,7 @@ const data = await resp.json();
     return;
   }
 }
+
 
 
         if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
