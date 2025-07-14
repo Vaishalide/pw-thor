@@ -320,6 +320,7 @@ async function loadBatches() {
 
 
 async function loadSubjects(batchId) {
+    history.pushState({}, '', `/batch/${batchId}`);
   show(subjectsDiv);
   backBtn.style.display = "block";
   backBtn.onclick = () => viewStack.pop()();
@@ -414,6 +415,7 @@ async function loadSubjects(batchId) {
 
   // Reset everything on new subject or first page
   if (page === 1) {
+    history.pushState({}, '', `/batch/${batchId}/subject/${subjectSlug}`);
     chapterPage = 1;
     chapterTotal = Infinity;
     chaptersDiv.innerHTML = "";
@@ -466,6 +468,7 @@ async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = 
 
   // Reset on first page
   if (page === 1) {
+    history.pushState({}, '', `/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/${contentType}`);
     document.getElementById("lectureContent").innerHTML = "";
   }
   show(document.getElementById("lectureSection"));
