@@ -530,16 +530,18 @@ lectureTotal = data.paginate?.totalCount || items.length;
     let finalUrl = mediaUrl;
 
     // Case 1: url is blank → call /api/video/stream-info
-    if (!finalUrl) {
-      const params = new URLSearchParams({
-        video_id: vid._id || '',
-        batch_id: currentBatchId || '',
-        subject_id: currentSubjectSlug || '',
-        video_url: '',
-        title: vid.name || '',
-        poster: vid.thumbnail || '',
-        video_type: 'pw'
-      });
+    if (!finalUrl || finalUrl.trim() === "") {
+  const params = new URLSearchParams({
+    video_id: vid._id || vid.id || item._id || '',
+    batch_id: currentBatchId || '',
+    subject_id: currentSubjectSlug || '',
+    video_url: '',
+    title: vid.name || '',
+    poster: vid.thumbnail || '',
+    video_type: 'pw'
+  });
+  console.log("Calling stream-info with:", params.toString());
+
       const resp = await fetch(`${API_BASE}/api/video/stream-info?${params.toString()}`);
       const data = await resp.json();
       if (data.success && data.signed_url) {
