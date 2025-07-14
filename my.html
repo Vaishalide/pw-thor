@@ -578,36 +578,6 @@ div.onclick = async () => {
   }
 };
 
-
-        const resp = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(finalUrl)}`);
-        const videoData = await resp.json();
-        let query = "";
-
-        if (typeof videoData === "string") {
-          query = `?type=live&url=${encodeURIComponent(videoData)}`;
-        } else if (videoData.url && !videoData.keys) {
-          query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
-        } else if (videoData.url && videoData.keys?.length) {
-          const [keyid, key] = videoData.keys[0].split(":");
-          query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
-          if (videoData.pssh) {
-            query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
-          }
-        } else {
-          alert("Unsupported video format.");
-          return;
-        }
-
-        window.location.href = `dipesh.html${query}`;
-      } catch (err) {
-        console.error("Video load failed:", err);
-        alert("Failed to load video.");
-      } finally {
-        overlay.style.display = "none";
-      }
-    };
-  }
-
   lectureContent.appendChild(div);
 });
 
