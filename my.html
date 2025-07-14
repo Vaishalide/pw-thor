@@ -493,101 +493,94 @@ lectureTotal = data.paginate?.totalCount || items.length;
       return;
     }
 
-    items.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "card";
+   items.forEach(item => {
+  const div = document.createElement("div");
+  div.className = "card";
 
-      if (contentType === "notes" || contentType === "DppNotes") {
-        // --- NOTES / DPP NOTES RENDERING ---
-        const topicTitle = item.topic || "Untitled Note";
-        // Flatten all attachmentIds
-        const buttonsHtml = (item.homeworkIds || []).flatMap(hw =>
-          (hw.attachmentIds || []).map(att =>
-            `<button onclick="window.open('${att.baseUrl + att.key}','_blank')">
-               ${att.name}
-             </button>`
-          )
-        ).join("");
+  if (contentType === "notes" || contentType === "DppNotes") {
+    const topicTitle = item.topic || "Untitled Note";
+    const buttonsHtml = (item.homeworkIds || []).flatMap(hw =>
+      (hw.attachmentIds || []).map(att =>
+        `<button onclick="window.open('${att.baseUrl + att.key}','_blank')">
+           ${att.name}
+         </button>`
+      )
+    ).join("");
+    div.innerHTML = `
+      <div class="card-title">${topicTitle}</div>
+      <div class="note-buttons">${buttonsHtml}</div>
+    `;
+  } else {
+    const vid   = item.videoDetails || item;
+    const title = vid.name || "Untitled Video";
+    const image = vid.image || vid.thumbnail || "";
+    const mediaUrl = vid.hls_url || item.url || "";
+    div.innerHTML = `
+      ${image ? `<img src="${image}" alt="${title}" />` : ""}
+      <div class="card-title">${title}</div>
+    `;
+    div.onclick = async () => {
+      overlay.style.display = "flex";
+      try {
+        let finalUrl = mediaUrl;
 
-        div.innerHTML = `
-          <div class="card-title">${topicTitle}</div>
-          <div class="note-buttons">${buttonsHtml}</div>
-        `;
-      } else {
-        // --- VIDEO / DPP VIDEOS RENDERING ---
-        const vid   = item.videoDetails || item;
-        const title = vid.name || "Untitled Video";
-        const image = vid.image || vid.thumbnail || "";
-        const mediaUrl = vid.hls_url || item.url || "";
+        if (!finalUrl || finalUrl.trim() === "") {
+          const params = new URLSearchParams({
+            video_id: vid._id || vid.id || item._id || '',
+            batch_id: currentBatchId || '',
+            subject_id: currentSubjectSlug || '',
+            video_url: '',
+            title: vid.name || '',
+            poster: vid.thumbnail || '',
+            video_type: 'pw'
+          });
+          console.log("Calling stream-info with:", params.toString());
+          const resp = await fetch(`${API_BASE}/api/video/stream-info?${params.toString()}`);
+          const data = await resp.json();
+          if (data.success && data.signed_url) {
+            finalUrl = data.signed_url;
+          } else {
+            alert("Video stream not available.");
+            return;
+          }
+        }
 
-        div.innerHTML = `
-          ${image ? `<img src="${image}" alt="${title}" />` : ""}
-          <div class="card-title">${title}</div>
-        `;
-       div.onclick = async () => {
-  overlay.style.display = "flex";
-  try {
-    let finalUrl = mediaUrl;
+        if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
+          window.open(finalUrl, '_blank');
+          return;
+        }
 
-    // Case 1: url is blank → call /api/video/stream-info
-    if (!finalUrl || finalUrl.trim() === "") {
-  const params = new URLSearchParams({
-    video_id: vid._id || vid.id || item._id || '',
-    batch_id: currentBatchId || '',
-    subject_id: currentSubjectSlug || '',
-    video_url: '',
-    title: vid.name || '',
-    poster: vid.thumbnail || '',
-    video_type: 'pw'
-  });
-  console.log("Calling stream-info with:", params.toString());
+        const resp = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(finalUrl)}`);
+        const videoData = await resp.json();
+        let query = "";
 
-      const resp = await fetch(`${API_BASE}/api/video/stream-info?${params.toString()}`);
-      const data = await resp.json();
-      if (data.success && data.signed_url) {
-        finalUrl = data.signed_url;
-      } else {
-        alert("Video stream not available.");
-        return;
+        if (typeof videoData === "string") {
+          query = `?type=live&url=${encodeURIComponent(videoData)}`;
+        } else if (videoData.url && !videoData.keys) {
+          query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
+        } else if (videoData.url && videoData.keys?.length) {
+          const [keyid, key] = videoData.keys[0].split(":");
+          query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
+          if (videoData.pssh) {
+            query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
+          }
+        } else {
+          alert("Unsupported video format.");
+          return;
+        }
+
+        window.location.href = `dipesh.html${query}`;
+      } catch (err) {
+        console.error("Video load failed:", err);
+        alert("Failed to load video.");
+      } finally {
+        overlay.style.display = "none";
       }
-    }
-
-    // Case 2: url is YouTube → open directly
-    if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
-      window.open(finalUrl, '_blank');
-      return;
-    }
-
-    // Case 3: normal → call /api/pw/video as before
-    const resp = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(finalUrl)}`);
-    const videoData = await resp.json();
-    let query = "";
-
-    if (typeof videoData === "string") {
-      query = `?type=live&url=${encodeURIComponent(videoData)}`;
-    } else if (videoData.url && !videoData.keys) {
-      query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
-    } else if (videoData.url && videoData.keys?.length) {
-      const [keyid, key] = videoData.keys[0].split(":");
-      query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
-      if (videoData.pssh) {
-        query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
-      }
-    } else {
-      alert("Unsupported video format.");
-      return;
-    }
-
-    window.location.href = `dipesh.html${query}`;
-  } catch (err) {
-    console.error("Video load failed:", err);
-    alert("Failed to load video.");
-  } finally {
-    overlay.style.display = "none";
+    };
   }
-};
- lectureContent.appendChild(div);
- });
+
+  lectureContent.appendChild(div);
+});
 
     lecturePage++;
   } catch (err) {
