@@ -543,21 +543,13 @@ if (!finalUrl || finalUrl.trim() === "") {
   const data = await resp.json();
   console.log("stream-info response:", data);
 
-  if (data.success && data.data && data.data.length > 0) {
-    const first = data.data[0];
-    finalUrl = first.url || first.videoDetails?.hls_url || "";
-    if (!finalUrl) {
-      alert("Video URL still missing.");
-      return;
-    }
-  } else {
-    alert("Video stream not available.");
-    return;
-  }
-}
-
-
-
+       } catch (err) {
+        console.error('Video load failed:', err);
+        alert('Failed to load video.');
+      } finally {
+        overlay.style.display = 'none';
+      }
+    
         if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
           window.open(finalUrl, '_blank');
           return;
