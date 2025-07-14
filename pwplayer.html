@@ -2,163 +2,916 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-
-
-  <title>Video Player</title>
+  <title>Modern Video Player with Auto-Rotation</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #000;
-      color: #fff;
-      overflow: hidden;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+      color: #ffffff;
+      overflow: hidden;
+      cursor: default;
+      user-select: none;
+    }
+
     .video-container {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
       background: #000;
       z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     video {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      background: #000;
     }
+
+    /* Glassmorphism Controls */
     .controls {
       position: fixed;
       bottom: 0;
-      width: 100%;
-      background: rgba(0,0,0,0.85);
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.8rem 1rem;
-      z-index: 3;
-      backdrop-filter: blur(5px);
-      transition: opacity 0.3s ease;
+      padding: 1rem 1.5rem;
+      z-index: 10;
+      opacity: 1;
+      transform: translateY(0);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .controls-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+
+    .controls.hidden {
+      opacity: 0;
+      transform: translateY(100%);
+      pointer-events: none;
     }
+
+    .controls-left,
     .controls-right {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
-    .controls button {
-      background: none;
-      border: none;
+
+    /* Modern Button Styles */
+    .control-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
       cursor: pointer;
-      padding: 0.4rem;
-      border-radius: 50%;
-      transition: all 0.2s ease;
-    }
-    .controls button:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    .controls img {
-      width: 1.8rem;
-      height: 1.8rem;
-    }
-    .play-pause-btn {
-      background: #6B63FE !important;
-      width: 2.5rem;
-      height: 2.5rem;
+      padding: 0.75rem;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .play-pause-icon {
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: white;
-    }
-    .time {
-      font-size: 0.9rem;
-      color: #ccc;
-      font-family: 'Courier New', monospace;
-      min-width: 120px;
-    }
-    .progress-container {
-      position: absolute;
-      bottom: 3.5rem;
-      left: 1rem;
-      right: 1rem;
-      height: 6px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 3px;
-      cursor: pointer;
-      z-index: 4;
-      transition: opacity 0.3s ease;
-    }
-    .progress-bar {
-      height: 100%;
-      background: #6B63FE;
-      border-radius: 3px;
-      width: 0%;
+      backdrop-filter: blur(10px);
       position: relative;
+      overflow: hidden;
     }
-    .progress-bar::after {
+
+    .control-btn::before {
       content: '';
       position: absolute;
-      right: -6px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 12px;
-      height: 12px;
-      background: #fff;
-      border-radius: 50%;
-      opacity: 0;
-      transition: opacity 0.2s;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
     }
-    .progress-container:hover .progress-bar::after {
+
+    .control-btn:hover::before {
+      left: 100%;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .control-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Play/Pause Button - Neon Style */
+    .play-pause-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .play-pause-btn::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+      border-radius: 50%;
+      z-index: -1;
+      animation: rotate 3s linear infinite;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .play-pause-btn:hover::before {
       opacity: 1;
     }
 
-    .hide-controls {
+    .play-pause-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .play-pause-icon {
+      font-size: 1.2rem;
+      color: white;
+      z-index: 1;
+    }
+
+    /* Time Display - Futuristic */
+    .time {
+      font-size: 0.9rem;
+      color: #e0e0e0;
+      font-family: 'Inter', monospace;
+      font-weight: 500;
+      min-width: 140px;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Progress Bar - Neon Glow */
+    .progress-container {
+      position: absolute;
+      bottom: 5rem;
+      left: 1.5rem;
+      right: 1.5rem;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      cursor: pointer;
+      z-index: 11;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .progress-container.hidden {
       opacity: 0;
+      transform: translateY(20px);
       pointer-events: none;
+    }
+
+    .progress-container:hover {
+      height: 8px;
+      bottom: 4.9rem;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      border-radius: 3px;
+      width: 0%;
+      position: relative;
+      transition: all 0.1s ease;
+      box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+    }
+
+    .progress-handle {
+      position: absolute;
+      right: -8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
+      border-radius: 50%;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .progress-container:hover .progress-handle {
+      opacity: 1;
+      transform: translateY(-50%) scale(1.2);
+    }
+
+    /* Back Button - Floating */
+    .back-button {
+      position: fixed;
+      top: 1.5rem;
+      left: 1.5rem;
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: 'Inter', sans-serif;
+    }
+
+    .back-button:hover {
+      background: rgba(0, 0, 0, 0.8);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .back-button.hidden {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
+
+    /* SVG Icons */
+    .icon {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .icon-small {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Skip Button Text */
+    .skip-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ffffff;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Fullscreen Styles */
+    body.fullscreen-mode {
+      cursor: none;
+    }
+
+    body.fullscreen-mode.show-cursor {
+      cursor: default;
+    }
+
+    /* Loading Animation */
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .controls {
+        padding: 1rem;
+      }
+      
+      .controls-left,
+      .controls-right {
+        gap: 0.75rem;
+      }
+      
+      .time {
+        font-size: 0.8rem;
+        min-width: 120px;
+        padding: 0.4rem 0.8rem;
+      }
+      
+      .play-pause-btn {
+        width: 3rem;
+        height: 3rem;
+      }
+      
+      .control-btn {
+        padding: 0.6rem;
+      }
+      
+      .progress-container {
+        left: 1rem;
+        right: 1rem;
+      }
+
+      .back-button {
+        top: 1rem;
+        left: 1rem;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+      }
+    }
+
+    /* Landscape Mode Styles for Mobile */
+    @media screen and (orientation: landscape) and (max-height: 500px) {
+      .controls {
+        padding: 0.75rem 1rem;
+      }
+      
+      .progress-container {
+        bottom: 4rem;
+      }
+      
+      .back-button {
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .controls {
+      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Custom Scrollbar (if needed) */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
     }
   </style>
 </head>
+
 <body>
+  <button id="backButton" class="back-button">
+    <svg class="icon-small" viewBox="0 0 24 24">
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
+    </svg>
+    Back
+  </button>
 
   <div class="video-container" id="videoContainer">
-    <video id="video" playsinline></video>
+    <video id="video" playsinline webkit-playsinline></video>
+    <div class="loading" id="loading" style="display: none;">
+      <div class="loading-spinner"></div>
+    </div>
   </div>
 
   <div class="progress-container" id="progressContainer">
-    <div class="progress-bar" id="progressBar"></div>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-handle" id="progressHandle"></div>
+    </div>
   </div>
 
   <div class="controls" id="controls">
     <div class="controls-left">
       <button id="playPause" class="play-pause-btn">
-        <span class="play-pause-icon" id="playIcon">▶</span>
+        <span id="playIcon" class="play-pause-icon">▶</span>
       </button>
-      <button id="rewind">
-        <img src="https://www.pw.live/watch/backward.svg" alt="rewind" />
+      
+      <button id="rewind" class="control-btn">
+        <span class="skip-text">-10</span>
       </button>
-      <button id="forward">
-        <img src="https://www.pw.live/watch/forward.svg" alt="forward" />
+      
+      <button id="forward" class="control-btn">
+        <span class="skip-text">+10</span>
       </button>
+      
       <div class="time" id="time">00:00:00 / 00:00:00</div>
     </div>
+    
     <div class="controls-right">
-      <button id="fullscreen">
-        <img src="https://www.pw.live/watch/maximize.svg" alt="fullscreen" />
+      <button id="fullscreen" class="control-btn">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
       </button>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    class ModernVideoPlayer {
+      constructor() {
+        this.initializeElements();
+        this.initializeState();
+        this.setupEventListeners();
+        this.loadVideo();
+      }
 
+      initializeElements() {
+        this.video = document.getElementById("video");
+        this.controls = document.getElementById("controls");
+        this.progressBar = document.getElementById("progressBar");
+        this.progressContainer = document.getElementById("progressContainer");
+        this.progressHandle = document.getElementById("progressHandle");
+        this.playIcon = document.getElementById("playIcon");
+        this.backButton = document.getElementById("backButton");
+        this.timeDisplay = document.getElementById("time");
+        this.playPauseBtn = document.getElementById("playPause");
+        this.rewindBtn = document.getElementById("rewind");
+        this.forwardBtn = document.getElementById("forward");
+        this.fullscreenBtn = document.getElementById("fullscreen");
+        this.loading = document.getElementById("loading");
+      }
+
+      initializeState() {
+        this.isFullscreen = false;
+        this.controlsVisible = true;
+        this.hideTimer = null;
+        this.isMouseMoving = false;
+        this.mouseMoveTimeout = null;
+        this.orientationLocked = false;
+        
+        // Get video URL from query params or use default
+        const params = new URLSearchParams(window.location.search);
+        this.videoURL = params.get("playurl");
+      }
+
+      setupEventListeners() {
+        // Video events
+        this.video.addEventListener('loadstart', () => this.showLoading());
+        this.video.addEventListener('loadeddata', () => this.hideLoading());
+        this.video.addEventListener('timeupdate', () => this.updateProgress());
+        this.video.addEventListener('loadedmetadata', () => this.updateTimeDisplay());
+        this.video.addEventListener('play', () => this.updatePlayButton(true));
+        this.video.addEventListener('pause', () => this.updatePlayButton(false));
+        this.video.addEventListener('click', () => this.togglePlay());
+        this.video.addEventListener('waiting', () => this.showLoading());
+        this.video.addEventListener('playing', () => this.hideLoading());
+
+        // Control events
+        this.playPauseBtn.addEventListener('click', () => this.togglePlay());
+        this.rewindBtn.addEventListener('click', () => this.seekRelative(-10));
+        this.forwardBtn.addEventListener('click', () => this.seekRelative(10));
+        this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+        this.backButton.addEventListener('click', () => this.goBack());
+        this.progressContainer.addEventListener('click', (e) => this.handleProgressClick(e));
+
+        // Fullscreen events
+        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
+
+        // Mouse events for auto-hide functionality
+        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+        document.addEventListener('mouseleave', () => this.handleMouseLeave());
+        
+        // Touch events for mobile
+        document.addEventListener('touchstart', () => this.handleUserActivity());
+        document.addEventListener('touchmove', () => this.handleUserActivity());
+
+        // Keyboard events
+        document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+
+        // Orientation change for mobile
+        window.addEventListener('orientationchange', () => this.handleOrientationChange());
+        screen.orientation?.addEventListener('change', () => this.handleOrientationChange());
+      }
+
+      async loadVideo() {
+        this.showLoading();
+        
+        try {
+          if (window.Hls && Hls.isSupported()) {
+            const hls = new Hls({
+              enableWorker: true,
+              lowLatencyMode: true,
+            });
+            
+            hls.loadSource(this.videoURL);
+            hls.attachMedia(this.video);
+            
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+              console.log('HLS manifest parsed successfully');
+              this.hideLoading();
+            });
+            
+            hls.on(Hls.Events.ERROR, (event, data) => {
+              console.error('HLS error:', data);
+              this.hideLoading();
+              
+              if (data.fatal) {
+                switch (data.type) {
+                  case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.error('Fatal network error, trying to recover...');
+                    hls.startLoad();
+                    break;
+                  case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.error('Fatal media error, trying to recover...');
+                    hls.recoverMediaError();
+                    break;
+                  default:
+                    console.error('Fatal error, cannot recover');
+                    hls.destroy();
+                    break;
+                }
+              }
+            });
+          } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
+            // For Safari and other browsers that support HLS natively
+            this.video.src = this.videoURL;
+            this.hideLoading();
+          } else {
+            console.error('HLS is not supported in this browser');
+            // Fallback to regular video source
+            this.video.src = this.videoURL;
+            this.hideLoading();
+          }
+        } catch (error) {
+          console.error('Error loading video:', error);
+          this.hideLoading();
+        }
+      }
+
+      showLoading() {
+        this.loading.style.display = 'block';
+      }
+
+      hideLoading() {
+        this.loading.style.display = 'none';
+      }
+
+      togglePlay() {
+        if (this.video.paused) {
+          this.video.play().catch(e => console.error('Play failed:', e));
+        } else {
+          this.video.pause();
+        }
+      }
+
+      updatePlayButton(isPlaying) {
+        this.playIcon.textContent = isPlaying ? "❚❚" : "▶";
+      }
+
+      seekRelative(seconds) {
+        const newTime = Math.max(0, Math.min(this.video.duration || 0, this.video.currentTime + seconds));
+        this.video.currentTime = newTime;
+      }
+
+      handleProgressClick(e) {
+        const rect = this.progressContainer.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = clickX / rect.width;
+        const newTime = percentage * (this.video.duration || 0);
+        this.video.currentTime = newTime;
+      }
+
+      updateProgress() {
+        const duration = this.video.duration || 0;
+        const currentTime = this.video.currentTime || 0;
+        const percentage = duration ? (currentTime / duration) * 100 : 0;
+        
+        this.progressBar.style.width = `${percentage}%`;
+        this.updateTimeDisplay();
+      }
+
+      updateTimeDisplay() {
+        const current = this.video.currentTime || 0;
+        const duration = this.video.duration || 0;
+        
+        this.timeDisplay.textContent = `${this.formatTime(current)} / ${this.formatTime(duration)}`;
+      }
+
+      formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        if (hours > 0) {
+          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+
+      async toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+              !document.mozFullScreenElement && !document.msFullscreenElement) {
+            
+            // Lock orientation to landscape on mobile before entering fullscreen
+            if (this.isMobile()) {
+              await this.lockOrientationLandscape();
+            }
+            
+            // Enter fullscreen
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+              await element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+              await element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+              await element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+              await element.msRequestFullscreen();
+            }
+          } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              await document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+              await document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+              await document.msExitFullscreen();
+            }
+            
+            // Unlock orientation when exiting fullscreen
+            if (this.isMobile() && this.orientationLocked) {
+              await this.unlockOrientation();
+            }
+          }
+        } catch (error) {
+          console.error('Fullscreen toggle failed:', error);
+        }
+      }
+
+      async lockOrientationLandscape() {
+        try {
+          if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('landscape');
+            this.orientationLocked = true;
+          } else if (screen.lockOrientation) {
+            screen.lockOrientation('landscape');
+            this.orientationLocked = true;
+          } else if (screen.webkitLockOrientation) {
+            screen.webkitLockOrientation('landscape');
+            this.orientationLocked = true;
+          } else if (screen.mozLockOrientation) {
+            screen.mozLockOrientation('landscape');
+            this.orientationLocked = true;
+          }
+        } catch (error) {
+          console.log('Orientation lock not supported or failed:', error);
+        }
+      }
+
+      async unlockOrientation() {
+        try {
+          if (screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+          } else if (screen.unlockOrientation) {
+            screen.unlockOrientation();
+          } else if (screen.webkitUnlockOrientation) {
+            screen.webkitUnlockOrientation();
+          } else if (screen.mozUnlockOrientation) {
+            screen.mozUnlockOrientation();
+          }
+          this.orientationLocked = false;
+        } catch (error) {
+          console.log('Orientation unlock failed:', error);
+        }
+      }
+
+      isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+      }
+
+      handleFullscreenChange() {
+        const isCurrentlyFullscreen = Boolean(
+          document.fullscreenElement || 
+          document.webkitFullscreenElement || 
+          document.mozFullScreenElement || 
+          document.msFullscreenElement
+        );
+        
+        this.isFullscreen = isCurrentlyFullscreen;
+        
+        if (this.isFullscreen) {
+          document.body.classList.add('fullscreen-mode');
+          this.startAutoHideTimer();
+        } else {
+          document.body.classList.remove('fullscreen-mode', 'show-cursor');
+          this.showControls();
+          this.clearAutoHideTimer();
+          
+          // Unlock orientation when exiting fullscreen
+          if (this.isMobile() && this.orientationLocked) {
+            this.unlockOrientation();
+          }
+        }
+      }
+
+      handleOrientationChange() {
+        // Small delay to ensure orientation change is complete
+        setTimeout(() => {
+          if (this.isFullscreen && this.isMobile()) {
+            // Ensure we're in landscape when in fullscreen on mobile
+            const orientation = screen.orientation?.angle || window.orientation;
+            if (orientation === 0 || orientation === 180) {
+              // Portrait mode detected, try to lock to landscape
+              this.lockOrientationLandscape();
+            }
+          }
+        }, 100);
+      }
+
+      handleMouseMove(e) {
+        if (!this.isFullscreen) return;
+        
+        this.isMouseMoving = true;
+        document.body.classList.add('show-cursor');
+        this.showControls();
+        this.startAutoHideTimer();
+        
+        // Reset mouse moving state after a short delay
+        clearTimeout(this.mouseMoveTimeout);
+        this.mouseMoveTimeout = setTimeout(() => {
+          this.isMouseMoving = false;
+          document.body.classList.remove('show-cursor');
+        }, 100);
+      }
+
+      handleMouseLeave() {
+        if (!this.isFullscreen) return;
+        
+        this.isMouseMoving = false;
+        document.body.classList.remove('show-cursor');
+        this.startAutoHideTimer();
+      }
+
+      handleUserActivity() {
+        if (!this.isFullscreen) return;
+        
+        this.showControls();
+        this.startAutoHideTimer();
+      }
+
+      handleKeyPress(e) {
+        switch (e.code) {
+          case 'Space':
+            e.preventDefault();
+            this.togglePlay();
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            this.seekRelative(-10);
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            this.seekRelative(10);
+            break;
+          case 'KeyF':
+            e.preventDefault();
+            this.toggleFullscreen();
+            break;
+          case 'Escape':
+            if (this.isFullscreen) {
+              this.toggleFullscreen();
+            }
+            break;
+        }
+        
+        if (this.isFullscreen) {
+          this.handleUserActivity();
+        }
+      }
+
+      startAutoHideTimer() {
+        if (!this.isFullscreen) return;
+        
+        this.clearAutoHideTimer();
+        
+        this.hideTimer = setTimeout(() => {
+          if (this.isFullscreen && !this.isMouseMoving) {
+            this.hideControls();
+          }
+        }, 3000); // 3 seconds delay
+      }
+
+      clearAutoHideTimer() {
+        if (this.hideTimer) {
+          clearTimeout(this.hideTimer);
+          this.hideTimer = null;
+        }
+      }
+
+      showControls() {
+        if (!this.controlsVisible) {
+          this.controlsVisible = true;
+          this.controls.classList.remove('hidden');
+          this.progressContainer.classList.remove('hidden');
+          this.backButton.classList.remove('hidden');
+        }
+      }
+
+      hideControls() {
+        if (this.controlsVisible) {
+          this.controlsVisible = false;
+          this.controls.classList.add('hidden');
+          this.progressContainer.classList.add('hidden');
+          this.backButton.classList.add('hidden');
+        }
+      }
+
+      goBack() {
+        // Try to go back in history, fallback to closing window
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.close();
+        }
+      }
+    }
+
+    // Initialize the video player when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      new ModernVideoPlayer();
+    });
+
+    // Prevent context menu on video
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.tagName === 'VIDEO') {
+        e.preventDefault();
+      }
+    });
+
+    // Prevent text selection
+    document.addEventListener('selectstart', (e) => {
+      e.preventDefault();
+    });
+  </script>
 </body>
 </html>
