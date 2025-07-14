@@ -602,29 +602,32 @@ window.addEventListener("scroll", () => {
     loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
   }
 });
-const sentinel = document.getElementById("loadMoreChapters");
-
-const chapterObserver = new IntersectionObserver(entries => {
-  if (entries[0].isIntersecting && chaptersDiv.style.display !== "none") {
-    loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
+window.onload = () => {
+  const sentinel = document.getElementById("loadMoreChapters");
+  if (sentinel) {
+    const chapterObserver = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && chaptersDiv.style.display !== "none") {
+        loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
+      }
+    });
+    chapterObserver.observe(sentinel);
   }
-});
 
-chapterObserver.observe(sentinel);
-const lectureSentinel = document.getElementById("loadMoreLectures");
-
-const lectureObserver = new IntersectionObserver(entries => {
-  if (
-    entries[0].isIntersecting &&
-    document.getElementById("lectureSection").style.display !== "none"
-  ) {
-    loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
+  const lectureSentinel = document.getElementById("loadMoreLectures");
+  if (lectureSentinel) {
+    const lectureObserver = new IntersectionObserver(entries => {
+      if (
+        entries[0].isIntersecting &&
+        document.getElementById("lectureSection").style.display !== "none"
+      ) {
+        loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
+      }
+    });
+    lectureObserver.observe(lectureSentinel);
   }
-});
 
-lectureObserver.observe(lectureSentinel);
-
-    loadBatches();
+  loadBatches(); // start app after observers are set
+};
   </script>
   
   <script>
