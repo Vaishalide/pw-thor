@@ -520,21 +520,22 @@ lectureTotal = data.paginate?.totalCount || items.length;
       ${image ? `<img src="${image}" alt="${title}" />` : ""}
       <div class="card-title">${title}</div>
     `;
-  div.onclick = async () => {
+div.onclick = async () => {
   overlay.style.display = "flex";
   try {
     let finalUrl = mediaUrl;
 
-    // Check if it’s a YouTube link first → open directly
+    // Check if direct URL is YouTube → open directly
     if (finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'))) {
       window.open(finalUrl, '_blank');
       return;
     }
 
-    // If finalUrl is missing, build params and call final-stream
+    // If no direct URL, call backend to get signed m3u8
     if (!finalUrl || finalUrl.trim() === "") {
       const realVid = item.videoDetails || item;
 
+      // Build flat query string as you wanted
       const params = [
         `video_url=`,
         `title=${encodeURIComponent(realVid.name || '')}`,
@@ -559,13 +560,13 @@ lectureTotal = data.paginate?.totalCount || items.length;
       finalUrl = data.m3u8_url;
     }
 
-    // Safety: if finalUrl is a YouTube link, open directly
+    // Safety: check again if finalUrl is YouTube
     if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
       window.open(finalUrl, '_blank');
       return;
     }
 
-    // Redirect to player page
+    // Redirect to player page with playurl param
     const encoded = encodeURIComponent(finalUrl);
     window.location.href = `pwplayer.html?playurl=${encoded}`;
 
@@ -576,6 +577,48 @@ lectureTotal = data.paginate?.totalCount || items.length;
     overlay.style.display = "none";
   }
 };
+
+
+        const resp = await fetch(`${API_BASE}/api/pw/video?url=${encodeURIComponent(finalUrl)}`);
+        const videoData = await resp.json();
+        let query = "";
+
+        if (typeof videoData === "string") {
+          query = `?type=live&url=${encodeURIComponent(videoData)}`;
+        } else if (videoData.url && !videoData.keys) {
+          query = `?type=live&url=${encodeURIComponent(videoData.url)}`;
+        } else if (videoData.url && videoData.keys?.length) {
+          const [keyid, key] = videoData.keys[0].split(":");
+          query = `?type=drm&url=${encodeURIComponent(videoData.url)}&keyid=${keyid}&key=${key}`;
+          if (videoData.pssh) {
+            query += `&pssh=${encodeURIComponent(videoData.pssh)}`;
+          }
+        } else {
+          alert("Unsupported video format.");
+          return;
+        }
+
+        window.location.href = `dipesh.html${query}`;
+      } catch (err) {
+        console.error("Video load failed:", err);
+        alert("Failed to load video.");
+      } finally {
+        overlay.style.display = "none";
+      }
+    };
+  }
+
+  lectureContent.appendChild(div);
+});
+
+    lecturePage++;
+  } catch (err) {
+    console.error("Failed to load content:", err);
+  } finally {
+    lectureLoading = false;
+    showLoader(false);
+  }
+}
 
 
 
