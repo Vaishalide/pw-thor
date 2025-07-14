@@ -641,6 +641,39 @@ window.addEventListener("scroll", () => {
     loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
   }
 });
+
+      function goToPlayer(finalUrl) {
+      const encoded = encodeURIComponent(finalUrl);
+      const base = location.origin;
+      window.location.href = `${base}/pwplayer.html?playurl=${encoded}`;
+    }
+
+      window.onload = () => {
+      const path = location.pathname;
+      const pathParts = path.split('/').filter(Boolean);
+
+      // If we are on a nested route, reload main HTML
+      if (pathParts[0] === 'batch') {
+        // Load batch → subject → chapters/lectures
+        const batchId = pathParts[1];
+        const subjectSlug = pathParts[3];
+        const topicId = pathParts[5];
+        const contentType = pathParts[6];
+
+        if (batchId && subjectSlug && topicId && contentType) {
+          loadLecturesContent(batchId, subjectSlug, topicId, contentType);
+        } else if (batchId && subjectSlug) {
+          loadChapters(batchId, subjectSlug);
+        } else if (batchId) {
+          loadSubjects(batchId);
+        } else {
+          loadBatches();
+        }
+      } else {
+        loadBatches();
+      }
+    };
+     
 window.onload = () => {
   const sentinel = document.getElementById("loadMoreChapters");
   if (sentinel) {
