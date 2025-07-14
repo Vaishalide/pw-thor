@@ -1,454 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PW THOR PLAYER</title>
-    <!-- Add Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Video Player</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+    .video-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 1;
+    }
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .controls {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.8rem 1rem;
+      z-index: 3;
+      backdrop-filter: blur(5px);
+      transition: opacity 0.3s ease;
+    }
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .controls button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.4rem;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    .controls button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .controls img {
+      width: 1.8rem;
+      height: 1.8rem;
+    }
+    .play-pause-btn {
+      background: #6B63FE !important;
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .play-pause-icon {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: white;
+    }
+    .time {
+      font-size: 0.9rem;
+      color: #ccc;
+      font-family: 'Courier New', monospace;
+      min-width: 120px;
+    }
+    .progress-container {
+      position: absolute;
+      bottom: 3.5rem;
+      left: 1rem;
+      right: 1rem;
+      height: 6px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 3px;
+      cursor: pointer;
+      z-index: 4;
+      transition: opacity 0.3s ease;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #6B63FE;
+      border-radius: 3px;
+      width: 0%;
+      position: relative;
+    }
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .progress-container:hover .progress-bar::after {
+      opacity: 1;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #111;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-
-        .player-container {
-            max-width: 900px;
-            width: 100%;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            background: #000;
-        }
-
-        video {
-            width: 100%;
-            display: block;
-        }
-
-        .controls-overlay {
-            position: absolute;
-            pointer-events: none;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 2;
-        }
-
-        .video-wrapper:hover .controls-overlay,
-        .controls-overlay.visible {
-            opacity: 1;
-        }
-
-        .top-bar,
-        .bottom-bar {
-            padding: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .top-bar {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
-            pointer-events: auto;
-            /* ✅ clickable */
-            z-index: 10;
-        }
-
-        .bottom-bar {
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
-            flex-direction: column;
-            padding-bottom: 10px;
-        }
-
-        .control-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-            transition: transform 0.2s ease;
-            pointer-events: auto;
-            z-index: 9999;
-
-
-
-        }
-
-        .control-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .top-bar .spacer {
-            flex-grow: 1;
-        }
-
-        .progress-bar-wrapper {
-            width: 100%;
-            padding: 0 5px;
-            margin-bottom: 10px;
-        }
-
-        #progress-bar {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #progress-bar::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 15px;
-            height: 15px;
-            background: #ff0000;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        #progress-bar::-moz-range-thumb {
-            width: 15px;
-            height: 15px;
-            background: #ff0000;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
-
-        #progress-bar {
-            pointer-events: auto;
-        }
-
-
-        .controls-row {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            align-items: center;
-        }
-
-        .left-controls,
-        .right-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .volume-container {
-            display: flex;
-            align-items: center;
-        }
-
-        #volume-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 0;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            cursor: pointer;
-        }
-
-
-        .volume-container:hover #volume-slider {
-            width: 80px;
-        }
-
-        #volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            background: #fff;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        #volume-slider::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            background: #fff;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
-
-        .time-display {
-            font-size: 14px;
-        }
-
-        /* Status and Error styling */
-        .status-container {
-            padding: 10px 20px;
-            background: #222;
-        }
-
-        .status {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 10px;
-            color: white;
-            font-size: 12px;
-            line-height: 1.4;
-            max-height: 50px;
-            overflow-y: auto;
-        }
-
-        .error {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid rgba(255, 0, 0, 0.5);
-            color: #ff6b6b;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 20px;
-            display: none;
-        }
-
-        .error.show {
-            display: block;
-        }
-
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 3;
-            display: none;
-            text-align: center;
-            color: white;
-            font-size: 16px;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid #fff;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Settings Menu Styles */
-        .settings-menu {
-            position: absolute;
-            bottom: 80px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.9);
-            border-radius: 8px;
-            padding: 15px;
-            min-width: 200px;
-            display: none;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .settings-menu.show {
-            display: block;
-        }
-
-        .settings-item {
-            margin-bottom: 15px;
-        }
-
-        .settings-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .settings-label {
-            display: block;
-            color: #fff;
-            font-size: 12px;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-        .settings-select {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            color: #fff;
-            padding: 8px 10px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-
-        .settings-select:focus {
-            outline: none;
-            border-color: #ff0000;
-        }
-
-        .settings-select option {
-            background: #333;
-            color: #fff;
-        }
-
-        .telegram-button-wrapper {
-            text-align: center;
-            margin-top: 15px;
-            margin-bottom: 20px;
-        }
-
-        .telegram-btn {
-            display: inline-block;
-            background-color: #0088cc;
-            color: white;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
-
-        .telegram-btn i {
-            margin-right: 8px;
-        }
-
-        .telegram-btn:hover {
-            background-color: #006fa7;
-        }
-    </style>
+    .hide-controls {
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
 </head>
-
 <body>
-    <div class="player-container">
-        <div class="video-wrapper">
-            <video id="video" preload="metadata" poster="">
-                Your browser does not support the video tag.
-            </video>
 
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                Loading DRM content...
-            </div>
+  <div class="video-container" id="videoContainer">
+    <video id="video" playsinline></video>
+  </div>
 
+  <div class="progress-container" id="progressContainer">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
 
-            <div class="controls-overlay">
-                <div class="top-bar">
-                    <button id="back-btn" class="control-btn"><i class="fas fa-arrow-left"></i></button>
-                    <div class="spacer"></div>
-                    <button id="menu-btn" class="control-btn"><i class="fas fa-ellipsis-v"></i></button>
-                </div>
-
-                <div class="bottom-bar">
-                    <div class="progress-bar-wrapper">
-                        <input type="range" id="progress-bar" min="0" max="100" step="0.1" value="0">
-                    </div>
-
-                    <div class="controls-row">
-                        <div class="left-controls">
-                            <button id="play-pause-btn" class="control-btn"><i class="fas fa-play"></i></button>
-                            <button id="rewind-btn" class="control-btn"><i class="fas fa-rotate-left"></i></button>
-                            <button id="forward-btn" class="control-btn"><i class="fas fa-rotate-right"></i></button>
-                            <div class="volume-container">
-                                <button id="volume-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
-                                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-                            </div>
-                        </div>
-                        <div class="right-controls">
-                            <span id="time-display" class="time-display">00:00 / 00:00</span>
-                            <button id="settings-btn" class="control-btn"><i class="fas fa-cog"></i></button>
-                            <button id="pip-btn" class="control-btn"><i class="fas fa-clone"></i></button>
-                            <button id="fullscreen-btn" class="control-btn"><i class="fas fa-expand"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Menu -->
-            <div class="settings-menu" id="settings-menu">
-                <div class="settings-item">
-                    <label class="settings-label">Playback Speed</label>
-                    <select class="settings-select" id="speed-select">
-                        <option value="0.25">0.25x</option>
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1" selected>1x (Normal)</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="1.75">1.75x</option>
-                        <option value="2">2x</option>
-                    </select>
-                </div>
-                <div class="settings-item">
-                    <label class="settings-label">Quality</label>
-                    <select class="settings-select" id="quality-select">
-                        <option value="auto" selected>Auto</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-
-        <div class="status-container">
-            <div class="error" id="error"></div>
-            <div class="status">
-                <div id="statusText">Ready to load DRM content with signed segment requests</div>
-            </div>
-        </div>
+  <div class="controls" id="controls">
+    <div class="controls-left">
+      <button id="playPause" class="play-pause-btn">
+        <span class="play-pause-icon" id="playIcon">▶</span>
+      </button>
+      <button id="rewind">
+        <img src="https://www.pw.live/watch/backward.svg" alt="rewind" />
+      </button>
+      <button id="forward">
+        <img src="https://www.pw.live/watch/forward.svg" alt="forward" />
+      </button>
+      <div class="time" id="time">00:00:00 / 00:00:00</div>
     </div>
-
-    <div class="telegram-button-wrapper">
-        <a href="https://t.me/pwthorxiityatra" target="_blank" class="telegram-btn">
-            <i class="fab fa-telegram-plane"></i> Join our Telegram
-        </a>
+    <div class="controls-right">
+      <button id="fullscreen">
+        <img src="https://www.pw.live/watch/maximize.svg" alt="fullscreen" />
+      </button>
     </div>
+  </div>
 
+  <script src="script.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.min.js"></script>
-    <script>
-        // Elements
-     const _0x2cad31=_0xdb91;(function(_0x36ab8d,_0x43864f){const _0x31181c=_0xdb91,_0x5f5599=_0x36ab8d();while(!![]){try{const _0x33700a=-parseInt(_0x31181c(0x11c))/0x1*(parseInt(_0x31181c(0x149))/0x2)+-parseInt(_0x31181c(0x17e))/0x3*(-parseInt(_0x31181c(0x14d))/0x4)+-parseInt(_0x31181c(0xf8))/0x5*(parseInt(_0x31181c(0xf6))/0x6)+parseInt(_0x31181c(0x16c))/0x7+-parseInt(_0x31181c(0x16a))/0x8+parseInt(_0x31181c(0x16f))/0x9*(-parseInt(_0x31181c(0x14c))/0xa)+parseInt(_0x31181c(0x159))/0xb;if(_0x33700a===_0x43864f)break;else _0x5f5599['push'](_0x5f5599['shift']());}catch(_0x555ab5){_0x5f5599['push'](_0x5f5599['shift']());}}}(_0x43b5,0xa3b07));const playerContainer=document[_0x2cad31(0x14e)](_0x2cad31(0x15c)),videoWrapper=document['querySelector'](_0x2cad31(0x13e)),video=document[_0x2cad31(0x179)](_0x2cad31(0x106)),loading=document[_0x2cad31(0x179)]('loading'),error=document[_0x2cad31(0x179)](_0x2cad31(0x138)),statusText=document[_0x2cad31(0x179)](_0x2cad31(0x12a)),controlsOverlay=document[_0x2cad31(0x14e)](_0x2cad31(0x10c)),playPauseBtn=document['getElementById'](_0x2cad31(0x121)),rewindBtn=document['getElementById'](_0x2cad31(0xea)),forwardBtn=document[_0x2cad31(0x179)](_0x2cad31(0x11b)),volumeBtn=document[_0x2cad31(0x179)](_0x2cad31(0x16e)),volumeSlider=document[_0x2cad31(0x179)](_0x2cad31(0x116)),progressBar=document[_0x2cad31(0x179)](_0x2cad31(0x127)),timeDisplay=document[_0x2cad31(0x179)]('time-display'),pipBtn=document[_0x2cad31(0x179)](_0x2cad31(0x10d)),fullscreenBtn=document[_0x2cad31(0x179)](_0x2cad31(0x148)),settingsBtn=document[_0x2cad31(0x179)]('settings-btn'),settingsMenu=document['getElementById']('settings-menu'),speedSelect=document[_0x2cad31(0x179)](_0x2cad31(0xf2)),qualitySelect=document['getElementById'](_0x2cad31(0x137));let player=null,videoData=null,signedParams=null,streamType='drm',controlsTimeout;function getUrlParameter(_0x1edfe0){const _0x2f32ac=_0x2cad31,_0x561cea=new URLSearchParams(window[_0x2f32ac(0xeb)][_0x2f32ac(0x12f)]);return _0x561cea[_0x2f32ac(0xf0)](_0x1edfe0);}function getConfigFromUrl(){const _0xaf1d66=_0x2cad31,_0x45c439=getUrlParameter(_0xaf1d66(0x166)),_0x7ed93f=getUrlParameter(_0xaf1d66(0x186)),_0x3d1581=getUrlParameter(_0xaf1d66(0x183)),_0x44b2c4=getUrlParameter('key'),_0x5b3df3=getUrlParameter('pssh');console['log'](_0xaf1d66(0x184),{'type':_0x45c439,'url':_0x7ed93f,'keyid':_0x3d1581,'key':_0x44b2c4,'pssh':_0x5b3df3});if(!_0x7ed93f)throw new Error('Missing\x20required\x20parameter:\x20url\x20is\x20required!');const _0x3b566c=[_0xaf1d66(0x11d),'Expires',_0xaf1d66(0x10b),_0xaf1d66(0x122),'Key-Pair-Id',_0xaf1d66(0x135)];if(_0x45c439===_0xaf1d66(0x15e)){const _0x4e7054=new URL(_0x7ed93f),_0x190be6={};_0x3b566c['forEach'](_0x4e3cb2=>{const _0x2a70e1=_0xaf1d66;_0x4e7054[_0x2a70e1(0x141)][_0x2a70e1(0x136)](_0x4e3cb2)&&(_0x190be6[_0x4e3cb2]=_0x4e7054[_0x2a70e1(0x141)][_0x2a70e1(0xf0)](_0x4e3cb2));});const _0x5aa0f6=new URL(_0x4e7054[_0xaf1d66(0x151)]+_0x4e7054[_0xaf1d66(0x172)]);return{'streamType':'live','videoData':{'url':_0x5aa0f6[_0xaf1d66(0x188)]()},'signedParams':_0x190be6};}if(!_0x3d1581||!_0x44b2c4)throw new Error('Missing\x20parameters.\x20For\x20DRM,\x20`keyid`\x20and\x20`key`\x20are\x20required.\x20For\x20live\x20streams,\x20add\x20`?type=live`\x20to\x20the\x20URL.');const _0x1c5984=new URL(_0x7ed93f),_0x5154a7={};_0x3b566c[_0xaf1d66(0x173)](_0x319858=>{const _0x104fd4=_0xaf1d66;_0x1c5984[_0x104fd4(0x141)][_0x104fd4(0x136)](_0x319858)&&(_0x5154a7[_0x319858]=_0x1c5984['searchParams']['get'](_0x319858));});const _0x2c1903=new URL(_0x1c5984[_0xaf1d66(0x151)]+_0x1c5984['pathname']);return{'streamType':_0xaf1d66(0x181),'videoData':{'drmType':_0xaf1d66(0xf3),'key_strings':_0xaf1d66(0x11e)+_0x3d1581+':'+_0x44b2c4,'keys':[_0x3d1581+':'+_0x44b2c4],'pssh':_0x5b3df3||'','url':_0x2c1903[_0xaf1d66(0x188)]()},'signedParams':_0x5154a7};}function initializeConfig(){const _0x4e9fd9=_0x2cad31;try{const _0x27fc5e=getConfigFromUrl();videoData=_0x27fc5e[_0x4e9fd9(0x176)],signedParams=_0x27fc5e[_0x4e9fd9(0x103)],streamType=_0x27fc5e[_0x4e9fd9(0x105)],streamType===_0x4e9fd9(0x15e)?updateStatus(_0x4e9fd9(0x18c)+videoData['url'][_0x4e9fd9(0xfa)](0x0,0x32)+_0x4e9fd9(0x157)):updateStatus(_0x4e9fd9(0x12c)+videoData[_0x4e9fd9(0x186)]['substring'](0x0,0x32)+_0x4e9fd9(0x157)),setTimeout(()=>loadContent(),0x3e8);}catch(_0x10f329){showError(_0x10f329[_0x4e9fd9(0xff)]),updateStatus(_0x4e9fd9(0x18e));}}function _0xdb91(_0x41ca88,_0x26b0b3){const _0x43b5f4=_0x43b5();return _0xdb91=function(_0xdb914,_0x3ee8da){_0xdb914=_0xdb914-0xe9;let _0x57c038=_0x43b5f4[_0xdb914];return _0x57c038;},_0xdb91(_0x41ca88,_0x26b0b3);}class SignedSegmentFilter{constructor(_0x43ae8a){const _0x5eeeaf=_0x2cad31;this[_0x5eeeaf(0x103)]=_0x43ae8a;}[_0x2cad31(0x12b)](_0xdfb118,_0x5c70e8){const _0x3d645d=_0x2cad31;if(_0xdfb118===shaka[_0x3d645d(0x101)][_0x3d645d(0x131)][_0x3d645d(0x154)][_0x3d645d(0x155)]||_0xdfb118===shaka[_0x3d645d(0x101)][_0x3d645d(0x131)][_0x3d645d(0x154)]['SEGMENT']){const _0x408231=new URL(_0x5c70e8[_0x3d645d(0x187)][0x0]);Object[_0x3d645d(0x145)](this['signedParams'])[_0x3d645d(0x173)](_0x9336a4=>{const _0x480765=_0x3d645d;_0x408231[_0x480765(0x141)][_0x480765(0xf4)](_0x9336a4,this['signedParams'][_0x9336a4]);}),_0x5c70e8[_0x3d645d(0x187)][0x0]=_0x408231['toString'](),updateStatus(_0xdfb118+_0x3d645d(0x113)+_0x408231[_0x3d645d(0x172)][_0x3d645d(0xec)]('/')[_0x3d645d(0x125)]());}return _0x5c70e8;}}function initializePlayer(){const _0x11c733=_0x2cad31;shaka[_0x11c733(0x14b)][_0x11c733(0x118)]();if(!shaka['Player'][_0x11c733(0xed)]())return showError(_0x11c733(0x144)),![];player=new shaka[(_0x11c733(0x160))](video),player[_0x11c733(0x15b)]('error',onPlayerError);streamType==='drm'&&videoData['keys']&&player['configure']({'drm':{'clearKeys':parseClearKeys(videoData['keys'])}});const _0x42f05f=player[_0x11c733(0x104)]();if(signedParams&&Object['keys'](signedParams)[_0x11c733(0x146)]>0x0){const _0x5759c6=new SignedSegmentFilter(signedParams);_0x42f05f['registerRequestFilter']((_0x32eba9,_0x3379f1)=>_0x5759c6[_0x11c733(0x12b)](_0x32eba9,_0x3379f1));}return!![];}function parseClearKeys(_0x15d437){const _0x557318={};return _0x15d437['forEach'](_0x4fdf57=>{const _0x664ec6=_0xdb91,[_0x353263,_0xa296bd]=_0x4fdf57[_0x664ec6(0xec)](':');_0x557318[_0x353263]=_0xa296bd;}),_0x557318;}async function loadContent(){const _0x234ce5=_0x2cad31;if(!videoData){showError(_0x234ce5(0x132)),updateStatus(_0x234ce5(0x152));return;}if(!player){if(!initializePlayer())return;}try{showLoading(!![]),streamType===_0x234ce5(0x15e)?updateStatus(_0x234ce5(0x185)):updateStatus(_0x234ce5(0x110)),await player[_0x234ce5(0x134)](videoData['url']),showLoading(![]),updateStatus(_0x234ce5(0x117)),populateQualityOptions();}catch(_0x55f168){showLoading(![]),showError('Failed\x20to\x20load\x20content:\x20'+_0x55f168[_0x234ce5(0xff)]),updateStatus('Failed\x20to\x20load\x20content');}}function onPlayerError(_0x4c9acd){const _0x21f845=_0x2cad31;showError('Player\x20error:\x20'+_0x4c9acd['detail']['message']),updateStatus(_0x21f845(0x15a));}function showLoading(_0x3392b6){const _0x23a601=_0x2cad31;loading['classList'][_0x23a601(0x12d)](_0x23a601(0xf1),_0x3392b6);}function showError(_0x391d4){const _0x3062b5=_0x2cad31;error[_0x3062b5(0x142)]=_0x391d4,error[_0x3062b5(0x17b)]['add'](_0x3062b5(0xf1)),clearTimeout(error[_0x3062b5(0x108)]),error[_0x3062b5(0x108)]=setTimeout(()=>{const _0x4c7eb4=_0x3062b5;error[_0x4c7eb4(0x17b)]['remove'](_0x4c7eb4(0xf1));},0x1388);}function updateStatus(_0x11087a){const _0x52ba23=_0x2cad31;statusText[_0x52ba23(0x142)]=_0x11087a;}function togglePlayPause(){const _0x6efc3a=_0x2cad31;video[_0x6efc3a(0xf5)]||video[_0x6efc3a(0x165)]?video[_0x6efc3a(0x189)]():video[_0x6efc3a(0xfb)]();}function updatePlayPauseIcon(){const _0x1e7310=_0x2cad31,_0x5e1a8d=playPauseBtn[_0x1e7310(0x14e)]('i');video['paused']||video[_0x1e7310(0x165)]?(_0x5e1a8d[_0x1e7310(0x17b)][_0x1e7310(0x14f)](_0x1e7310(0x170)),_0x5e1a8d['classList'][_0x1e7310(0xf9)](_0x1e7310(0x180))):(_0x5e1a8d['classList'][_0x1e7310(0x14f)](_0x1e7310(0x180)),_0x5e1a8d[_0x1e7310(0x17b)][_0x1e7310(0xf9)]('fa-pause'));}function seek(_0x48959d){const _0x180d58=_0x2cad31;video[_0x180d58(0x18f)]+=_0x48959d;}function handleVolumeChange(){const _0x33ccd5=_0x2cad31;video[_0x33ccd5(0x126)]=volumeSlider[_0x33ccd5(0x100)],video[_0x33ccd5(0x126)]===0x0?video[_0x33ccd5(0x14a)]=!![]:video['muted']=![];}function updateVolumeIcon(){const _0x501de4=_0x2cad31,_0xf99332=volumeBtn['querySelector']('i');_0xf99332[_0x501de4(0x17b)][_0x501de4(0x14f)](_0x501de4(0x163),_0x501de4(0x15f),_0x501de4(0x164));if(video[_0x501de4(0x14a)]||video['volume']===0x0)_0xf99332[_0x501de4(0x17b)]['add']('fa-volume-mute');else video[_0x501de4(0x126)]<0.5?_0xf99332['classList'][_0x501de4(0xf9)](_0x501de4(0x15f)):_0xf99332['classList'][_0x501de4(0xf9)](_0x501de4(0x163));}function toggleMute(){const _0xd8cce3=_0x2cad31;video[_0xd8cce3(0x14a)]=!video['muted'],video[_0xd8cce3(0x14a)]?volumeSlider['value']=0x0:volumeSlider[_0xd8cce3(0x100)]=video['volume']>0x0?video['volume']:0x1,updateVolumeIcon();}function updateProgress(){const _0x7729b7=_0x2cad31,_0x2e34c1=video['currentTime']/video[_0x7729b7(0x123)]*0x64;progressBar[_0x7729b7(0x100)]=_0x2e34c1||0x0;const _0x22a315=_0x2e34c1/0x64;progressBar[_0x7729b7(0x13f)][_0x7729b7(0x17f)]=_0x7729b7(0x107)+_0x22a315*0x64+'%,\x20rgba(255,\x20255,\x20255,\x200.4)\x20'+_0x22a315*0x64+'%)';const _0x40dc6e=formatTime(video['currentTime']),_0x3d10f5=formatTime(video[_0x7729b7(0x123)]);timeDisplay[_0x7729b7(0x142)]=_0x40dc6e+_0x7729b7(0x13c)+_0x3d10f5;}function setProgress(_0x3ad332){const _0x5718ee=_0x2cad31,_0x465aee=_0x3ad332[_0x5718ee(0x18d)]['value']/0x64*video[_0x5718ee(0x123)];video[_0x5718ee(0x18f)]=_0x465aee;}function formatTime(_0x3a4b6e){const _0x515328=_0x2cad31;if(isNaN(_0x3a4b6e))return _0x515328(0x102);const _0x170fc0=new Date(null);_0x170fc0[_0x515328(0x128)](_0x3a4b6e);const _0xe4a638=_0x170fc0[_0x515328(0x182)](),_0x4a38fe=_0x170fc0['getUTCMinutes'](),_0x335ff3=_0x170fc0[_0x515328(0x112)]();if(_0xe4a638>0x0)return String(_0xe4a638)[_0x515328(0x143)](0x2,'0')+':'+String(_0x4a38fe)[_0x515328(0x143)](0x2,'0')+':'+String(_0x335ff3)[_0x515328(0x143)](0x2,'0');return String(_0x4a38fe)[_0x515328(0x143)](0x2,'0')+':'+String(_0x335ff3)[_0x515328(0x143)](0x2,'0');}function togglePictureInPicture(){const _0x1f2e0f=_0x2cad31;if(document[_0x1f2e0f(0x168)])document['exitPictureInPicture']();else document[_0x1f2e0f(0x167)]&&video[_0x1f2e0f(0x115)]();}function toggleFullscreen(){const _0xd1c878=_0x2cad31,_0x31f7ff=videoWrapper;!document[_0xd1c878(0x162)]?_0x31f7ff['requestFullscreen']()[_0xd1c878(0x124)](()=>{const _0x50f91c=_0xd1c878;console['log']('Entered\x20fullscreen'),screen[_0x50f91c(0x120)]&&screen[_0x50f91c(0x120)]['lock']&&screen['orientation'][_0x50f91c(0x10a)]('landscape')['catch'](_0x59370c=>{const _0x175929=_0x50f91c;console[_0x175929(0x174)](_0x175929(0x13b),_0x59370c[_0x175929(0xff)]);});})['catch'](_0x302254=>{const _0x4bc145=_0xd1c878;console[_0x4bc145(0x138)]('Error\x20entering\x20fullscreen:',_0x302254),showError(_0x4bc145(0x12e)+_0x302254[_0x4bc145(0xff)]);}):document[_0xd1c878(0x13a)]()[_0xd1c878(0x124)](()=>{const _0x1d6828=_0xd1c878;console[_0x1d6828(0x133)](_0x1d6828(0x130)),screen['orientation']&&screen[_0x1d6828(0x120)][_0x1d6828(0x11f)]&&screen['orientation'][_0x1d6828(0x11f)]();})[_0xd1c878(0x15d)](_0x47c466=>{const _0x357124=_0xd1c878;console[_0x357124(0x138)](_0x357124(0x17d),_0x47c466),showError('Fullscreen\x20exit\x20error:\x20'+_0x47c466['message']);});}function updateFullscreenIcon(){const _0x44c7d5=_0x2cad31,_0x3445b0=fullscreenBtn[_0x44c7d5(0x14e)]('i');document[_0x44c7d5(0x162)]?(_0x3445b0[_0x44c7d5(0x17b)][_0x44c7d5(0x14f)]('fa-expand'),_0x3445b0[_0x44c7d5(0x17b)][_0x44c7d5(0xf9)](_0x44c7d5(0x13d))):(_0x3445b0[_0x44c7d5(0x17b)][_0x44c7d5(0x14f)]('fa-compress'),_0x3445b0[_0x44c7d5(0x17b)]['add'](_0x44c7d5(0x178)));}fullscreenBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),toggleFullscreen),document['addEventListener']('fullscreenchange',updateFullscreenIcon);function hideControls(){const _0x84fe15=_0x2cad31;if(video[_0x84fe15(0xf5)])return;controlsOverlay['classList']['remove']('visible');}function showControls(){const _0x31721a=_0x2cad31;controlsOverlay[_0x31721a(0x17b)][_0x31721a(0xf9)]('visible'),clearTimeout(controlsTimeout),controlsTimeout=setTimeout(hideControls,0xbb8);}function toggleSettingsMenu(){const _0x5dc9ac=_0x2cad31;settingsMenu['classList'][_0x5dc9ac(0x12d)](_0x5dc9ac(0xf1));}function handleSpeedChange(){const _0x2c4c6d=_0x2cad31,_0x4b0eb2=parseFloat(speedSelect[_0x2c4c6d(0x100)]);video[_0x2c4c6d(0x18a)]=_0x4b0eb2,updateStatus(_0x2c4c6d(0x109)+_0x4b0eb2+'x');}function handleQualityChange(){const _0x4469f9=_0x2cad31,_0xfcb400=qualitySelect[_0x4469f9(0x100)];if(player&&_0xfcb400!==_0x4469f9(0x150)){const _0x59e3de=player[_0x4469f9(0x175)](),_0x429ee0=_0x59e3de[_0x4469f9(0x177)](_0x3cd951=>_0x3cd951['height']===parseInt(_0xfcb400));_0x429ee0&&(player['selectVariantTrack'](_0x429ee0),updateStatus(_0x4469f9(0x156)+_0xfcb400+'p'));}else player&&_0xfcb400===_0x4469f9(0x150)&&(player[_0x4469f9(0x16b)](null),updateStatus(_0x4469f9(0x140)));}function populateQualityOptions(){const _0x2b05a4=_0x2cad31;if(!player)return;const _0x583af7=player[_0x2b05a4(0x175)](),_0x1e495d=qualitySelect['value'];qualitySelect[_0x2b05a4(0xee)]=_0x2b05a4(0x10f);const _0x2e4220=[...new Set(_0x583af7[_0x2b05a4(0x111)](_0xcdf980=>_0xcdf980[_0x2b05a4(0x129)]))][_0x2b05a4(0xfd)]((_0x3b952b,_0x5d3c89)=>_0x5d3c89-_0x3b952b);_0x2e4220[_0x2b05a4(0x173)](_0x4ae17a=>{const _0x5550f7=_0x2b05a4,_0x49b5c7=document[_0x5550f7(0x10e)](_0x5550f7(0xf7));_0x49b5c7[_0x5550f7(0x100)]=_0x4ae17a,_0x49b5c7[_0x5550f7(0x142)]=_0x4ae17a+'p',qualitySelect[_0x5550f7(0xe9)](_0x49b5c7);}),_0x1e495d&&_0x2e4220[_0x2b05a4(0x114)](parseInt(_0x1e495d))&&(qualitySelect['value']=_0x1e495d);}playPauseBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),togglePlayPause),controlsOverlay[_0x2cad31(0x15b)](_0x2cad31(0xfe),_0x2037d5=>{const _0x1d8ea7=_0x2cad31,_0x280ce4=_0x2037d5[_0x1d8ea7(0x18d)][_0x1d8ea7(0xfc)](_0x1d8ea7(0x11a))||_0x2037d5[_0x1d8ea7(0x18d)][_0x1d8ea7(0xfc)](_0x1d8ea7(0x16d));!_0x280ce4&&togglePlayPause();}),video['addEventListener'](_0x2cad31(0x189),updatePlayPauseIcon),video[_0x2cad31(0x15b)](_0x2cad31(0xfb),updatePlayPauseIcon),video[_0x2cad31(0x15b)](_0x2cad31(0x165),updatePlayPauseIcon),rewindBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),()=>seek(-0xa)),forwardBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),()=>seek(0xa)),volumeBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),toggleMute),volumeSlider[_0x2cad31(0x15b)](_0x2cad31(0xef),handleVolumeChange),video[_0x2cad31(0x15b)](_0x2cad31(0x147),updateVolumeIcon),video['addEventListener'](_0x2cad31(0x158),updateProgress),video[_0x2cad31(0x15b)]('loadedmetadata',updateProgress),progressBar[_0x2cad31(0x15b)]('input',setProgress),pipBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),togglePictureInPicture),fullscreenBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),toggleFullscreen),document['addEventListener'](_0x2cad31(0x153),updateFullscreenIcon),settingsBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),toggleSettingsMenu),speedSelect['addEventListener'](_0x2cad31(0x17c),handleSpeedChange),qualitySelect[_0x2cad31(0x15b)](_0x2cad31(0x17c),handleQualityChange),document[_0x2cad31(0x15b)]('click',_0x5c2406=>{const _0xff8721=_0x2cad31;!settingsMenu['contains'](_0x5c2406[_0xff8721(0x18d)])&&!settingsBtn['contains'](_0x5c2406[_0xff8721(0x18d)])&&settingsMenu[_0xff8721(0x17b)]['remove'](_0xff8721(0xf1));}),videoWrapper['addEventListener'](_0x2cad31(0x18b),()=>{const _0x8bef29=_0x2cad31;!video[_0x8bef29(0xf5)]&&showControls();}),video[_0x2cad31(0x15b)]('play',()=>{showControls();}),video[_0x2cad31(0x15b)](_0x2cad31(0xfb),()=>{showControls(),clearTimeout(controlsTimeout);});function _0x43b5(){const _0x1b5ff4=['substring','pause','closest','sort','click','message','value','net','00:00','signedParams','getNetworkingEngine','streamType','video','linear-gradient(to\x20right,\x20#ff0000\x20','timeout','Playback\x20speed\x20changed\x20to\x20','lock','KeyName','.controls-overlay','pip-btn','createElement','<option\x20value=\x22auto\x22\x20selected>Auto</option>','Loading\x20DRM\x20content\x20with\x20signed\x20segment\x20requests...','map','getUTCSeconds','\x20request\x20with\x20signed\x20params:\x20','includes','requestPictureInPicture','volume-slider','Content\x20loaded\x20successfully!','installAll','back-btn','.control-btn','forward-btn','1065mlrzSZ','URLPrefix','--key\x20','unlock','orientation','play-pause-btn','Signature','duration','then','pop','volume','progress-bar','setSeconds','height','statusText','apply','DRM\x20configuration\x20loaded.\x20MPD:\x20','toggle','Fullscreen\x20error:\x20','search','Exited\x20fullscreen','NetworkingEngine','No\x20configuration\x20found.\x20Please\x20provide\x20required\x20URL\x20parameters.','log','load','Policy','has','quality-select','error','visible','exitFullscreen','Orientation\x20lock\x20failed:','\x20/\x20','fa-compress','.video-wrapper','style','Quality\x20set\x20to\x20Auto','searchParams','textContent','padStart','Browser\x20not\x20supported\x20for\x20playback!','keys','length','volumechange','fullscreen-btn','1072asECjo','muted','polyfill','6870GhgzPy','78024ywpeOV','querySelector','remove','auto','origin','Configuration\x20required','fullscreenchange','RequestType','MANIFEST','Quality\x20changed\x20to\x20','...','timeupdate','18213404CEJbKi','Player\x20error\x20occurred','addEventListener','.player-container','catch','live','fa-volume-down','Player','Exited\x20fullscreen\x20via\x20back\x20button','fullscreenElement','fa-volume-up','fa-volume-mute','ended','type','pictureInPictureEnabled','pictureInPictureElement','preventDefault','720488dTdCLJ','selectVariantTrack','6554352uaCSIy','.settings-menu','volume-btn','11313xZsbCv','fa-pause','stopPropagation','pathname','forEach','warn','getVariantTracks','videoData','find','fa-expand','getElementById','DOMContentLoaded','classList','change','Error\x20exiting\x20fullscreen:','45Astgxe','background','fa-play','drm','getUTCHours','keyid','URL\x20Parameters:','Loading\x20HLS\x20live\x20stream...','url','uris','toString','play','playbackRate','mousemove','Live\x20HLS\x20configuration\x20loaded.\x20URL:\x20','target','Waiting\x20for\x20URL\x20parameters...','currentTime','appendChild','rewind-btn','location','split','isBrowserSupported','innerHTML','input','get','show','speed-select','ClearKey','set','paused','6CCUxXG','option','3448795ohlOpj','add'];_0x43b5=function(){return _0x1b5ff4;};return _0x43b5();}function showControls(){const _0x214cca=_0x2cad31;controlsOverlay['classList'][_0x214cca(0xf9)](_0x214cca(0x139)),clearTimeout(controlsTimeout),!video[_0x214cca(0xf5)]&&(controlsTimeout=setTimeout(()=>{const _0x11c926=_0x214cca;controlsOverlay[_0x11c926(0x17b)][_0x11c926(0x14f)]('visible');},0xbb8));}const backBtn=document['getElementById'](_0x2cad31(0x119));backBtn[_0x2cad31(0x15b)](_0x2cad31(0xfe),async _0x2b1b42=>{const _0x35219a=_0x2cad31;_0x2b1b42[_0x35219a(0x169)](),_0x2b1b42[_0x35219a(0x171)]();if(document[_0x35219a(0x162)])try{await document[_0x35219a(0x13a)](),console[_0x35219a(0x133)](_0x35219a(0x161));}catch(_0x3f34cc){console[_0x35219a(0x138)](_0x35219a(0x17d),_0x3f34cc);}else history['back']();}),document[_0x2cad31(0x15b)](_0x2cad31(0x17a),()=>{initializeConfig(),updateVolumeIcon();});
-    </script>
 </body>
-
 </html>
