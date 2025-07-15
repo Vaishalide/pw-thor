@@ -2,121 +2,189 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>PW THOR – Squid Game UI</title>
+  <title>PW THOR – Squid Game Edition</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"/>
-  <link href="https://www.pw.live/favicon.ico" rel="icon"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://www.pw.live/favicon.ico" rel="icon" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <style>
+    :root {
+      --sg-bg: #121212;
+      --sg-card: #1a1a1d;
+      --sg-pink: #ff4f81;
+      --sg-green: #2fff8d;
+      --sg-dark: #0f0f10;
+    }
+
     body {
-      margin: 0;
-      background: #111;
-      color: #eee;
+      background: var(--sg-bg);
+      color: #f0f0f0;
       font-family: 'Poppins', sans-serif;
+      margin: 0;
       padding: 1rem;
     }
+
     h1 {
-      color: #6ECB63;
-      text-shadow: 0 0 6px rgba(110, 203, 99, 0.5);
       text-align: center;
+      color: var(--sg-green);
+      text-shadow: 0 0 10px var(--sg-green);
     }
+
     .grid {
       display: flex;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 1.5rem;
       justify-content: center;
+      margin-top: 1rem;
     }
+
     .card {
-      background: #1A1A1D;
-      border-left: 4px solid #FF6699;
+      background: var(--sg-card);
+      border-left: 5px solid var(--sg-pink);
       border-radius: 10px;
       padding: 1rem;
       width: 260px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: 0.3s ease;
     }
+
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 12px rgba(255, 102, 153, 0.3);
+      transform: translateY(-6px);
+      box-shadow: 0 0 12px var(--sg-pink);
     }
+
     .card img {
       width: 100%;
       border-radius: 8px;
     }
+
     .card-title {
       margin-top: 10px;
       font-weight: bold;
+      font-size: 1rem;
       color: #fff;
     }
+
     #searchInput {
       display: block;
       width: 90%;
       max-width: 400px;
       margin: 1rem auto;
       padding: 0.75rem 1rem;
-      border-radius: 30px;
-      border: 2px solid #6ECB63;
-      background: #1F1F1F;
-      color: #fff;
+      border-radius: 50px;
+      background: var(--sg-dark);
+      border: 2px solid var(--sg-green);
+      color: white;
+      font-size: 1rem;
     }
+
     .back-btn {
-      display: none;
-      color: #FF6699;
-      margin: 10px 0;
+      margin: 1rem 0;
       font-weight: bold;
+      color: var(--sg-pink);
       cursor: pointer;
+      display: none;
     }
+
     .today-classes-wrapper {
-      margin: 20px 0;
+      margin-top: 1rem;
     }
+
     .today-classes-title {
       font-size: 1.2rem;
-      color: #FF6699;
-      margin-left: 1rem;
+      color: var(--sg-pink);
+      margin: 0 0 10px 10px;
     }
+
     .today-classes-container {
-      white-space: nowrap;
       overflow-x: auto;
+      white-space: nowrap;
       padding: 10px;
+      background: var(--sg-card);
+      border-radius: 10px;
     }
+
     .today-card {
       display: inline-block;
       width: 220px;
-      background: #2C2C31;
+      background: var(--sg-dark);
       margin-right: 10px;
       padding: 10px;
       border-radius: 10px;
-      color: #fff;
     }
+
     .today-card img {
       width: 100%;
-      border-radius: 8px;
+      border-radius: 6px;
     }
+
     .overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.85);
-      z-index: 9999;
+      background: rgba(0, 0, 0, 0.85);
       display: none;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      z-index: 9999;
     }
+
     .spinner {
       border: 6px solid #333;
-      border-top: 6px solid #6ECB63;
+      border-top: 6px solid var(--sg-green);
       border-radius: 50%;
       width: 60px;
       height: 60px;
       animation: spin 1s linear infinite;
     }
+
     @keyframes spin {
-      100% { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .lecture-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 1rem 0;
+    }
+
+    .lecture-tabs button {
+      background: var(--sg-pink);
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .lecture-tabs button.active {
+      background: var(--sg-green);
+      color: #111;
+    }
+
+    #loadMoreChaptersWrapper {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    #loadMoreChaptersBtn {
+      padding: 10px 20px;
+      border: none;
+      background: var(--sg-green);
+      color: #111;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+
   <div style="text-align: center;">
-    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" alt="Logo" style="height: 60px;" />
+    <img src="ChatGPT Image May 7, 2025, 08_57_25 PM.png" style="height: 60px;" alt="Logo" />
     <h1>PW THOR</h1>
   </div>
 
@@ -132,213 +200,283 @@
   <div id="main" class="grid"></div>
   <div id="subjects" class="grid" style="display:none;"></div>
   <div id="chapters" class="grid" style="display:none;"></div>
+
+  <div id="loadMoreChaptersWrapper" style="display: none;">
+    <button id="loadMoreChaptersBtn">Load More Chapters</button>
+  </div>
+
   <div id="lectureSection" style="display:none;">
-    <div class="lecture-tabs" style="text-align: center; margin: 1rem;">
-      <button onclick="switchTab('vidoes')">Lectures</button>
-      <button onclick="switchTab('notes')">Notes</button>
-      <button onclick="switchTab('DppNotes')">DPP Notes</button>
-      <button onclick="switchTab('DppVideos')">DPP Lectures</button>
+    <div class="lecture-tabs">
+      <button onclick="switchTab('vidoes')" id="tab-vidoes">Lectures</button>
+      <button onclick="switchTab('notes')" id="tab-notes">Notes</button>
+      <button onclick="switchTab('DppNotes')" id="tab-DppNotes">DPP Notes</button>
+      <button onclick="switchTab('DppVideos')" id="tab-DppVideos">DPP Lectures</button>
     </div>
     <div class="grid" id="lectureContent"></div>
   </div>
-  <!-- POPUP Modal -->
-  <div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-      background:#1F1F1F; padding:20px; border-radius:12px; box-shadow:0 0 20px #FF669966; z-index:9999;">
-    <button onclick="popup.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:18px; color:white;">&times;</button>
-    <img id="popupImage" src="" style="width:100%; border-radius:8px;" />
-    <p id="popupText" style="margin:10px 0;"></p>
-    <a id="popupLink" href="#" target="_blank" style="padding:8px 12px; background:#FF6699; color:#111; text-decoration:none; font-weight:bold; border-radius:5px;">Join Telegram</a>
-  </div>
+<script>
+  const API_BASE = "https://pw-api-75332756c41b.herokuapp.com";
+  const overlay = document.getElementById("overlay");
+  const backBtn = document.getElementById("backBtn");
+  const main = document.getElementById("main");
+  const subjects = document.getElementById("subjects");
+  const chapters = document.getElementById("chapters");
+  const lectureSection = document.getElementById("lectureSection");
+  const lectureContent = document.getElementById("lectureContent");
+  const todayWrapper = document.getElementById("todayWrapper");
+  const todayClasses = document.getElementById("todayClasses");
+  const chapterLoadMoreBtn = document.getElementById("loadMoreChaptersBtn");
+  const chapterLoadMoreWrapper = document.getElementById("loadMoreChaptersWrapper");
 
-  <!-- TELEGRAM Floating Button -->
-  <a href="https://t.me/pwthor_support" target="_blank" style="position:fixed; bottom:20px; right:20px; z-index:1000;">
-    <img src="download.png" alt="Telegram" style="width:50px; height:50px; border-radius:50%; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);" />
-  </a>
+  let viewStack = [];
+  let allBatches = [];
+  let currentBatchId = "", currentSubjectSlug = "", currentTopicId = "", currentContentType = "vidoes", currentSubjectId = "";
+  let chapterPage = 1, chapterTotal = Infinity, chapterLoading = false;
+  let lecturePage = 1, lectureTotal = Infinity, lectureLoading = false;
 
-  <!-- JS Logic -->
-  <script>
-    const API = "https://pw-api-75332756c41b.herokuapp.com";
-    const overlay = document.getElementById("overlay");
-    const backBtn = document.getElementById("backBtn");
-    const main = document.getElementById("main");
-    const subjects = document.getElementById("subjects");
-    const chapters = document.getElementById("chapters");
-    const lectureContent = document.getElementById("lectureContent");
-    const lectureSection = document.getElementById("lectureSection");
-    const todayWrapper = document.getElementById("todayWrapper");
-    const todayClasses = document.getElementById("todayClasses");
-    const searchInput = document.getElementById("searchInput");
+  function showLoader(flag) {
+    overlay.style.display = flag ? "flex" : "none";
+  }
 
-    let viewStack = [];
-    let allBatches = [], currentBatch = "", currentSubjectSlug = "", currentTopicId = "", currentType = "vidoes";
+  function clearAll() {
+    [main, subjects, chapters, lectureSection].forEach(el => el.style.display = "none");
+    todayWrapper.style.display = "none";
+    backBtn.style.display = viewStack.length ? "block" : "none";
+  }
 
-    function showLoader(flag) {
-      overlay.style.display = flag ? "flex" : "none";
+  function show(el) {
+    clearAll();
+    el.style.display = el === lectureSection ? "block" : "flex";
+  }
+
+  function appendCard(container, title, image, onClick) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `${image ? `<img src="${image}" />` : ""}<div class="card-title">${title}</div>`;
+    div.onclick = onClick;
+    container.appendChild(div);
+  }
+
+  async function loadBatches() {
+    showLoader(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/batches`);
+      const data = await res.json();
+      allBatches = data.batches.map(b => ({ name: b.name, image: b.previewImage, id: b._id }));
+      renderBatches(allBatches);
+    } catch (err) {
+      alert("Failed to load batches");
+    } finally {
+      showLoader(false);
     }
+  }
 
-    function clearViews() {
-      [main, subjects, chapters, lectureSection].forEach(el => el.style.display = "none");
-      todayWrapper.style.display = "none";
-      backBtn.style.display = viewStack.length ? "block" : "none";
-    }
-
-    function show(el) {
-      clearViews();
-      el.style.display = el === lectureSection ? "block" : "flex";
-    }
-
-    function createCard(container, title, img, onClick) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `${img ? `<img src="${img}" />` : ""}<div class="card-title">${title}</div>`;
-      card.onclick = onClick;
-      container.appendChild(card);
-    }
-
-    async function loadBatches() {
-      showLoader(true);
-      try {
-        const res = await fetch(`${API}/api/batches`);
-        const data = await res.json();
-        allBatches = data.batches.map(b => ({ name: b.name, image: b.previewImage, id: b._id }));
-        renderBatches(allBatches);
-      } catch (e) {
-        alert("Failed to load batches");
-      } finally {
-        showLoader(false);
-      }
-    }
-
-    function renderBatches(list) {
-      main.innerHTML = "";
-      list.forEach(b => createCard(main, b.name, b.image, () => {
-        viewStack.push(() => renderBatches(list));
-        loadSubjects(b.id);
-      }));
-      show(main);
-    }
-
-    async function loadSubjects(batchId) {
-      currentBatch = batchId;
-      show(subjects);
-      backBtn.onclick = () => viewStack.pop()?.();
-      subjects.innerHTML = "";
-      todayClasses.innerHTML = "";
-      todayWrapper.style.display = "none";
-
-      try {
-        const res = await fetch(`${API}/api/batch/${batchId}`);
-        const { data } = await res.json();
-        data.subjects.forEach(sub => {
-          const img = sub.imageId ? sub.imageId.baseUrl + sub.imageId.key : null;
-          createCard(subjects, sub.subject, img, () => {
-            viewStack.push(() => loadSubjects(batchId));
-            loadChapters(batchId, sub.slug);
-          });
-        });
-
-        const todayRes = await fetch(`${API}/api/batch/${batchId}/todays-schedule`);
-        const today = await todayRes.json();
-        if (today.length > 0) {
-          todayWrapper.style.display = "block";
-          today.forEach(cls => {
-            const div = document.createElement("div");
-            div.className = "today-card";
-            div.innerHTML = `${cls.image ? `<img src="${cls.image}" />` : ""}<div class="card-title">${cls.title}</div>`;
-            div.onclick = () => launchPlayer(cls.url);
-            todayClasses.appendChild(div);
-          });
-        }
-      } catch (e) {
-        console.error(e);
-        alert("Error loading subjects");
-      }
-    }
-
-    async function loadChapters(batchId, subjectSlug) {
-      currentSubjectSlug = subjectSlug;
-      show(chapters);
-      chapters.innerHTML = "";
-      try {
-        const res = await fetch(`${API}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=1`);
-        const result = await res.json();
-        (result.data || []).forEach(ch => {
-          createCard(chapters, ch.name, null, () => {
-            viewStack.push(() => loadChapters(batchId, subjectSlug));
-            loadLectures(batchId, subjectSlug, ch._id);
-          });
-        });
-      } catch (e) {
-        alert("Error loading chapters");
-      }
-    }
-
-    function switchTab(type) {
-      currentType = type;
-      loadLectures(currentBatch, currentSubjectSlug, currentTopicId);
-    }
-
-    async function loadLectures(batchId, subjectSlug, topicId) {
-      currentTopicId = topicId;
-      show(lectureSection);
-      lectureContent.innerHTML = "";
-      try {
-        const res = await fetch(`${API}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${currentType}&page=1`);
-        const result = await res.json();
-        (result.data || []).forEach(item => {
-          const div = document.createElement("div");
-          div.className = "card";
-
-          if (["notes", "DppNotes"].includes(currentType)) {
-            const links = (item.homeworkIds || []).flatMap(h => h.attachmentIds || []).map(a =>
-              `<button onclick="window.open('${a.baseUrl + a.key}', '_blank')">${a.name}</button>`
-            ).join("");
-            div.innerHTML = `<div class="card-title">${item.topic || "Note"}</div>${links}`;
-          } else {
-            const video = item.videoDetails || item;
-            const image = video.image || video.thumbnail || "";
-            const title = video.name || "Video";
-            div.innerHTML = `${image ? `<img src="${image}" />` : ""}<div class="card-title">${title}</div>`;
-            div.onclick = () => launchPlayer(video.hls_url || item.url || "");
-          }
-          lectureContent.appendChild(div);
-        });
-      } catch (e) {
-        alert("Error loading lectures");
-      }
-    }
-
-    async function launchPlayer(url) {
-      if (!url) return alert("Invalid URL");
-      if (url.includes("youtube.com") || url.includes("youtu.be")) {
-        return window.open(url, "_blank");
-      }
-      const encoded = encodeURIComponent(url);
-      window.location.href = `pwplayer.html?playurl=${encoded}`;
-    }
-
-    backBtn.onclick = () => {
-      const last = viewStack.pop();
-      if (last) last();
-    };
-
-    searchInput.addEventListener("input", () => {
-      const q = searchInput.value.toLowerCase();
-      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(q));
-      renderBatches(filtered);
+  function renderBatches(batches) {
+    main.innerHTML = "";
+    searchInput.style.display = "block";
+    show(main);
+    batches.forEach(batch => {
+      appendCard(main, batch.name, batch.image, () => {
+        viewStack.push(() => renderBatches(batches));
+        loadSubjects(batch.id);
+      });
     });
+  }
 
-    // Load popup if available
-    fetch("/popup.json").then(r => r.json()).then(popup => {
-      if (popup.show) {
-        popupImage.src = popup.image;
-        popupText.textContent = popup.text;
-        popupLink.href = popup.link;
-        popup.style.display = "block";
+  async function loadSubjects(batchId) {
+    show(subjects);
+    backBtn.onclick = () => viewStack.pop()?.();
+    currentBatchId = batchId;
+    subjects.innerHTML = "";
+    todayClasses.innerHTML = "";
+    todayWrapper.style.display = "none";
+
+    try {
+      const res = await fetch(`${API_BASE}/api/batch/${batchId}`);
+      const { data } = await res.json();
+      (data.subjects || []).forEach(sub => {
+        const img = sub.imageId ? sub.imageId.baseUrl + sub.imageId.key : null;
+        appendCard(subjects, sub.subject, img, () => {
+          viewStack.push(() => loadSubjects(batchId));
+          currentSubjectId = sub.subjectId || sub._id;
+          chapterPage = 1;
+          chapterTotal = Infinity;
+          loadChapters(batchId, sub.slug, 1);
+        });
+      });
+
+      const todayRes = await fetch(`${API_BASE}/api/batch/${batchId}/todays-schedule`);
+      const today = await todayRes.json();
+      if (today.length > 0) {
+        todayWrapper.style.display = "block";
+        today.forEach(cls => {
+          const card = document.createElement("div");
+          card.className = "today-card";
+          card.innerHTML = `${cls.image ? `<img src="${cls.image}" />` : ""}<div class="card-title">${cls.title}</div>`;
+          card.onclick = () => launchPlayer(cls.url);
+          todayClasses.appendChild(card);
+        });
       }
-    }).catch(console.warn);
+    } catch (e) {
+      console.error(e);
+      alert("Error loading subjects");
+    }
+  }
 
-    window.onload = loadBatches;
-  </script>
+  async function loadChapters(batchId, subjectSlug, page = 1) {
+    if (chapterLoading) return;
+    if (page === 1) {
+      chapters.innerHTML = "";
+      chapterTotal = Infinity;
+    }
+    if (page > Math.ceil(chapterTotal / 20)) return;
+
+    chapterLoading = true;
+    showLoader(true);
+    currentBatchId = batchId;
+    currentSubjectSlug = subjectSlug;
+    show(chapters);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
+      const result = await res.json();
+      const chaptersData = result.data || [];
+      chapterTotal = result.paginate?.totalCount || chaptersData.length;
+
+      chaptersData.forEach(ch => {
+        appendCard(chapters, ch.name, null, () => {
+          viewStack.push(() => loadChapters(batchId, subjectSlug));
+          loadLecturesContent(batchId, subjectSlug, ch._id);
+        });
+      });
+
+      chapterPage++;
+      chapterLoadMoreWrapper.style.display = (chapterPage <= Math.ceil(chapterTotal / 20)) ? "block" : "none";
+    } catch (err) {
+      alert("Error loading chapters");
+    } finally {
+      chapterLoading = false;
+      showLoader(false);
+    }
+  }
+
+  async function loadLecturesContent(batchId, subjectSlug, topicId, type = currentContentType, page = 1) {
+    if (lectureLoading || page > Math.ceil(lectureTotal / 20)) return;
+    if (page === 1) lectureContent.innerHTML = "";
+
+    show(lectureSection);
+    showLoader(true);
+    lectureLoading = true;
+
+    currentTopicId = topicId;
+    currentContentType = type;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${type}&page=${page}`);
+      const data = await res.json();
+      const items = data.data || [];
+      lectureTotal = data.paginate?.totalCount || items.length;
+
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "card";
+
+        if (["notes", "DppNotes"].includes(type)) {
+          const links = (item.homeworkIds || []).flatMap(h => h.attachmentIds || []).map(a =>
+            `<button onclick="window.open('${a.baseUrl + a.key}', '_blank')">${a.name}</button>`
+          ).join("");
+          div.innerHTML = `<div class="card-title">${item.topic || "Note"}</div>${links}`;
+        } else {
+          const vid = item.videoDetails || item;
+          const image = vid.image || vid.thumbnail || "";
+          const title = vid.name || "Video";
+          const mediaUrl = vid.hls_url || item.url || "";
+
+          div.innerHTML = `${image ? `<img src="${image}" />` : ""}<div class="card-title">${title}</div>`;
+          div.onclick = async () => {
+            showLoader(true);
+            try {
+              let finalUrl = mediaUrl;
+
+              if (finalUrl.includes("youtube.com") || finalUrl.includes("youtu.be")) {
+                window.open(finalUrl, "_blank");
+                return;
+              }
+
+              if (!finalUrl || finalUrl.trim() === "") {
+                const params = [
+                  `video_url=`,
+                  `title=${encodeURIComponent(vid.name || "")}`,
+                  `poster=${encodeURIComponent(image)}`,
+                  `video_type=pw`,
+                  `video_id=${item._id || ""}`,
+                  `subject_id=${currentSubjectId || ""}`,
+                  `batch_id=${currentBatchId || ""}`
+                ].join('&');
+
+                const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+                const data = await resp.json();
+                if (!data.success || !data.m3u8_url) {
+                  alert("Video not available.");
+                  return;
+                }
+
+                finalUrl = data.m3u8_url;
+              }
+
+              if (finalUrl.includes("youtube.com") || finalUrl.includes("youtu.be")) {
+                window.open(finalUrl, "_blank");
+                return;
+              }
+
+              window.location.href = `pwplayer.html?playurl=${encodeURIComponent(finalUrl)}`;
+            } catch (err) {
+              console.error("Video load failed", err);
+              alert("Failed to load video.");
+            } finally {
+              showLoader(false);
+            }
+          };
+        }
+
+        lectureContent.appendChild(div);
+      });
+
+      lecturePage++;
+    } catch (err) {
+      alert("Error loading lectures");
+    } finally {
+      lectureLoading = false;
+      showLoader(false);
+    }
+  }
+
+  function switchTab(tab) {
+    ["vidoes", "notes", "DppNotes", "DppVideos"].forEach(t =>
+      document.getElementById("tab-" + t)?.classList.remove("active")
+    );
+    document.getElementById("tab-" + tab)?.classList.add("active");
+    lecturePage = 1;
+    lectureTotal = Infinity;
+    loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, tab);
+  }
+
+  document.getElementById("searchInput").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    const filtered = allBatches.filter(b => b.name.toLowerCase().includes(q));
+    renderBatches(filtered);
+  });
+
+  chapterLoadMoreBtn.onclick = () => {
+    loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
+  };
+
+  backBtn.onclick = () => {
+    const fn = viewStack.pop();
+    fn && fn();
+  };
+
+  window.onload = loadBatches;
+</script>
 </body>
 </html>
