@@ -1279,10 +1279,12 @@
       searchInput.style.display = "block";
 
       batches.forEach(batch => {
-        appendCard(main, batch.name, batch.image, () => {
-          viewStack.push(() => renderBatches(batches));
-          loadSubjects(batch.batchId);
-        });
+       appendCard(main, batch.name, batch.image, () => {
+  viewStack.push(() => renderBatches(batches));
+  currentBatchName = batch.name; // ✅ STORE THE NAME HERE
+  loadSubjects(batch.batchId);
+});
+
       });
     }
 
@@ -1305,18 +1307,14 @@
             ? `${sub.imageId.baseUrl}${sub.imageId.key}`
             : null;
 
-          appendCard(
-            subjectsDiv,
-            sub.subject,
-            imgUrl,
-            () => {
-              viewStack.push(() => loadSubjects(batchId));
-              chapterPage = 1;
-              chapterLoading = false;
-              currentSubjectId = sub.subjectId || sub._id;
-              loadChapters(batchId, sub.slug, 1);
-            }
-          );
+          appendCard(subjectsDiv, sub.subject, imgUrl, () => {
+  viewStack.push(() => loadSubjects(batchId));
+  chapterPage = 1;
+  chapterLoading = false;
+  currentSubjectId = sub.subjectId || sub._id;
+  currentSubjectName = sub.subject; // ✅ STORE THE NAME
+  loadChapters(batchId, sub.slug, 1);
+});
         });
 
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
@@ -1408,6 +1406,7 @@
               return;
             }
             viewStack.push(() => loadChapters(batchId, subjectSlug));
+            currentTopicName = ch.name; 
             loadLecturesContent(batchId, subjectSlug, ch._id);
           });
         });
@@ -1487,54 +1486,54 @@
               <div class="card-title">${title}</div>
             `;
 
-            div.onclick = async () => {
-              showLoader(true);
-              try {
-                let finalUrl = mediaUrl;
+          div.onclick = async () => {
+  showLoader(true);
+  try {
+    let finalUrl = mediaUrl;
+    const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
 
-                if (finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'))) {
-                  window.open(finalUrl, '_blank');
-                  return;
-                }
+    // ✅ Open YouTube videos directly
+    if (isYouTube) {
+      window.open(finalUrl, '_blank');
+      return;
+    }
 
-                if (!finalUrl || finalUrl.trim() === "") {
-                  const realVid = item.videoDetails || item;
-                  const params = [
-                    `video_url=`,
-                    `title=${encodeURIComponent(realVid.name || '')}`,
-                    `poster=${encodeURIComponent(realVid.image || realVid.thumbnail || '')}`,
-                    `video_type=pw`,
-                    `video_id=${item._id || ''}`,
-                    `subject_id=${currentSubjectId || ''}`,
-                    `batch_id=${currentBatchId || ''}`
-                  ].join('&');
+    // ✅ Always call stream-info API for non-YouTube videos
+    const realVid = item.videoDetails || item;
+    const batch = currentBatchName || 'Unknown Batch';
+    const subject = currentSubjectName || 'Unknown Subject';
+    const topic = currentTopicName || 'General';
+    const title = realVid.name || '';
 
-                  const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-                  const data = await resp.json();
+    const params = new URLSearchParams({
+      batch,
+      subject,
+      topic,
+      title
+    });
 
-                  if (!data.success || !data.m3u8_url) {
-                    alert("Video stream not available.");
-                    return;
-                  }
+    const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+    const data = await resp.json();
 
-                  finalUrl = data.m3u8_url;
-                }
+    if (!data.success || !data.m3u8_url) {
+      alert("Video stream not available.");
+      return;
+    }
 
-                if (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be')) {
-                  window.open(finalUrl, '_blank');
-                  return;
-                }
+    finalUrl = data.m3u8_url;
 
-                const encoded = encodeURIComponent(finalUrl);
-                window.location.href = `pwplayer.html?playurl=${encoded}`;
+    // ✅ Open video in pwplayer.html
+    const encoded = encodeURIComponent(finalUrl);
+    window.location.href = `pwplayer.html?playurl=${encoded}`;
 
-              } catch (err) {
-                console.error("Video load failed:", err);
-                alert("Failed to load video.");
-              } finally {
-                showLoader(false);
-              }
-            };
+  } catch (err) {
+    console.error("Video load failed:", err);
+    alert("Failed to load video.");
+  } finally {
+    showLoader(false);
+  }
+};
+
           }
 
           lectureContent.appendChild(div);
