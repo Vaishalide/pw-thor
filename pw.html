@@ -1523,8 +1523,12 @@
     finalUrl = data.m3u8_url;
 
     // ✅ Open video in pwplayer.html
-    const encoded = encodeURIComponent(finalUrl);
-    window.location.href = `pwplayer.html?playurl=${encoded}`;
+   const urlParams = new URLSearchParams({
+  encrypted: data.m3u8_url,
+  iv: data.iv
+});
+window.location.href = `pwplayer.html?${urlParams}`;
+
 
   } catch (err) {
     console.error("Video load failed:", err);
