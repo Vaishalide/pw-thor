@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <title>PW THOR PLAYER</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <title>Squid Game Video Player</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
 
     * {
       margin: 0;
@@ -15,12 +17,35 @@
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+      font-family: 'Rajdhani', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(ellipse at center, #1a0a1a 0%, #0d0308 70%, #000000 100%);
       color: #ffffff;
       overflow: hidden;
       cursor: default;
       user-select: none;
+      position: relative;
+    }
+
+    /* Squid Game Background Pattern */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: 
+        radial-gradient(circle at 25% 25%, #ff006e22 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, #f72585aa 0%, transparent 50%),
+        linear-gradient(45deg, transparent 45%, #ff006e05 46%, #ff006e05 54%, transparent 55%);
+      background-size: 100px 100px, 150px 150px, 50px 50px;
+      animation: bgShift 20s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    @keyframes bgShift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(-10px, -10px) rotate(1deg); }
     }
 
     .video-container {
@@ -34,6 +59,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      border: 2px solid #ff006e;
+      box-shadow: inset 0 0 50px rgba(247, 37, 133, 0.3);
     }
 
     video {
@@ -41,26 +68,29 @@
       height: 100%;
       object-fit: contain;
       background: #000;
+      filter: contrast(1.1) saturate(1.1);
     }
 
-    /* Glassmorphism Controls */
+    /* Squid Game Controls */
     .controls {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0, 0, 0, 0.4);
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 10, 26, 0.9) 100%);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid #ff006e;
+      border-image: linear-gradient(90deg, #ff006e, #f72585, #ff006e) 1;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 1.5rem;
+      padding: 1.5rem 2rem;
       z-index: 10;
       opacity: 1;
       transform: translateY(0);
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 -10px 30px rgba(247, 37, 133, 0.4);
     }
 
     .controls.hidden {
@@ -73,17 +103,17 @@
     .controls-right {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.5rem;
     }
 
-    /* Modern Button Styles */
+    /* Geometric Button Styles */
     .control-btn {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white;
+      background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(255, 0, 110, 0.1) 100%);
+      border: 2px solid #ff006e;
+      color: #ff006e;
       cursor: pointer;
-      padding: 0.75rem;
-      border-radius: 12px;
+      padding: 1rem;
+      border-radius: 4px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       align-items: center;
@@ -91,6 +121,11 @@
       backdrop-filter: blur(10px);
       position: relative;
       overflow: hidden;
+      font-family: 'Orbitron', monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
     }
 
     .control-btn::before {
@@ -100,7 +135,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      background: linear-gradient(90deg, transparent, rgba(247, 37, 133, 0.4), transparent);
       transition: left 0.5s;
     }
 
@@ -109,29 +144,32 @@
     }
 
     .control-btn:hover {
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.3);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, rgba(247, 37, 133, 0.4) 0%, rgba(255, 0, 110, 0.3) 100%);
+      border-color: #f72585;
+      color: #f72585;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5);
     }
 
     .control-btn:active {
-      transform: translateY(0);
+      transform: translateY(-1px);
     }
 
-    /* Play/Pause Button - Neon Style */
+    /* Iconic Squid Game Play Button */
     .play-pause-btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border: none;
-      width: 3.5rem;
-      height: 3.5rem;
+      background: linear-gradient(135deg, #ff006e 0%, #f72585 50%, #ff006e 100%);
+      border: 3px solid #ffffff;
+      width: 4rem;
+      height: 4rem;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      box-shadow: 
+        0 0 30px rgba(247, 37, 133, 0.6),
+        inset 0 0 20px rgba(255, 255, 255, 0.2);
       position: relative;
       overflow: hidden;
     }
@@ -139,14 +177,14 @@
     .play-pause-btn::before {
       content: '';
       position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      background: linear-gradient(45deg, #ff006e, #f72585, #ff3c8b, #f72585, #ff006e);
       border-radius: 50%;
       z-index: -1;
-      animation: rotate 3s linear infinite;
+      animation: squidRotate 4s linear infinite;
       opacity: 0;
       transition: opacity 0.3s;
     }
@@ -156,48 +194,60 @@
     }
 
     .play-pause-btn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+      transform: scale(1.15);
+      box-shadow: 
+        0 0 40px rgba(247, 37, 133, 0.8),
+        inset 0 0 25px rgba(255, 255, 255, 0.3);
     }
 
-    @keyframes rotate {
+    @keyframes squidRotate {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
     .play-pause-icon {
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       color: white;
       z-index: 1;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      font-family: 'Orbitron', monospace;
     }
 
-    /* Time Display - Futuristic */
+    /* Game-like Time Display */
     .time {
-      font-size: 0.9rem;
-      color: #e0e0e0;
-      font-family: 'Inter', monospace;
-      font-weight: 500;
-      min-width: 140px;
-      padding: 0.5rem 1rem;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 1rem;
+      color: #ff006e;
+      font-family: 'Orbitron', monospace;
+      font-weight: 600;
+      min-width: 160px;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 10, 26, 0.6) 100%);
+      border-radius: 4px;
+      border: 2px solid #ff006e;
       backdrop-filter: blur(10px);
+      text-align: center;
+      letter-spacing: 1px;
+      box-shadow: 
+        0 0 20px rgba(247, 37, 133, 0.3),
+        inset 0 0 10px rgba(247, 37, 133, 0.1);
     }
 
-    /* Progress Bar - Neon Glow */
+    /* Neon Progress Bar */
     .progress-container {
+      display: flex;
       position: absolute;
-      bottom: 5rem;
-      left: 1.5rem;
-      right: 1.5rem;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 3px;
+      bottom: 6rem;
+      left: 2rem;
+      right: 2rem;
+      height: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
       cursor: pointer;
       z-index: 11;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       backdrop-filter: blur(10px);
+      border: 1px solid rgba(247, 37, 133, 0.3);
+      box-shadow: 0 0 20px rgba(247, 37, 133, 0.2);
     }
 
     .progress-container.hidden {
@@ -207,65 +257,82 @@
     }
 
     .progress-container:hover {
-      height: 8px;
-      bottom: 4.9rem;
+      height: 12px;
+      bottom: 5.8rem;
+      box-shadow: 0 0 30px rgba(247, 37, 133, 0.4);
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-      border-radius: 3px;
+      background: linear-gradient(90deg, #ff006e 0%, #f72585 30%, #ff3c8b 60%, #f72585 100%);
+      border-radius: 4px;
       width: 0%;
       position: relative;
       transition: all 0.1s ease;
-      box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+      box-shadow: 
+        0 0 15px rgba(247, 37, 133, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      animation: neonPulse 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes neonPulse {
+      0% { box-shadow: 0 0 15px rgba(247, 37, 133, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+      100% { box-shadow: 0 0 25px rgba(247, 37, 133, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
     }
 
     .progress-handle {
       position: absolute;
-      right: -8px;
+      right: -10px;
       top: 50%;
       transform: translateY(-50%);
-      width: 16px;
-      height: 16px;
-      background: #ffffff;
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #ffffff 0%, #f72585 100%);
       border-radius: 50%;
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      box-shadow: 
+        0 3px 10px rgba(0, 0, 0, 0.4),
+        0 0 15px rgba(247, 37, 133, 0.6);
+      border: 2px solid #ff006e;
     }
 
     .progress-container:hover .progress-handle {
       opacity: 1;
-      transform: translateY(-50%) scale(1.2);
+      transform: translateY(-50%) scale(1.3);
     }
 
-    /* Back Button - Floating */
+    /* Squid Game Back Button */
     .back-button {
       position: fixed;
-      top: 1.5rem;
-      left: 1.5rem;
+      top: 2rem;
+      left: 2rem;
       z-index: 20;
-      background: rgba(0, 0, 0, 0.6);
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 10, 26, 0.8) 100%);
       backdrop-filter: blur(20px);
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      padding: 0.75rem 1.25rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      border-radius: 12px;
+      color: #ff006e;
+      border: 2px solid #ff006e;
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 4px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      font-family: 'Inter', sans-serif;
+      font-family: 'Orbitron', monospace;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
     }
 
     .back-button:hover {
-      background: rgba(0, 0, 0, 0.8);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(255, 0, 110, 0.1) 100%);
+      color: #f72585;
+      border-color: #f72585;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5);
     }
 
     .back-button.hidden {
@@ -274,27 +341,30 @@
       pointer-events: none;
     }
 
-    /* SVG Icons */
+    /* Geometric Icons */
     .icon {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       fill: currentColor;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
 
     .icon-small {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       fill: currentColor;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
     }
 
-    /* Skip Button Text */
+    /* Skip Button Text with Squid Game Font */
     .skip-text {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #ffffff;
-      font-family: 'Inter', sans-serif;
-      letter-spacing: 0.5px;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #ff006e;
+      font-family: 'Orbitron', monospace;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+      text-transform: uppercase;
     }
 
     /* Fullscreen Styles */
@@ -306,7 +376,7 @@
       cursor: default;
     }
 
-    /* Loading Animation */
+    /* Squid Game Loading Animation */
     .loading {
       position: absolute;
       top: 50%;
@@ -316,15 +386,16 @@
     }
 
     .loading-spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top: 3px solid #667eea;
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(247, 37, 133, 0.2);
+      border-top: 4px solid #ff006e;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
+      animation: squidSpin 1.5s linear infinite;
+      box-shadow: 0 0 30px rgba(247, 37, 133, 0.4);
     }
 
-    @keyframes spin {
+    @keyframes squidSpin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
@@ -332,32 +403,50 @@
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .controls {
-        padding: 1rem;
+        padding: 1.5rem;
       }
-      
+
       .controls-left,
       .controls-right {
-        gap: 0.75rem;
+        gap: 1rem;
       }
-      
+
       .time {
-        font-size: 0.8rem;
-        min-width: 120px;
-        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+        min-width: 140px;
+        padding: 0.6rem 1.2rem;
       }
-      
+
       .play-pause-btn {
-        width: 3rem;
-        height: 3rem;
+        width: 3.5rem;
+        height: 3.5rem;
       }
-      
+
       .control-btn {
-        padding: 0.6rem;
+        padding: 0.8rem;
       }
-      
+
       .progress-container {
-        left: 1rem;
-        right: 1rem;
+        left: 1.5rem;
+        right: 1.5rem;
+      }
+
+      .back-button {
+        top: 1.5rem;
+        left: 1.5rem;
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Landscape Mode Styles for Mobile */
+    @media screen and (orientation: landscape) and (max-height: 500px) {
+      .controls {
+        padding: 1rem 1.5rem;
+      }
+
+      .progress-container {
+        bottom: 4.5rem;
       }
 
       .back-button {
@@ -368,29 +457,20 @@
       }
     }
 
-    /* Landscape Mode Styles for Mobile */
-    @media screen and (orientation: landscape) and (max-height: 500px) {
-      .controls {
-        padding: 0.75rem 1rem;
+    /* Enhanced Animations */
+    @keyframes squidGameGlow {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
       }
-      
-      .progress-container {
-        bottom: 4rem;
-      }
-      
-      .back-button {
-        top: 0.75rem;
-        left: 0.75rem;
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
+      50% { 
+        box-shadow: 0 0 30px rgba(247, 37, 133, 0.6);
       }
     }
 
-    /* Animations */
-    @keyframes fadeIn {
+    @keyframes fadeInSquidGame {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px);
       }
       to {
         opacity: 1;
@@ -399,35 +479,85 @@
     }
 
     .controls {
-      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: fadeInSquidGame 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Custom Scrollbar (if needed) */
+    /* Custom Scrollbar */
     ::-webkit-scrollbar {
-      width: 8px;
+      width: 10px;
     }
 
     ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(247, 37, 133, 0.2);
     }
 
     ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 4px;
+      background: linear-gradient(135deg, #ff006e, #f72585);
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(247, 37, 133, 0.5);
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.5);
+      background: linear-gradient(135deg, #f72585, #ff3c8b);
+    }
+
+    /* Geometric Shape Decorations */
+    .shape-decoration {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.1;
+    }
+
+    .shape-circle {
+      width: 100px;
+      height: 100px;
+      border: 3px solid #ff006e;
+      border-radius: 50%;
+      top: 10%;
+      right: 10%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .shape-triangle {
+      width: 0;
+      height: 0;
+      border-left: 50px solid transparent;
+      border-right: 50px solid transparent;
+      border-bottom: 87px solid #ff006e;
+      top: 20%;
+      left: 5%;
+      animation: float 8s ease-in-out infinite reverse;
+    }
+
+    .shape-square {
+      width: 80px;
+      height: 80px;
+      background: #ff006e;
+      bottom: 20%;
+      right: 15%;
+      animation: float 7s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
     }
   </style>
 </head>
 
 <body>
+  <!-- Geometric Shape Decorations -->
+  <div class="shape-decoration shape-circle"></div>
+  <div class="shape-decoration shape-triangle"></div>
+  <div class="shape-decoration shape-square"></div>
+
   <button id="backButton" class="back-button">
     <svg class="icon-small" viewBox="0 0 24 24">
-      <path d="M19 12H5M12 19l-7-7 7-7"/>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
-    Back
+    Exit Game
   </button>
 
   <div class="video-container" id="videoContainer">
@@ -448,22 +578,22 @@
       <button id="playPause" class="play-pause-btn">
         <span id="playIcon" class="play-pause-icon">▶</span>
       </button>
-      
+
       <button id="rewind" class="control-btn">
         <span class="skip-text">-10</span>
       </button>
-      
+
       <button id="forward" class="control-btn">
         <span class="skip-text">+10</span>
       </button>
-      
+
       <div class="time" id="time">00:00:00 / 00:00:00</div>
     </div>
-    
+
     <div class="controls-right">
       <button id="fullscreen" class="control-btn">
         <svg class="icon" viewBox="0 0 24 24">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
         </svg>
       </button>
     </div>
@@ -501,10 +631,24 @@
         this.isMouseMoving = false;
         this.mouseMoveTimeout = null;
         this.orientationLocked = false;
-        
+
         // Get video URL from query params or use default
         const params = new URLSearchParams(window.location.search);
-        this.videoURL = params.get("playurl");
+        const encrypted = params.get("encrypted");
+const iv = params.get("iv");
+const key = "$2y$10$YgSaj3OmNEt/PLyk47Zq.uPi62W4/l2DLOKEEIkfgyxZXdITbYE1C";
+
+if (encrypted && iv) {
+  try {
+    const decryptedUrl = this.decryptAESCBC(encrypted, iv, key);
+    this.videoURL = decryptedUrl;
+  } catch (err) {
+    console.error("Decryption failed:", err);
+    alert("Invalid video stream.");
+  }
+} else {
+  this.videoURL = params.get("playurl");
+}
       }
 
       setupEventListeners() {
@@ -536,7 +680,7 @@
         // Mouse events for auto-hide functionality
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseleave', () => this.handleMouseLeave());
-        
+
         // Touch events for mobile
         document.addEventListener('touchstart', () => this.handleUserActivity());
         document.addEventListener('touchmove', () => this.handleUserActivity());
@@ -549,28 +693,47 @@
         screen.orientation?.addEventListener('change', () => this.handleOrientationChange());
       }
 
+      decryptAESCBC(base64CipherText, base64Iv, keyString) {
+  const key = CryptoJS.SHA256(keyString); // derive key (same as backend)
+  const iv = CryptoJS.enc.Base64.parse(base64Iv);
+  const encrypted = CryptoJS.enc.Base64.parse(base64CipherText);
+
+  const decrypted = CryptoJS.AES.decrypt(
+    { ciphertext: encrypted },
+    key,
+    {
+      iv: iv,
+      mode: CryptoJS.mode.CBC,
+      padding: CryptoJS.pad.Pkcs7
+    }
+  );
+
+  return decrypted.toString(CryptoJS.enc.Utf8);
+}
+
+
       async loadVideo() {
         this.showLoading();
-        
+
         try {
           if (window.Hls && Hls.isSupported()) {
             const hls = new Hls({
               enableWorker: true,
               lowLatencyMode: true,
             });
-            
+
             hls.loadSource(this.videoURL);
             hls.attachMedia(this.video);
-            
+
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
               console.log('HLS manifest parsed successfully');
               this.hideLoading();
             });
-            
+
             hls.on(Hls.Events.ERROR, (event, data) => {
               console.error('HLS error:', data);
               this.hideLoading();
-              
+
               if (data.fatal) {
                 switch (data.type) {
                   case Hls.ErrorTypes.NETWORK_ERROR:
@@ -641,7 +804,7 @@
         const duration = this.video.duration || 0;
         const currentTime = this.video.currentTime || 0;
         const percentage = duration ? (currentTime / duration) * 100 : 0;
-        
+
         this.progressBar.style.width = `${percentage}%`;
         this.updateTimeDisplay();
       }
@@ -649,7 +812,7 @@
       updateTimeDisplay() {
         const current = this.video.currentTime || 0;
         const duration = this.video.duration || 0;
-        
+
         this.timeDisplay.textContent = `${this.formatTime(current)} / ${this.formatTime(duration)}`;
       }
 
@@ -657,7 +820,7 @@
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
-        
+
         if (hours > 0) {
           return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
@@ -666,16 +829,10 @@
 
       async toggleFullscreen() {
         try {
-          if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-              !document.mozFullScreenElement && !document.msFullscreenElement) {
-            
-            // Lock orientation to landscape on mobile before entering fullscreen
-            if (this.isMobile()) {
-              await this.lockOrientationLandscape();
-            }
-            
-            // Enter fullscreen
-            const element = document.documentElement;
+          const element = document.documentElement;
+
+          if (!document.fullscreenElement) {
+            // First request fullscreen
             if (element.requestFullscreen) {
               await element.requestFullscreen();
             } else if (element.webkitRequestFullscreen) {
@@ -685,6 +842,17 @@
             } else if (element.msRequestFullscreen) {
               await element.msRequestFullscreen();
             }
+
+            // Then lock orientation AFTER fullscreen
+            if (this.isMobile() && screen.orientation?.lock) {
+              try {
+                await screen.orientation.lock('landscape');
+                this.orientationLocked = true;
+              } catch (err) {
+                console.warn('Orientation lock failed:', err);
+              }
+            }
+
           } else {
             // Exit fullscreen
             if (document.exitFullscreen) {
@@ -696,16 +864,18 @@
             } else if (document.msExitFullscreen) {
               await document.msExitFullscreen();
             }
-            
-            // Unlock orientation when exiting fullscreen
-            if (this.isMobile() && this.orientationLocked) {
-              await this.unlockOrientation();
+
+            // Unlock orientation
+            if (this.isMobile() && this.orientationLocked && screen.orientation?.unlock) {
+              screen.orientation.unlock();
+              this.orientationLocked = false;
             }
           }
         } catch (error) {
           console.error('Fullscreen toggle failed:', error);
         }
       }
+
 
       async lockOrientationLandscape() {
         try {
@@ -746,19 +916,19 @@
 
       isMobile() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+          (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
       }
 
       handleFullscreenChange() {
         const isCurrentlyFullscreen = Boolean(
-          document.fullscreenElement || 
-          document.webkitFullscreenElement || 
-          document.mozFullScreenElement || 
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
           document.msFullscreenElement
         );
-        
+
         this.isFullscreen = isCurrentlyFullscreen;
-        
+
         if (this.isFullscreen) {
           document.body.classList.add('fullscreen-mode');
           this.startAutoHideTimer();
@@ -766,7 +936,7 @@
           document.body.classList.remove('fullscreen-mode', 'show-cursor');
           this.showControls();
           this.clearAutoHideTimer();
-          
+
           // Unlock orientation when exiting fullscreen
           if (this.isMobile() && this.orientationLocked) {
             this.unlockOrientation();
@@ -790,23 +960,23 @@
 
       handleMouseMove(e) {
         if (!this.isFullscreen) return;
-        
+
         this.isMouseMoving = true;
         document.body.classList.add('show-cursor');
         this.showControls();
         this.startAutoHideTimer();
-        
+
         // Reset mouse moving state after a short delay
         clearTimeout(this.mouseMoveTimeout);
         this.mouseMoveTimeout = setTimeout(() => {
           this.isMouseMoving = false;
           document.body.classList.remove('show-cursor');
-        }, 100);
+        }, 2900);
       }
 
       handleMouseLeave() {
         if (!this.isFullscreen) return;
-        
+
         this.isMouseMoving = false;
         document.body.classList.remove('show-cursor');
         this.startAutoHideTimer();
@@ -814,7 +984,7 @@
 
       handleUserActivity() {
         if (!this.isFullscreen) return;
-        
+
         this.showControls();
         this.startAutoHideTimer();
       }
@@ -843,7 +1013,7 @@
             }
             break;
         }
-        
+
         if (this.isFullscreen) {
           this.handleUserActivity();
         }
@@ -851,9 +1021,9 @@
 
       startAutoHideTimer() {
         if (!this.isFullscreen) return;
-        
+
         this.clearAutoHideTimer();
-        
+
         this.hideTimer = setTimeout(() => {
           if (this.isFullscreen && !this.isMouseMoving) {
             this.hideControls();
@@ -914,4 +1084,5 @@
     });
   </script>
 </body>
+
 </html>
