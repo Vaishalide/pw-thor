@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <title>Squid Game Video Player</title>
+  <title>PW THOR PLAYER</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     * {
       margin: 0;
@@ -17,35 +16,12 @@
     }
 
     body {
-      font-family: 'Rajdhani', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: radial-gradient(ellipse at center, #1a0a1a 0%, #0d0308 70%, #000000 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
       color: #ffffff;
       overflow: hidden;
       cursor: default;
       user-select: none;
-      position: relative;
-    }
-
-    /* Squid Game Background Pattern */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-image: 
-        radial-gradient(circle at 25% 25%, #ff006e22 0%, transparent 50%),
-        radial-gradient(circle at 75% 75%, #f72585aa 0%, transparent 50%),
-        linear-gradient(45deg, transparent 45%, #ff006e05 46%, #ff006e05 54%, transparent 55%);
-      background-size: 100px 100px, 150px 150px, 50px 50px;
-      animation: bgShift 20s ease-in-out infinite;
-      z-index: -1;
-    }
-
-    @keyframes bgShift {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      50% { transform: translate(-10px, -10px) rotate(1deg); }
     }
 
     .video-container {
@@ -59,8 +35,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 2px solid #ff006e;
-      box-shadow: inset 0 0 50px rgba(247, 37, 133, 0.3);
     }
 
     video {
@@ -68,29 +42,26 @@
       height: 100%;
       object-fit: contain;
       background: #000;
-      filter: contrast(1.1) saturate(1.1);
     }
 
-    /* Squid Game Controls */
+    /* Glassmorphism Controls */
     .controls {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 10, 26, 0.9) 100%);
+      background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border-top: 3px solid #ff006e;
-      border-image: linear-gradient(90deg, #ff006e, #f72585, #ff006e) 1;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.5rem 2rem;
+      padding: 1rem 1.5rem;
       z-index: 10;
       opacity: 1;
       transform: translateY(0);
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 -10px 30px rgba(247, 37, 133, 0.4);
     }
 
     .controls.hidden {
@@ -103,17 +74,17 @@
     .controls-right {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
-    /* Geometric Button Styles */
+    /* Modern Button Styles */
     .control-btn {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(255, 0, 110, 0.1) 100%);
-      border: 2px solid #ff006e;
-      color: #ff006e;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
       cursor: pointer;
-      padding: 1rem;
-      border-radius: 4px;
+      padding: 0.75rem;
+      border-radius: 12px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       align-items: center;
@@ -121,11 +92,6 @@
       backdrop-filter: blur(10px);
       position: relative;
       overflow: hidden;
-      font-family: 'Orbitron', monospace;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
     }
 
     .control-btn::before {
@@ -135,7 +101,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(247, 37, 133, 0.4), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
       transition: left 0.5s;
     }
 
@@ -144,32 +110,29 @@
     }
 
     .control-btn:hover {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.4) 0%, rgba(255, 0, 110, 0.3) 100%);
-      border-color: #f72585;
-      color: #f72585;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5);
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
 
     .control-btn:active {
-      transform: translateY(-1px);
+      transform: translateY(0);
     }
 
-    /* Iconic Squid Game Play Button */
+    /* Play/Pause Button - Neon Style */
     .play-pause-btn {
-      background: linear-gradient(135deg, #ff006e 0%, #f72585 50%, #ff006e 100%);
-      border: 3px solid #ffffff;
-      width: 4rem;
-      height: 4rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      width: 3.5rem;
+      height: 3.5rem;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 
-        0 0 30px rgba(247, 37, 133, 0.6),
-        inset 0 0 20px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
       position: relative;
       overflow: hidden;
     }
@@ -177,14 +140,14 @@
     .play-pause-btn::before {
       content: '';
       position: absolute;
-      top: -3px;
-      left: -3px;
-      right: -3px;
-      bottom: -3px;
-      background: linear-gradient(45deg, #ff006e, #f72585, #ff3c8b, #f72585, #ff006e);
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
       border-radius: 50%;
       z-index: -1;
-      animation: squidRotate 4s linear infinite;
+      animation: rotate 3s linear infinite;
       opacity: 0;
       transition: opacity 0.3s;
     }
@@ -194,59 +157,48 @@
     }
 
     .play-pause-btn:hover {
-      transform: scale(1.15);
-      box-shadow: 
-        0 0 40px rgba(247, 37, 133, 0.8),
-        inset 0 0 25px rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
     }
 
-    @keyframes squidRotate {
+    @keyframes rotate {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
     .play-pause-icon {
-      font-size: 1.4rem;
+      font-size: 1.2rem;
       color: white;
       z-index: 1;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-      font-family: 'Orbitron', monospace;
     }
 
-    /* Game-like Time Display */
+    /* Time Display - Futuristic */
     .time {
-      font-size: 1rem;
-      color: #ff006e;
-      font-family: 'Orbitron', monospace;
-      font-weight: 600;
-      min-width: 160px;
-      padding: 0.75rem 1.5rem;
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(26, 10, 26, 0.6) 100%);
-      border-radius: 4px;
-      border: 2px solid #ff006e;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+      font-family: 'Inter', monospace;
+      font-weight: 500;
+      min-width: 140px;
+      padding: 0.5rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
-      text-align: center;
-      letter-spacing: 1px;
-      box-shadow: 
-        0 0 20px rgba(247, 37, 133, 0.3),
-        inset 0 0 10px rgba(247, 37, 133, 0.1);
     }
 
-    /* Neon Progress Bar */
+    /* Progress Bar - Neon Glow */
     .progress-container {
-      position: fixed;
-      bottom: 6rem;
-      left: 2rem;
-      right: 2rem;
-      height: 8px;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 4px;
+      position: absolute;
+      bottom: 5rem;
+      left: 1.5rem;
+      right: 1.5rem;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
       cursor: pointer;
       z-index: 11;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(247, 37, 133, 0.3);
-      box-shadow: 0 0 20px rgba(247, 37, 133, 0.2);
     }
 
     .progress-container.hidden {
@@ -256,82 +208,65 @@
     }
 
     .progress-container:hover {
-      height: 12px;
-      bottom: 5.8rem;
-      box-shadow: 0 0 30px rgba(247, 37, 133, 0.4);
+      height: 8px;
+      bottom: 4.9rem;
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #ff006e 0%, #f72585 30%, #ff3c8b 60%, #f72585 100%);
-      border-radius: 4px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      border-radius: 3px;
       width: 0%;
       position: relative;
       transition: all 0.1s ease;
-      box-shadow: 
-        0 0 15px rgba(247, 37, 133, 0.6),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      animation: neonPulse 2s ease-in-out infinite alternate;
-    }
-
-    @keyframes neonPulse {
-      0% { box-shadow: 0 0 15px rgba(247, 37, 133, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
-      100% { box-shadow: 0 0 25px rgba(247, 37, 133, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+      box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
     }
 
     .progress-handle {
       position: absolute;
-      right: -10px;
+      right: -8px;
       top: 50%;
       transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      background: linear-gradient(135deg, #ffffff 0%, #f72585 100%);
+      width: 16px;
+      height: 16px;
+      background: #ffffff;
       border-radius: 50%;
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 
-        0 3px 10px rgba(0, 0, 0, 0.4),
-        0 0 15px rgba(247, 37, 133, 0.6);
-      border: 2px solid #ff006e;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .progress-container:hover .progress-handle {
       opacity: 1;
-      transform: translateY(-50%) scale(1.3);
+      transform: translateY(-50%) scale(1.2);
     }
 
-    /* Squid Game Back Button */
+    /* Back Button - Floating */
     .back-button {
       position: fixed;
-      top: 2rem;
-      left: 2rem;
+      top: 1.5rem;
+      left: 1.5rem;
       z-index: 20;
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 10, 26, 0.8) 100%);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(20px);
-      color: #ff006e;
-      border: 2px solid #ff006e;
-      padding: 1rem 1.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 4px;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.75rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 12px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      font-family: 'Orbitron', monospace;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
+      font-family: 'Inter', sans-serif;
     }
 
     .back-button:hover {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(255, 0, 110, 0.1) 100%);
-      color: #f72585;
-      border-color: #f72585;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5);
+      background: rgba(0, 0, 0, 0.8);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
 
     .back-button.hidden {
@@ -340,152 +275,27 @@
       pointer-events: none;
     }
 
-    /* Geometric Icons */
+    /* SVG Icons */
     .icon {
-      width: 22px;
-      height: 22px;
+      width: 20px;
+      height: 20px;
       fill: currentColor;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
 
     .icon-small {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       fill: currentColor;
-      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
     }
 
-    /* Skip Button Text with Squid Game Font */
+    /* Skip Button Text */
     .skip-text {
-      font-size: 0.9rem;
-      font-weight: 700;
-      color: #ff006e;
-      font-family: 'Orbitron', monospace;
-      letter-spacing: 1px;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-      text-transform: uppercase;
-    }
-
-    /* Quality and Speed Dropdown Styles */
-    .dropdown-container {
-      position: relative;
-      display: inline-block;
-    }
-
-    .dropdown-btn {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(255, 0, 110, 0.1) 100%);
-      border: 2px solid #ff006e;
-      color: #ff006e;
-      cursor: pointer;
-      padding: 1rem;
-      border-radius: 4px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(10px);
-      position: relative;
-      overflow: hidden;
-      font-family: 'Orbitron', monospace;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
-      min-width: 80px;
       font-size: 0.85rem;
-    }
-
-    .dropdown-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(247, 37, 133, 0.4), transparent);
-      transition: left 0.5s;
-    }
-
-    .dropdown-btn:hover::before {
-      left: 100%;
-    }
-
-    .dropdown-btn:hover {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.4) 0%, rgba(255, 0, 110, 0.3) 100%);
-      border-color: #f72585;
-      color: #f72585;
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.5);
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(26, 10, 26, 0.9) 100%);
-      backdrop-filter: blur(20px) saturate(180%);
-      border: 2px solid #ff006e;
-      border-radius: 4px;
-      min-width: 120px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateX(-50%) translateY(10px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10000;
-      box-shadow: 0 10px 30px rgba(247, 37, 133, 0.4);
-      margin-bottom: 10px;
-    }
-
-    .dropdown-menu.show {
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    .dropdown-item {
-      padding: 0.75rem 1rem;
-      color: #ff006e;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      font-family: 'Orbitron', monospace;
-      font-weight: 500;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid rgba(247, 37, 133, 0.2);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .dropdown-item:last-child {
-      border-bottom: none;
-    }
-
-    .dropdown-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(247, 37, 133, 0.2), transparent);
-      transition: left 0.3s;
-    }
-
-    .dropdown-item:hover::before {
-      left: 100%;
-    }
-
-    .dropdown-item:hover {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.2) 0%, rgba(255, 0, 110, 0.1) 100%);
-      color: #f72585;
-    }
-
-    .dropdown-item.active {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.3) 0%, rgba(255, 0, 110, 0.2) 100%);
+      font-weight: 600;
       color: #ffffff;
-      box-shadow: inset 0 0 10px rgba(247, 37, 133, 0.3);
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
     /* Fullscreen Styles */
@@ -497,7 +307,7 @@
       cursor: default;
     }
 
-    /* Squid Game Loading Animation */
+    /* Loading Animation */
     .loading {
       position: absolute;
       top: 50%;
@@ -507,16 +317,15 @@
     }
 
     .loading-spinner {
-      width: 60px;
-      height: 60px;
-      border: 4px solid rgba(247, 37, 133, 0.2);
-      border-top: 4px solid #ff006e;
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid #667eea;
       border-radius: 50%;
-      animation: squidSpin 1.5s linear infinite;
-      box-shadow: 0 0 30px rgba(247, 37, 133, 0.4);
+      animation: spin 1s linear infinite;
     }
 
-    @keyframes squidSpin {
+    @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
@@ -524,187 +333,65 @@
     /* Mobile Responsive */
     @media (max-width: 768px) {
       .controls {
-        padding: 1rem 0.75rem;
-        flex-wrap: wrap;
-        gap: 0.75rem;
+        padding: 1rem;
       }
-
+      
       .controls-left,
       .controls-right {
-        gap: 0.5rem;
-        flex-wrap: wrap;
+        gap: 0.75rem;
       }
-
-      .controls-left {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .controls-right {
-        flex-shrink: 0;
-      }
-
+      
       .time {
-        font-size: 0.85rem;
-        min-width: 100px;
-        padding: 0.5rem 0.75rem;
-        order: 10;
-        width: 100%;
-        margin-top: 0.5rem;
-        text-align: center;
+        font-size: 0.8rem;
+        min-width: 120px;
+        padding: 0.4rem 0.8rem;
       }
-
+      
       .play-pause-btn {
-        width: 2.75rem;
-        height: 2.75rem;
+        width: 3rem;
+        height: 3rem;
       }
-
+      
       .control-btn {
         padding: 0.6rem;
       }
-
-      .dropdown-btn {
-        padding: 0.6rem 0.5rem;
-        min-width: 50px;
-        font-size: 0.7rem;
-      }
-
-      .dropdown-menu {
-        min-width: 80px;
-      }
-
-      .dropdown-item {
-        padding: 0.5rem 0.6rem;
-        font-size: 0.7rem;
-      }
-
+      
       .progress-container {
-        left: 1.5rem;
-        right: 1.5rem;
-        bottom: 7rem;
+        left: 1rem;
+        right: 1rem;
       }
 
       .back-button {
-        top: 1.5rem;
-        left: 1.5rem;
+        top: 1rem;
+        left: 1rem;
         padding: 0.6rem 1rem;
-        font-size: 0.8rem;
-      }
-
-      /* Ensure controls don't overlap */
-      .controls {
-        min-height: 5rem;
-        align-items: flex-start;
-        align-content: flex-start;
-      }
-
-      /* Stack controls on very small screens */
-      @media (max-width: 480px) {
-        .controls {
-          flex-direction: column;
-          align-items: center;
-          padding: 0.75rem;
-          gap: 0.75rem;
-        }
-
-        .controls-left,
-        .controls-right {
-          width: 100%;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .controls-left {
-          order: 1;
-        }
-
-        .controls-right {
-          order: 2;
-        }
-
-        .time {
-          order: 3;
-          margin-top: 0;
-          width: auto;
-          min-width: 140px;
-        }
-
-        .progress-container {
-          bottom: 8rem;
-        }
+        font-size: 0.85rem;
       }
     }
 
     /* Landscape Mode Styles for Mobile */
     @media screen and (orientation: landscape) and (max-height: 500px) {
       .controls {
-        padding: 0.5rem 1rem;
-        min-height: 3.5rem;
+        padding: 0.75rem 1rem;
       }
-
-      .controls-left,
-      .controls-right {
-        gap: 0.5rem;
-      }
-
-      .time {
-        font-size: 0.75rem;
-        min-width: 90px;
-        padding: 0.4rem 0.6rem;
-        margin-top: 0;
-        width: auto;
-        order: initial;
-      }
-
-      .play-pause-btn {
-        width: 2.5rem;
-        height: 2.5rem;
-      }
-
-      .control-btn {
-        padding: 0.5rem;
-      }
-
-      .dropdown-btn {
-        padding: 0.5rem 0.4rem;
-        min-width: 45px;
-        font-size: 0.65rem;
-      }
-
+      
       .progress-container {
         bottom: 4rem;
       }
-
+      
       .back-button {
-        top: 1rem;
-        left: 1.5rem;
-        font-size: 0.75rem;
-      }
-
-      .dropdown-menu {
-        min-width: 70px;
-      }
-
-      .dropdown-item {
-        padding: 0.4rem 0.5rem;
-        font-size: 0.65rem;
+        top: 0.75rem;
+        left: 0.75rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
       }
     }
 
-    /* Enhanced Animations */
-    @keyframes squidGameGlow {
-      0%, 100% { 
-        box-shadow: 0 0 20px rgba(247, 37, 133, 0.3);
-      }
-      50% { 
-        box-shadow: 0 0 30px rgba(247, 37, 133, 0.6);
-      }
-    }
-
-    @keyframes fadeInSquidGame {
+    /* Animations */
+    @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -713,85 +400,35 @@
     }
 
     .controls {
-      animation: fadeInSquidGame 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Custom Scrollbar */
+    /* Custom Scrollbar (if needed) */
     ::-webkit-scrollbar {
-      width: 10px;
+      width: 8px;
     }
 
     ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(247, 37, 133, 0.2);
+      background: rgba(255, 255, 255, 0.1);
     }
 
     ::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #ff006e, #f72585);
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(247, 37, 133, 0.5);
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #f72585, #ff3c8b);
-    }
-
-    /* Geometric Shape Decorations */
-    .shape-decoration {
-      position: fixed;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.1;
-    }
-
-    .shape-circle {
-      width: 100px;
-      height: 100px;
-      border: 3px solid #ff006e;
-      border-radius: 50%;
-      top: 10%;
-      right: 10%;
-      animation: float 6s ease-in-out infinite;
-    }
-
-    .shape-triangle {
-      width: 0;
-      height: 0;
-      border-left: 50px solid transparent;
-      border-right: 50px solid transparent;
-      border-bottom: 87px solid #ff006e;
-      top: 20%;
-      left: 5%;
-      animation: float 8s ease-in-out infinite reverse;
-    }
-
-    .shape-square {
-      width: 80px;
-      height: 80px;
-      background: #ff006e;
-      bottom: 20%;
-      right: 15%;
-      animation: float 7s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-20px) rotate(5deg); }
+      background: rgba(255, 255, 255, 0.5);
     }
   </style>
 </head>
 
 <body>
-  <!-- Geometric Shape Decorations -->
-  <div class="shape-decoration shape-circle"></div>
-  <div class="shape-decoration shape-triangle"></div>
-  <div class="shape-decoration shape-square"></div>
-
   <button id="backButton" class="back-button">
     <svg class="icon-small" viewBox="0 0 24 24">
-      <path d="M19 12H5M12 19l-7-7 7-7" />
+      <path d="M19 12H5M12 19l-7-7 7-7"/>
     </svg>
-    Exit Game
+    Back
   </button>
 
   <div class="video-container" id="videoContainer">
@@ -812,55 +449,28 @@
       <button id="playPause" class="play-pause-btn">
         <span id="playIcon" class="play-pause-icon">▶</span>
       </button>
-
+      
       <button id="rewind" class="control-btn">
         <span class="skip-text">-10</span>
       </button>
-
+      
       <button id="forward" class="control-btn">
         <span class="skip-text">+10</span>
       </button>
-
+      
       <div class="time" id="time">00:00:00 / 00:00:00</div>
     </div>
-
+    
     <div class="controls-right">
-      <div class="dropdown-container">
-        <button id="qualityBtn" class="dropdown-btn">
-          <span id="qualityText">Auto</span>
-        </button>
-        <div id="qualityMenu" class="dropdown-menu">
-          <div class="dropdown-item active" data-quality="auto">Auto</div>
-        </div>
-      </div>
-
-      <div class="dropdown-container">
-        <button id="speedBtn" class="dropdown-btn">
-          <span id="speedText">1x</span>
-        </button>
-        <div id="speedMenu" class="dropdown-menu">
-          <div class="dropdown-item" data-speed="0.25">0.25x</div>
-          <div class="dropdown-item" data-speed="0.5">0.5x</div>
-          <div class="dropdown-item" data-speed="0.75">0.75x</div>
-          <div class="dropdown-item active" data-speed="1">1x</div>
-          <div class="dropdown-item" data-speed="1.25">1.25x</div>
-          <div class="dropdown-item" data-speed="1.5">1.5x</div>
-          <div class="dropdown-item" data-speed="1.75">1.75x</div>
-          <div class="dropdown-item" data-speed="2">2x</div>
-        </div>
-      </div>
-
       <button id="fullscreen" class="control-btn">
         <svg class="icon" viewBox="0 0 24 24">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
         </svg>
       </button>
     </div>
   </div>
 
   <script>
-
-    
     class ModernVideoPlayer {
       constructor() {
         this.initializeElements();
@@ -883,15 +493,6 @@
         this.forwardBtn = document.getElementById("forward");
         this.fullscreenBtn = document.getElementById("fullscreen");
         this.loading = document.getElementById("loading");
-        this.qualityBtn = document.getElementById("qualityBtn");
-        this.qualityMenu = document.getElementById("qualityMenu");
-        this.qualityText = document.getElementById("qualityText");
-        this.speedBtn = document.getElementById("speedBtn");
-        this.speedMenu = document.getElementById("speedMenu");
-        this.speedText = document.getElementById("speedText");
-        this.progressBar = document.getElementById("progressBar");
-        this.progressContainer = document.getElementById("progressContainer");
-        this.progressHandle = document.getElementById("progressHandle");
       }
 
       initializeState() {
@@ -901,11 +502,7 @@
         this.isMouseMoving = false;
         this.mouseMoveTimeout = null;
         this.orientationLocked = false;
-        this.hls = null;
-        this.availableQualities = [];
-        this.currentQuality = 'auto';
-        this.currentSpeed = 1;
-
+        
         // Get video URL from query params or use default
         const params = new URLSearchParams(window.location.search);
         const encrypted = params.get("encrypted");
@@ -923,6 +520,7 @@ if (encrypted && iv) {
 } else {
   this.videoURL = params.get("playurl");
 }
+
       }
 
       setupEventListeners() {
@@ -944,20 +542,6 @@ if (encrypted && iv) {
         this.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
         this.backButton.addEventListener('click', () => this.goBack());
         this.progressContainer.addEventListener('click', (e) => this.handleProgressClick(e));
-        this.progressContainer.addEventListener('click', (e) => this.handleProgressClick(e));
-
-        // Quality and Speed controls
-        this.qualityBtn.addEventListener('click', (e) => this.toggleDropdown(e, this.qualityMenu));
-        this.speedBtn.addEventListener('click', (e) => this.toggleDropdown(e, this.speedMenu));
-        
-        // Quality menu items
-        this.qualityMenu.addEventListener('click', (e) => this.handleQualityChange(e));
-        
-        // Speed menu items
-        this.speedMenu.addEventListener('click', (e) => this.handleSpeedChange(e));
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', (e) => this.handleOutsideClick(e));
 
         // Fullscreen events
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
@@ -968,7 +552,7 @@ if (encrypted && iv) {
         // Mouse events for auto-hide functionality
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseleave', () => this.handleMouseLeave());
-
+        
         // Touch events for mobile
         document.addEventListener('touchstart', () => this.handleUserActivity());
         document.addEventListener('touchmove', () => this.handleUserActivity());
@@ -980,6 +564,7 @@ if (encrypted && iv) {
         window.addEventListener('orientationchange', () => this.handleOrientationChange());
         screen.orientation?.addEventListener('change', () => this.handleOrientationChange());
       }
+      
 decryptAESCBC(base64CipherText, base64Iv, keyString) {
   const key = CryptoJS.SHA256(keyString); // derive key (same as backend)
   const iv = CryptoJS.enc.Base64.parse(base64Iv);
@@ -1000,40 +585,39 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
       async loadVideo() {
         this.showLoading();
-
+        
         try {
           if (window.Hls && Hls.isSupported()) {
-            this.hls = new Hls({
+            const hls = new Hls({
               enableWorker: true,
               lowLatencyMode: true,
             });
-
-            this.hls.loadSource(this.videoURL);
-            this.hls.attachMedia(this.video);
-
-            this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            
+            hls.loadSource(this.videoURL);
+            hls.attachMedia(this.video);
+            
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
               console.log('HLS manifest parsed successfully');
-              this.setupQualityLevels();
               this.hideLoading();
             });
-
-            this.hls.on(Hls.Events.ERROR, (event, data) => {
+            
+            hls.on(Hls.Events.ERROR, (event, data) => {
               console.error('HLS error:', data);
               this.hideLoading();
-
+              
               if (data.fatal) {
                 switch (data.type) {
                   case Hls.ErrorTypes.NETWORK_ERROR:
                     console.error('Fatal network error, trying to recover...');
-                    this.hls.startLoad();
+                    hls.startLoad();
                     break;
                   case Hls.ErrorTypes.MEDIA_ERROR:
                     console.error('Fatal media error, trying to recover...');
-                    this.hls.recoverMediaError();
+                    hls.recoverMediaError();
                     break;
                   default:
                     console.error('Fatal error, cannot recover');
-                    this.hls.destroy();
+                    hls.destroy();
                     break;
                 }
               }
@@ -1052,108 +636,6 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
           console.error('Error loading video:', error);
           this.hideLoading();
         }
-      }
-
-      setupQualityLevels() {
-  if (!this.hls) return;
-
-  // Get all available quality levels
-  this.availableQualities = this.hls.levels.map((level, index) => ({
-    index: index,
-    height: level.height,
-    bitrate: level.bitrate,
-    name: level.height ? `${level.height}p` : `${Math.round(level.bitrate / 1000)}k`
-  }));
-
-  // Clear previous menu items
-  this.qualityMenu.innerHTML = '';
-
-  // Create "Auto" option
-  const autoItem = document.createElement('div');
-  autoItem.className = 'dropdown-item active';
-  autoItem.setAttribute('data-quality', 'auto');
-  autoItem.textContent = 'Auto';
-  this.qualityMenu.appendChild(autoItem);
-
-  // Create items for each available quality
-  this.availableQualities.forEach(quality => {
-    const item = document.createElement('div');
-    item.className = 'dropdown-item';
-    item.setAttribute('data-quality', quality.index.toString());
-    item.textContent = quality.name;
-    this.qualityMenu.appendChild(item);
-  });
-}
-
-
-      toggleDropdown(e, menu) {
-        e.stopPropagation();
-        
-        // Close other dropdowns
-        document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
-          if (dropdown !== menu) {
-            dropdown.classList.remove('show');
-          }
-        });
-
-        // Toggle current dropdown
-        menu.classList.toggle('show');
-      }
-
-      handleOutsideClick(e) {
-        if (!e.target.closest('.dropdown-container')) {
-          document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
-            dropdown.classList.remove('show');
-          });
-        }
-      }
-
-      handleQualityChange(e) {
-        if (!e.target.classList.contains('dropdown-item')) return;
-
-        const quality = e.target.getAttribute('data-quality');
-        
-        // Update active state
-        this.qualityMenu.querySelectorAll('.dropdown-item').forEach(item => {
-          item.classList.remove('active');
-        });
-        e.target.classList.add('active');
-
-        // Update button text
-        this.qualityText.textContent = e.target.textContent;
-
-        // Apply quality change
-        if (this.hls) {
-          if (quality === 'auto') {
-            this.hls.currentLevel = -1; // Auto quality
-          } else {
-            this.hls.currentLevel = parseInt(quality);
-          }
-        }
-
-        this.currentQuality = quality;
-        this.qualityMenu.classList.remove('show');
-      }
-
-      handleSpeedChange(e) {
-        if (!e.target.classList.contains('dropdown-item')) return;
-
-        const speed = parseFloat(e.target.getAttribute('data-speed'));
-        
-        // Update active state
-        this.speedMenu.querySelectorAll('.dropdown-item').forEach(item => {
-          item.classList.remove('active');
-        });
-        e.target.classList.add('active');
-
-        // Update button text
-        this.speedText.textContent = e.target.textContent;
-
-        // Apply speed change
-        this.video.playbackRate = speed;
-        this.currentSpeed = speed;
-        
-        this.speedMenu.classList.remove('show');
       }
 
       showLoading() {
@@ -1190,70 +672,74 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
       }
 
       updateProgress() {
-  const duration = this.video.duration || 0;
-  const currentTime = this.video.currentTime || 0;
-  const percentage = duration ? (currentTime / duration) * 100 : 0;
-
-  this.progressBar.style.width = `${percentage}%`;
-  this.updateTimeDisplay();
-}
-
-updateTimeDisplay() {
-  const current = this.video.currentTime || 0;
-  const duration = this.video.duration || 0;
-
-  this.timeDisplay.textContent = `${this.formatTime(current)} / ${this.formatTime(duration)}`;
-}
-
-formatTime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  return hours > 0
-    ? `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    : `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-
-async toggleFullscreen() {
-  try {
-    const element = document.documentElement;
-
-    if (!document.fullscreenElement) {
-      // Enter fullscreen
-      if (element.requestFullscreen) {
-        await element.requestFullscreen();
-      } else if (element.webkitRequestFullscreen) {
-        await element.webkitRequestFullscreen();
-      } else if (element.mozRequestFullScreen) {
-        await element.mozRequestFullScreen();
-      } else if (element.msRequestFullscreen) {
-        await element.msRequestFullscreen();
+        const duration = this.video.duration || 0;
+        const currentTime = this.video.currentTime || 0;
+        const percentage = duration ? (currentTime / duration) * 100 : 0;
+        
+        this.progressBar.style.width = `${percentage}%`;
+        this.updateTimeDisplay();
       }
 
-      // Lock to landscape if mobile
-      if (this.isMobile()) await this.lockOrientationLandscape();
-    } else {
-      // Exit fullscreen
-      if (document.exitFullscreen) {
-        await document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) {
-        await document.webkitExitFullscreen();
-      } else if (document.mozCancelFullScreen) {
-        await document.mozCancelFullScreen();
-      } else if (document.msExitFullscreen) {
-        await document.msExitFullscreen();
+      updateTimeDisplay() {
+        const current = this.video.currentTime || 0;
+        const duration = this.video.duration || 0;
+        
+        this.timeDisplay.textContent = `${this.formatTime(current)} / ${this.formatTime(duration)}`;
       }
 
-      // Unlock orientation if previously locked
-      if (this.orientationLocked) await this.unlockOrientation();
-    }
-  } catch (error) {
-    console.error('Fullscreen toggle failed:', error);
-  }
-}
+      formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+        
+        if (hours > 0) {
+          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
 
+      async toggleFullscreen() {
+        try {
+          if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+              !document.mozFullScreenElement && !document.msFullscreenElement) {
+            
+            // Lock orientation to landscape on mobile before entering fullscreen
+            if (this.isMobile()) {
+              await this.lockOrientationLandscape();
+            }
+            
+            // Enter fullscreen
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+              await element.requestFullscreen();
+            } else if (element.webkitRequestFullscreen) {
+              await element.webkitRequestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+              await element.mozRequestFullScreen();
+            } else if (element.msRequestFullscreen) {
+              await element.msRequestFullscreen();
+            }
+          } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              await document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+              await document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+              await document.msExitFullscreen();
+            }
+            
+            // Unlock orientation when exiting fullscreen
+            if (this.isMobile() && this.orientationLocked) {
+              await this.unlockOrientation();
+            }
+          }
+        } catch (error) {
+          console.error('Fullscreen toggle failed:', error);
+        }
+      }
 
       async lockOrientationLandscape() {
         try {
@@ -1294,19 +780,19 @@ async toggleFullscreen() {
 
       isMobile() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-          (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
       }
 
       handleFullscreenChange() {
         const isCurrentlyFullscreen = Boolean(
-          document.fullscreenElement ||
-          document.webkitFullscreenElement ||
-          document.mozFullScreenElement ||
+          document.fullscreenElement || 
+          document.webkitFullscreenElement || 
+          document.mozFullScreenElement || 
           document.msFullscreenElement
         );
-
+        
         this.isFullscreen = isCurrentlyFullscreen;
-
+        
         if (this.isFullscreen) {
           document.body.classList.add('fullscreen-mode');
           this.startAutoHideTimer();
@@ -1314,7 +800,7 @@ async toggleFullscreen() {
           document.body.classList.remove('fullscreen-mode', 'show-cursor');
           this.showControls();
           this.clearAutoHideTimer();
-
+          
           // Unlock orientation when exiting fullscreen
           if (this.isMobile() && this.orientationLocked) {
             this.unlockOrientation();
@@ -1338,23 +824,23 @@ async toggleFullscreen() {
 
       handleMouseMove(e) {
         if (!this.isFullscreen) return;
-
+        
         this.isMouseMoving = true;
         document.body.classList.add('show-cursor');
         this.showControls();
         this.startAutoHideTimer();
-
+        
         // Reset mouse moving state after a short delay
         clearTimeout(this.mouseMoveTimeout);
         this.mouseMoveTimeout = setTimeout(() => {
           this.isMouseMoving = false;
           document.body.classList.remove('show-cursor');
-        }, 2900);
+        }, 100);
       }
 
       handleMouseLeave() {
         if (!this.isFullscreen) return;
-
+        
         this.isMouseMoving = false;
         document.body.classList.remove('show-cursor');
         this.startAutoHideTimer();
@@ -1362,7 +848,7 @@ async toggleFullscreen() {
 
       handleUserActivity() {
         if (!this.isFullscreen) return;
-
+        
         this.showControls();
         this.startAutoHideTimer();
       }
@@ -1391,7 +877,7 @@ async toggleFullscreen() {
             }
             break;
         }
-
+        
         if (this.isFullscreen) {
           this.handleUserActivity();
         }
@@ -1399,9 +885,9 @@ async toggleFullscreen() {
 
       startAutoHideTimer() {
         if (!this.isFullscreen) return;
-
+        
         this.clearAutoHideTimer();
-
+        
         this.hideTimer = setTimeout(() => {
           if (this.isFullscreen && !this.isMouseMoving) {
             this.hideControls();
@@ -1421,7 +907,6 @@ async toggleFullscreen() {
           this.controlsVisible = true;
           this.controls.classList.remove('hidden');
           this.progressContainer.classList.remove('hidden');
-          this.progressContainer.classList.remove('hidden');
           this.backButton.classList.remove('hidden');
         }
       }
@@ -1430,7 +915,6 @@ async toggleFullscreen() {
         if (this.controlsVisible) {
           this.controlsVisible = false;
           this.controls.classList.add('hidden');
-          this.progressContainer.classList.add('hidden');
           this.progressContainer.classList.add('hidden');
           this.backButton.classList.add('hidden');
         }
@@ -1464,5 +948,4 @@ async toggleFullscreen() {
     });
   </script>
 </body>
-
 </html>
