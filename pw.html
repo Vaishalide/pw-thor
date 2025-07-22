@@ -1503,7 +1503,7 @@
     const batch = currentBatchName || 'Unknown Batch';
     const subject = currentSubjectName || 'Unknown Subject';
     const topic = currentTopicName || 'General';
-    const title = realVid.name || '';
+    const title = item.topic || realVid.name || '';
 
     const params = new URLSearchParams({
       batch,
