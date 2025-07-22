@@ -1491,7 +1491,7 @@ if (item.topic) {
               <div class="card-title">${title}</div>
             `;
 
-          div.onclick = async () => {
+    div.onclick = async () => {
   showLoader(true);
   try {
     let finalUrl = mediaUrl;
@@ -1517,38 +1517,40 @@ if (item.topic) {
       title
     });
 
- const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-  const data = await resp.json();
+    const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+    const data = await resp.json();
 
-  if (!data.success) {
-    alert("Video stream not available.");
-    return;
+    if (!data.success) {
+      alert("Video stream not available.");
+      return;
+    }
+
+    // ✅ YouTube fallback
+    if (data.youtube && data.videoUrl) {
+      window.open(data.videoUrl, '_blank');
+      return;
+    }
+
+    // ✅ Signed video fallback
+    if (data.signed_url && data.video_id) {
+      const urlParams = new URLSearchParams({
+        encrypted: data.signed_url,
+        iv: data.video_id
+      });
+      window.location.href = `pwplayer.html?${urlParams}`;
+    } else {
+      alert("Invalid video stream response.");
+    }
+
+  } catch (err) {
+    console.error("Video load failed:", err);
+    alert("Failed to load video.");
+  } finally {
+    showLoader(false);
   }
+};
 
-  // ✅ YouTube fallback
-  if (data.youtube && data.videoUrl) {
-    window.open(data.videoUrl, '_blank');
-    return;
-  }
-
-  // ✅ Signed video fallback
-  if (data.signed_url && data.video_id) {
-    const urlParams = new URLSearchParams({
-      encrypted: data.signed_url,
-      iv: data.video_id
-    });
-    window.location.href = `pwplayer.html?${urlParams}`;
-  } else {
-    alert("Invalid video stream response.");
-  }
-
-} catch (err) {
-  console.error("Video load failed:", err);
-  alert("Failed to load video.");
-} finally {
-  showLoader(false);
-}
-          }
+          
 
           lectureContent.appendChild(div);
         });
