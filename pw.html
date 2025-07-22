@@ -1513,22 +1513,33 @@
     });
 
     const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-    const data = await resp.json();
+const data = await resp.json();
 
-    if (!data.success || !data.m3u8_url) {
-      alert("Video stream not available.");
-      return;
-    }
+if (!data.success) {
+  alert("Video stream not available.");
+  return;
+}
 
-    finalUrl = data.m3u8_url;
+// ✅ If it's a YouTube video, open directly in a new tab
+if (data.youtube && data.videoUrl) {
+  window.open(data.videoUrl, '_blank');
+  return;
+}
 
-    // ✅ Open video in pwplayer.html
-   const urlParams = new URLSearchParams({
-  encrypted: data.m3u8_url,
-  iv: data.iv
+// ✅ Otherwise, expect encrypted video
+if (!data.signed_url) {
+  alert("Video stream not available.");
+  return;
+}
+
+const finalUrl = data.signed_url;
+
+// ✅ Open video in pwplayer.html with encrypted params
+const urlParams = new URLSearchParams({
+  encrypted: data.signed_url,
+  iv: data.video_id
 });
 window.location.href = `pwplayer.html?${urlParams}`;
-
 
   } catch (err) {
     console.error("Video load failed:", err);
