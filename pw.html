@@ -1688,6 +1688,15 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
         event.preventDefault();
       }
     });
+window.addEventListener("popstate", () => {
+  if (viewStack.length) {
+    const lastView = viewStack.pop();
+    lastView();
+  } else {
+    // fallback: reload batch list
+    loadBatches();
+  }
+});
 
     // Additional protection against console access
     (function () {
