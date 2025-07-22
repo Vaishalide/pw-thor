@@ -1512,30 +1512,22 @@
       title
     });
 
-    const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-const data = await resp.json();
+ const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+    const data = await resp.json();
 
-if (!data.success) {
-  alert("Video stream not available.");
-  return;
-}
+    if (!data.success || !data.signed_url) {
+      alert("Video stream not available.");
+      return;
+    }
+// ✅ Open YouTube video in new tab
+        if (data.youtube && data.videoUrl) {
+          window.open(data.videoUrl, '_blank');
+          return;
+        }
+    finalUrl = data.signed_url;
 
-// ✅ If it's a YouTube video, open directly in a new tab
-if (data.youtube && data.videoUrl) {
-  window.open(data.videoUrl, '_blank');
-  return;
-}
-
-// ✅ Otherwise, expect encrypted video
-if (!data.signed_url) {
-  alert("Video stream not available.");
-  return;
-}
-
-const finalUrl = data.signed_url;
-
-// ✅ Open video in pwplayer.html with encrypted params
-const urlParams = new URLSearchParams({
+    // ✅ Open video in pwplayer.html
+   const urlParams = new URLSearchParams({
   encrypted: data.signed_url,
   iv: data.video_id
 });
