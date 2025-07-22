@@ -908,11 +908,13 @@
     }
 
     .note-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center; /* ✅ Center horizontally */
+}
+
 
     .note-buttons button {
       background: linear-gradient(45deg, var(--squid-cyan), var(--squid-green));
