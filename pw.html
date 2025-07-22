@@ -1478,7 +1478,7 @@
             `;
           } else {
             const vid = item.videoDetails || item;
-            const title = vid.name || "Untitled Video";
+            const title = item.topic || vid.name || "Untitled Video";
             const image = vid.image || vid.thumbnail || "";
             const mediaUrl = vid.hls_url || item.url || "";
             div.innerHTML = `
