@@ -1463,20 +1463,20 @@
           const div = document.createElement("div");
           div.className = "card";
 
-          if (contentType === "notes" || contentType === "DppNotes") {
-            const topicTitle = item.topic || "Untitled Note";
-            const buttonsHtml = (item.homeworkIds || []).flatMap(hw =>
-              (hw.attachmentIds || []).map(att =>
-                `<button onclick="window.open('${att.baseUrl + att.key}','_blank')">
-                   ${att.name}
-                 </button>`
-              )
-            ).join("");
-            div.innerHTML = `
-              <div class="card-title">${topicTitle}</div>
-              <div class="note-buttons">${buttonsHtml}</div>
-            `;
-          } else {
+        if (contentType === "notes" || contentType === "DppNotes") {
+  const topicTitle = item.topic || "Untitled Note";
+  const scheduleId = item._id;
+
+  div.innerHTML = `
+    <div class="card-title">${topicTitle}</div>
+    <div class="note-buttons">
+      <button onclick="fetchAndOpenAttachments('${currentBatchId}', '${currentSubjectSlug}', '${scheduleId}')">
+        📂 Open Attachments
+      </button>
+    </div>
+  `;
+}
+           else {
             const vid = item.videoDetails || item;
             const title = item.topic || vid.name || "Untitled Video";
             const image = vid.image || vid.thumbnail || "";
@@ -1554,6 +1554,40 @@ window.location.href = `pwplayer.html?${urlParams}`;
         showLoader(false);
       }
     }
+async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
+  try {
+    showLoader(true);
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
+    const data = await res.json();
+
+    if (!data.data || !data.data.length) {
+      alert("No content found.");
+      return;
+    }
+
+    const attachments = data.data.flatMap(item =>
+      (item.homeworkIds || []).flatMap(hw =>
+        (hw.attachmentIds || [])
+      )
+    );
+
+    if (!attachments.length) {
+      alert("No attachments found.");
+      return;
+    }
+
+    attachments.forEach(att => {
+      const fileUrl = `${att.baseUrl}${att.key}`;
+      window.open(fileUrl, '_blank');
+    });
+
+  } catch (err) {
+    console.error("Failed to fetch schedule content:", err);
+    alert("Error loading attachments.");
+  } finally {
+    showLoader(false);
+  }
+}
 
     function switchLectureTab(tab) {
       const typeMap = {
