@@ -1239,6 +1239,12 @@
       document.getElementById("lectureSection").style.display = "none";
     }
 
+    function pushView(fn, state = {}) {
+  viewStack.push(fn);
+  history.pushState(state, '', location.href);
+}
+
+
     function show(div) {
       clearAll();
       div.style.display = div.id === "lectureSection" ? "block" : "grid";
@@ -1282,7 +1288,7 @@
 
       batches.forEach(batch => {
        appendCard(main, batch.name, batch.image, () => {
-  viewStack.push(() => renderBatches(batches));
+  pushView(() => renderBatches(batches));
   currentBatchName = batch.name; // ✅ STORE THE NAME HERE
   loadSubjects(batch.batchId);
 });
@@ -1310,7 +1316,7 @@
             : null;
 
           appendCard(subjectsDiv, sub.subject, imgUrl, () => {
-  viewStack.push(() => loadSubjects(batchId));
+ pushView(() => loadSubjects(batchId));
   chapterPage = 1;
   chapterLoading = false;
   currentSubjectId = sub.subjectId || sub._id;
@@ -1407,7 +1413,7 @@
               alert("Chapter ID missing. Cannot load lectures.");
               return;
             }
-            viewStack.push(() => loadChapters(batchId, subjectSlug));
+            pushView(() => loadChapters(batchId, subjectSlug));
             currentTopicName = ch.name; 
             loadLecturesContent(batchId, subjectSlug, ch._id);
           });
@@ -1621,11 +1627,9 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
     }
 
     backBtn.onclick = () => {
-      if (viewStack.length) {
-        const lastView = viewStack.pop();
-        lastView();
-      }
-    };
+  history.back(); // ✅ triggers popstate event
+};
+
 
     searchInput.addEventListener("input", () => {
       const keyword = searchInput.value.toLowerCase();
@@ -1689,14 +1693,17 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
       }
     });
 window.addEventListener("popstate", () => {
-  if (viewStack.length) {
-    const lastView = viewStack.pop();
-    lastView();
+  if (viewStack.length > 1) {
+    viewStack.pop(); // remove current
+    const lastView = viewStack[viewStack.length - 1];
+    if (typeof lastView === 'function') {
+      lastView();
+    }
   } else {
-    // fallback: reload batch list
-    loadBatches();
+    loadBatches(); // fallback
   }
 });
+
 
     // Additional protection against console access
     (function () {
