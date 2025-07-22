@@ -1464,7 +1464,12 @@
           div.className = "card";
 
         if (contentType === "notes" || contentType === "DppNotes") {
-  const topicTitle = item.topic || "Untitled Note";
+  let topicTitle = "Untitled Note";
+if (item.topic) {
+  topicTitle = item.topic;
+} else if (item.homeworkIds?.[0]?.topic) {
+  topicTitle = item.homeworkIds[0].topic;
+}
   const scheduleId = item._id;
 
   div.innerHTML = `
