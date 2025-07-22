@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <title>PW THOR PLAYER</title>
+  <title>Modern Video Player with Auto-Rotation</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -162,8 +163,13 @@
     }
 
     @keyframes rotate {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     .play-pause-icon {
@@ -326,8 +332,13 @@
     }
 
     @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
     }
 
     /* Mobile Responsive */
@@ -335,27 +346,27 @@
       .controls {
         padding: 1rem;
       }
-      
+
       .controls-left,
       .controls-right {
         gap: 0.75rem;
       }
-      
+
       .time {
         font-size: 0.8rem;
         min-width: 120px;
         padding: 0.4rem 0.8rem;
       }
-      
+
       .play-pause-btn {
         width: 3rem;
         height: 3rem;
       }
-      
+
       .control-btn {
         padding: 0.6rem;
       }
-      
+
       .progress-container {
         left: 1rem;
         right: 1rem;
@@ -374,11 +385,11 @@
       .controls {
         padding: 0.75rem 1rem;
       }
-      
+
       .progress-container {
         bottom: 4rem;
       }
-      
+
       .back-button {
         top: 0.75rem;
         left: 0.75rem;
@@ -393,6 +404,7 @@
         opacity: 0;
         transform: translateY(20px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -426,7 +438,7 @@
 <body>
   <button id="backButton" class="back-button">
     <svg class="icon-small" viewBox="0 0 24 24">
-      <path d="M19 12H5M12 19l-7-7 7-7"/>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
     </svg>
     Back
   </button>
@@ -449,22 +461,22 @@
       <button id="playPause" class="play-pause-btn">
         <span id="playIcon" class="play-pause-icon">▶</span>
       </button>
-      
+
       <button id="rewind" class="control-btn">
         <span class="skip-text">-10</span>
       </button>
-      
+
       <button id="forward" class="control-btn">
         <span class="skip-text">+10</span>
       </button>
-      
+
       <div class="time" id="time">00:00:00 / 00:00:00</div>
     </div>
-    
+
     <div class="controls-right">
       <button id="fullscreen" class="control-btn">
         <svg class="icon" viewBox="0 0 24 24">
-          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
         </svg>
       </button>
     </div>
@@ -502,7 +514,7 @@
         this.isMouseMoving = false;
         this.mouseMoveTimeout = null;
         this.orientationLocked = false;
-        
+
         // Get video URL from query params or use default
         const params = new URLSearchParams(window.location.search);
         const encrypted = params.get("encrypted");
@@ -552,7 +564,7 @@ if (encrypted && iv) {
         // Mouse events for auto-hide functionality
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseleave', () => this.handleMouseLeave());
-        
+
         // Touch events for mobile
         document.addEventListener('touchstart', () => this.handleUserActivity());
         document.addEventListener('touchmove', () => this.handleUserActivity());
@@ -564,8 +576,8 @@ if (encrypted && iv) {
         window.addEventListener('orientationchange', () => this.handleOrientationChange());
         screen.orientation?.addEventListener('change', () => this.handleOrientationChange());
       }
-      
-decryptAESCBC(base64CipherText, base64Iv, keyString) {
+
+      decryptAESCBC(base64CipherText, base64Iv, keyString) {
   const key = CryptoJS.SHA256(keyString); // derive key (same as backend)
   const iv = CryptoJS.enc.Base64.parse(base64Iv);
   const encrypted = CryptoJS.enc.Base64.parse(base64CipherText);
@@ -582,29 +594,29 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
   return decrypted.toString(CryptoJS.enc.Utf8);
 }
-
+      
       async loadVideo() {
         this.showLoading();
-        
+
         try {
           if (window.Hls && Hls.isSupported()) {
             const hls = new Hls({
               enableWorker: true,
               lowLatencyMode: true,
             });
-            
+
             hls.loadSource(this.videoURL);
             hls.attachMedia(this.video);
-            
+
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
               console.log('HLS manifest parsed successfully');
               this.hideLoading();
             });
-            
+
             hls.on(Hls.Events.ERROR, (event, data) => {
               console.error('HLS error:', data);
               this.hideLoading();
-              
+
               if (data.fatal) {
                 switch (data.type) {
                   case Hls.ErrorTypes.NETWORK_ERROR:
@@ -675,7 +687,7 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
         const duration = this.video.duration || 0;
         const currentTime = this.video.currentTime || 0;
         const percentage = duration ? (currentTime / duration) * 100 : 0;
-        
+
         this.progressBar.style.width = `${percentage}%`;
         this.updateTimeDisplay();
       }
@@ -683,7 +695,7 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
       updateTimeDisplay() {
         const current = this.video.currentTime || 0;
         const duration = this.video.duration || 0;
-        
+
         this.timeDisplay.textContent = `${this.formatTime(current)} / ${this.formatTime(duration)}`;
       }
 
@@ -691,7 +703,7 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
-        
+
         if (hours > 0) {
           return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
@@ -700,16 +712,10 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
       async toggleFullscreen() {
         try {
-          if (!document.fullscreenElement && !document.webkitFullscreenElement && 
-              !document.mozFullScreenElement && !document.msFullscreenElement) {
-            
-            // Lock orientation to landscape on mobile before entering fullscreen
-            if (this.isMobile()) {
-              await this.lockOrientationLandscape();
-            }
-            
-            // Enter fullscreen
-            const element = document.documentElement;
+          const element = document.documentElement;
+
+          if (!document.fullscreenElement) {
+            // First request fullscreen
             if (element.requestFullscreen) {
               await element.requestFullscreen();
             } else if (element.webkitRequestFullscreen) {
@@ -719,6 +725,17 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
             } else if (element.msRequestFullscreen) {
               await element.msRequestFullscreen();
             }
+
+            // Then lock orientation AFTER fullscreen
+            if (this.isMobile() && screen.orientation?.lock) {
+              try {
+                await screen.orientation.lock('landscape');
+                this.orientationLocked = true;
+              } catch (err) {
+                console.warn('Orientation lock failed:', err);
+              }
+            }
+
           } else {
             // Exit fullscreen
             if (document.exitFullscreen) {
@@ -730,16 +747,18 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
             } else if (document.msExitFullscreen) {
               await document.msExitFullscreen();
             }
-            
-            // Unlock orientation when exiting fullscreen
-            if (this.isMobile() && this.orientationLocked) {
-              await this.unlockOrientation();
+
+            // Unlock orientation
+            if (this.isMobile() && this.orientationLocked && screen.orientation?.unlock) {
+              screen.orientation.unlock();
+              this.orientationLocked = false;
             }
           }
         } catch (error) {
           console.error('Fullscreen toggle failed:', error);
         }
       }
+
 
       async lockOrientationLandscape() {
         try {
@@ -780,19 +799,19 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
       isMobile() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-               (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+          (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
       }
 
       handleFullscreenChange() {
         const isCurrentlyFullscreen = Boolean(
-          document.fullscreenElement || 
-          document.webkitFullscreenElement || 
-          document.mozFullScreenElement || 
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.mozFullScreenElement ||
           document.msFullscreenElement
         );
-        
+
         this.isFullscreen = isCurrentlyFullscreen;
-        
+
         if (this.isFullscreen) {
           document.body.classList.add('fullscreen-mode');
           this.startAutoHideTimer();
@@ -800,7 +819,7 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
           document.body.classList.remove('fullscreen-mode', 'show-cursor');
           this.showControls();
           this.clearAutoHideTimer();
-          
+
           // Unlock orientation when exiting fullscreen
           if (this.isMobile() && this.orientationLocked) {
             this.unlockOrientation();
@@ -824,23 +843,23 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
       handleMouseMove(e) {
         if (!this.isFullscreen) return;
-        
+
         this.isMouseMoving = true;
         document.body.classList.add('show-cursor');
         this.showControls();
         this.startAutoHideTimer();
-        
+
         // Reset mouse moving state after a short delay
         clearTimeout(this.mouseMoveTimeout);
         this.mouseMoveTimeout = setTimeout(() => {
           this.isMouseMoving = false;
           document.body.classList.remove('show-cursor');
-        }, 100);
+        }, 2900);
       }
 
       handleMouseLeave() {
         if (!this.isFullscreen) return;
-        
+
         this.isMouseMoving = false;
         document.body.classList.remove('show-cursor');
         this.startAutoHideTimer();
@@ -848,7 +867,7 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
       handleUserActivity() {
         if (!this.isFullscreen) return;
-        
+
         this.showControls();
         this.startAutoHideTimer();
       }
@@ -877,7 +896,7 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
             }
             break;
         }
-        
+
         if (this.isFullscreen) {
           this.handleUserActivity();
         }
@@ -885,9 +904,9 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
 
       startAutoHideTimer() {
         if (!this.isFullscreen) return;
-        
+
         this.clearAutoHideTimer();
-        
+
         this.hideTimer = setTimeout(() => {
           if (this.isFullscreen && !this.isMouseMoving) {
             this.hideControls();
@@ -948,4 +967,5 @@ decryptAESCBC(base64CipherText, base64Iv, keyString) {
     });
   </script>
 </body>
+
 </html>
