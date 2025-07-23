@@ -637,16 +637,16 @@
   display: flex;
   flex-direction: row;
   overflow-x: auto;
-  overflow-y: hidden;
   gap: 16px;
   scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
-
-  /* Optional aesthetics */
-  scrollbar-width: thin;          /* Firefox */
-  scrollbar-color: var(--squid-pink) transparent;
+  padding: 12px 0;
 }
 
+.today-classes-container .today-card {
+  flex: 0 0 auto;
+  min-width: 240px;
+  scroll-snap-align: start;
+}
 /* Scrollbar for WebKit browsers */
 .today-classes-container::-webkit-scrollbar {
   height: 8px;
@@ -1464,7 +1464,8 @@ const todayClasses = todayJson.data || [];
 
   const card = document.createElement("div");
   card.className = "today-card";
-  card.style.width = "260px";
+ card.style.width = "260px"; // ✅ Fixed width for horizontal scroll
+card.style.flex = "0 0 auto"; // ✅ Prevent card from shrinking/wrapping
   card.innerHTML = `
     <img src="${customImage}" alt="${title}" />
     <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
