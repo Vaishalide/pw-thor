@@ -1403,21 +1403,19 @@
     function showLoader(show) {
       loadingOverlay.style.display = show ? "flex" : "none";
     }
+function show(el) {
+  clearAll();
+  el.style.display = "block";
+}
+  function clearAll() {
+  const ids = ["main", "subjectsDiv", "chaptersDiv", "lectureSection"];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
 
-   function clearAll() {
-  const main = document.getElementById("main");
-  const subjectsDiv = document.getElementById("subjectsDiv");
-  const chaptersDiv = document.getElementById("chaptersDiv");
   const backBtn = document.getElementById("backBtn");
-  const chapterLoadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
-  const lectureSection = document.getElementById("lectureSection");
-
-  if (main) main.style.display = "none";
-  if (subjectsDiv) subjectsDiv.style.display = "none";
-  if (chaptersDiv) chaptersDiv.style.display = "none";
   if (backBtn) backBtn.style.display = viewStack.length ? "block" : "none";
-  if (chapterLoadMoreWrapper) chapterLoadMoreWrapper.style.display = "none";
-  if (lectureSection) lectureSection.style.display = "none";
 }
 
 
@@ -1643,7 +1641,8 @@ todayScrollContainer.appendChild(card);
     }
 
   async function loadChapters(batchId, subjectSlug, page = 1) {
-  const chaptersDiv = document.getElementById("chaptersDiv"); // ✅ Place this at the top
+  const chaptersDiv = document.getElementById("chaptersDiv");
+  const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
 
   if (chapterLoading) return;
 
@@ -1652,8 +1651,8 @@ todayScrollContainer.appendChild(card);
     chapterPage = 1;
     chapterTotal = Infinity;
     chaptersDiv.innerHTML = "";
-    document.getElementById("chapterLoadMoreWrapper").style.display = "none";
-     clearAll(); 
+    if (loadMoreWrapper) loadMoreWrapper.style.display = "none";
+    clearAll(); // hide everything else
   }
 
   if (page > Math.ceil(chapterTotal / 20)) return;
@@ -1663,26 +1662,32 @@ todayScrollContainer.appendChild(card);
 
   currentBatchId = batchId;
   currentSubjectSlug = subjectSlug;
-  show(chaptersDiv);
 
   try {
     const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
     const result = await res.json();
+
     const chapters = result.data || [];
     chapterTotal = result.paginate?.totalCount || chapters.length;
+
+    if (chapters.length === 0 && page === 1) {
+      const emptyMsg = document.createElement("div");
+      emptyMsg.className = "empty-state";
+      emptyMsg.innerText = "No chapters found.";
+      chaptersDiv.appendChild(emptyMsg);
+    }
 
     chapters.forEach(ch => {
       const card = document.createElement("div");
       card.className = "chapter-card";
-     card.innerHTML = `
-  <div class="chapter-title">${ch.name}</div>
-  <div class="chapter-meta">
-    <div><i class="fas fa-video"></i> ${ch.lectureVideos || 0} Lectures</div>
-    <div><i class="fas fa-file-alt"></i> ${ch.notes || 0} Notes</div>
-    <div><i class="fas fa-book"></i> ${ch.exercises || 0} DPPs</div>
-  </div>
-`;
-
+      card.innerHTML = `
+        <div class="chapter-title">${ch.name}</div>
+        <div class="chapter-meta">
+          <div><i class="fas fa-video"></i> ${ch.lectureVideos || 0} Lectures</div>
+          <div><i class="fas fa-file-alt"></i> ${ch.notes || 0} Notes</div>
+          <div><i class="fas fa-book"></i> ${ch.exercises || 0} DPPs</div>
+        </div>
+      `;
 
       card.addEventListener("click", () => {
         if (!ch._id) {
@@ -1700,19 +1705,27 @@ todayScrollContainer.appendChild(card);
     chapterPage++;
   } catch (err) {
     console.error("Failed to load chapters:", err);
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "error-state";
+    errorMsg.innerText = "Failed to load chapters. Please try again.";
+    chaptersDiv.appendChild(errorMsg);
   } finally {
     showLoader(false);
 
-    const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
+    // Show chapters container after all logic completes
+    show(chaptersDiv);
+
+    // Handle "Load More" visibility
     if (chapterPage <= Math.ceil(chapterTotal / 20)) {
-      loadMoreWrapper.style.display = "block";
+      if (loadMoreWrapper) loadMoreWrapper.style.display = "block";
     } else {
-      loadMoreWrapper.style.display = "none";
+      if (loadMoreWrapper) loadMoreWrapper.style.display = "none";
     }
 
     chapterLoading = false;
   }
 }
+
 
     async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes", page = 1) {
       if (lectureLoading || page > Math.ceil(lectureTotal / 20)) return;
