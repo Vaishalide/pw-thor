@@ -1170,28 +1170,30 @@
         height: 14px;
       }
 
-      .today-horizontal-scroll {
+.today-scroll-container {
   display: flex;
   flex-direction: row;
   overflow-x: auto;
+  overflow-y: hidden;
   gap: 16px;
   scroll-snap-type: x mandatory;
   padding: 12px 0;
-  scrollbar-width: thin;
+  scrollbar-width: thin; /* Firefox */
 }
 
-.today-horizontal-scroll::-webkit-scrollbar {
+.today-scroll-container::-webkit-scrollbar {
   height: 8px;
 }
-.today-horizontal-scroll::-webkit-scrollbar-thumb {
+
+.today-scroll-container::-webkit-scrollbar-thumb {
   background: var(--squid-pink);
   border-radius: 10px;
 }
 
-.today-horizontal-scroll .today-card {
-  flex: 0 0 260px;
+.today-scroll-container .today-card {
+  flex: 0 0 auto;
+  width: 260px;
   scroll-snap-align: start;
-  width: auto !important;
 }
 
 
@@ -1269,11 +1271,11 @@
     <div class="grid" id="main"></div>
     <div class="back-btn" id="backBtn" style="display:none;">← Back to Arena</div>
 
-    <div class="today-classes-wrapper" id="todayWrapper" style="display: none;">
-      <div class="today-classes-title">🎯 Today's Battles</div>
-      <div class="today-horizontal-scroll" id="todayHorizontalContainer"></div>
-      <div class="today-classes-container" id="todayClasses"></div>
-    </div>
+   <div class="today-classes-wrapper" id="todayWrapper" style="display: block;">
+  <div class="today-classes-title">🎯 Today's Battles</div>
+  <div class="today-scroll-container" id="todayScrollContainer"></div>
+</div>
+
 
     <div id="subjects" class="subjects-container" style="display: none;"></div>
     <div class="grid" id="chapters" style="display: none;">
@@ -1471,27 +1473,41 @@ subs.forEach(sub => {
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
 const todayJson = await todayRes.json();
 const todayClasses = todayJson.data || [];
-       const todayWrapper = document.getElementById("todayWrapper");
-      todayWrapper.style.display = "block";
+      const todayWrapper = document.getElementById("todayWrapper");
+const todayScrollContainer = document.getElementById("todayScrollContainer");
 
-        todayClassesDiv.innerHTML = todayClasses.length === 0
-          ? '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>'
-          : "";
+todayWrapper.style.display = "block";
 
-      todayClasses.forEach(cls => {
+// If no classes, show message
+if (todayClasses.length === 0) {
+  todayScrollContainer.innerHTML = '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>';
+} else {
+  todayScrollContainer.innerHTML = ""; // Clear previous content
+}
+
+// Loop through today's classes
+todayClasses.forEach(cls => {
   const title = cls.topic || "Untitled";
   const subject = cls.subjectId?.name || "Unknown Subject";
   const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   const chapter = cls.tags?.[0]?.name || "General";
   const tagLabel = cls.tag || "Upcoming";
-  const statusColor = tagLabel === "Live" ? "var(--squid-green)" : tagLabel === "Ended" ? "var(--squid-red)" : "var(--squid-cyan)";
-  
+
+  const statusColor = tagLabel === "Live"
+    ? "var(--squid-green)"
+    : tagLabel === "Ended"
+    ? "var(--squid-red)"
+    : "var(--squid-cyan)";
+
   const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
 
   const card = document.createElement("div");
   card.className = "today-card";
- card.style.width = "260px"; // ✅ Fixed width for horizontal scroll
-card.style.flex = "0 0 auto"; // ✅ Prevent card from shrinking/wrapping
+
+  // Required for horizontal scroll layout
+  card.style.width = "260px";
+  card.style.flex = "0 0 auto";
+
   card.innerHTML = `
     <img src="${customImage}" alt="${title}" />
     <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
@@ -1546,7 +1562,7 @@ card.style.flex = "0 0 auto"; // ✅ Prevent card from shrinking/wrapping
     }
   };
 
-  document.getElementById("todayHorizontalContainer").appendChild(card);
+todayScrollContainer.appendChild(card);
 });
       } catch (err) {
         console.error("Failed to load subjects or todayclass:", err);
