@@ -1373,23 +1373,7 @@ async function loadSubjects(batchId) {
     const json = await res.json();
     const subs = (json.data && json.data.subjects) || [];
 
-    subs.forEach(sub => {
-      appendCard(subjectsDiv, sub, () => {
-        pushView(() => loadSubjects(batchId));
-        chapterPage = 1;
-        chapterLoading = false;
-        currentSubjectId = sub.subjectId || sub._id;
-        currentSubjectName = sub.subject;
-        loadChapters(batchId, sub.slug, 1);
-      });
-    });
-
-  } catch (err) {
-    console.error("Error loading subjects:", err);
-  }
-}
-
-// 👇 appendCard creates one subject card with all UI
+   // 1. Define appendCard FIRST
 function appendCard(container, sub, onClick) {
   const subjectName = sub.subject;
   const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
@@ -1424,7 +1408,17 @@ function appendCard(container, sub, onClick) {
   container.appendChild(card);
 }
 
-
+// 2. Then call it inside your loop
+subs.forEach(sub => {
+  appendCard(subjectsDiv, sub, () => {
+    pushView(() => loadSubjects(batchId));
+    chapterPage = 1;
+    chapterLoading = false;
+    currentSubjectId = sub.subjectId || sub._id;
+    currentSubjectName = sub.subject;
+    loadChapters(batchId, sub.slug, 1);
+  });
+});
 
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
 const todayJson = await todayRes.json();
