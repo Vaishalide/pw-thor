@@ -633,21 +633,28 @@
       gap: 0.5rem;
     }
 
-  .today-classes-container {
+ .today-schedule-container {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
   overflow-x: auto;
-  overflow-y: hidden;
-  padding: 1rem 0;
+  gap: 16px;
+  padding: 12px 0;
   scroll-snap-type: x mandatory;
-  white-space: nowrap;
-  scrollbar-width: thin;
-  scrollbar-color: var(--squid-pink) transparent;
 }
-    .today-classes-container::-webkit-scrollbar {
-      height: 8px;
-    }
+
+.today-schedule-container::-webkit-scrollbar {
+  display: none; /* optional: hide scrollbar on mobile */
+}
+.schedule-card {
+  min-width: 240px; /* or 300px depending on content */
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  background: #1e1e1e;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
 
     .today-classes-container::-webkit-scrollbar-track {
       background: var(--bg-tertiary);
