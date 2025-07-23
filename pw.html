@@ -1170,6 +1170,31 @@
         height: 14px;
       }
 
+      .today-horizontal-scroll {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 16px;
+  scroll-snap-type: x mandatory;
+  padding: 12px 0;
+  scrollbar-width: thin;
+}
+
+.today-horizontal-scroll::-webkit-scrollbar {
+  height: 8px;
+}
+.today-horizontal-scroll::-webkit-scrollbar-thumb {
+  background: var(--squid-pink);
+  border-radius: 10px;
+}
+
+.today-horizontal-scroll .today-card {
+  flex: 0 0 260px;
+  scroll-snap-align: start;
+  width: auto !important;
+}
+
+
       .today-card:nth-child(3n+3)::after {
         border-left: 7px solid transparent;
         border-right: 7px solid transparent;
@@ -1246,6 +1271,7 @@
 
     <div class="today-classes-wrapper" id="todayWrapper" style="display: none;">
       <div class="today-classes-title">🎯 Today's Battles</div>
+      <div class="today-horizontal-scroll" id="todayHorizontalContainer"></div>
       <div class="today-classes-container" id="todayClasses"></div>
     </div>
 
@@ -1520,7 +1546,7 @@ card.style.flex = "0 0 auto"; // ✅ Prevent card from shrinking/wrapping
     }
   };
 
-  todayClassesDiv.appendChild(card);
+  document.getElementById("todayHorizontalContainer").appendChild(card);
 });
       } catch (err) {
         console.error("Failed to load subjects or todayclass:", err);
