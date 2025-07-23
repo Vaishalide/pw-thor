@@ -637,18 +637,29 @@
   display: flex;
   flex-direction: row;
   overflow-x: auto;
+  overflow-y: hidden;
   gap: 16px;
   scroll-snap-type: x mandatory;
-  padding: 16px 0;
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
+  padding-bottom: 8px;
+
+  /* Optional aesthetics */
+  scrollbar-width: thin;          /* Firefox */
+  scrollbar-color: var(--squid-pink) transparent;
 }
 
+/* Scrollbar for WebKit browsers */
 .today-classes-container::-webkit-scrollbar {
-  display: none;                /* Chrome/Safari */
+  height: 8px;
 }
 
+.today-classes-container::-webkit-scrollbar-track {
+  background: transparent;
+}
 
+.today-classes-container::-webkit-scrollbar-thumb {
+  background-color: var(--squid-pink);
+  border-radius: 10px;
+}
 .today-class-card {
   flex: 0 0 auto;
   min-width: 240px;              /* adjust as needed */
@@ -669,16 +680,6 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
-
-    .today-classes-container::-webkit-scrollbar-track {
-      background: var(--bg-tertiary);
-      border-radius: 4px;
-    }
-
-    .today-classes-container::-webkit-scrollbar-thumb {
-  background: var(--squid-pink);
-  border-radius: 4px;
-}
  .today-card {
   flex: 0 0 260px;
   scroll-snap-align: start;
@@ -1463,6 +1464,7 @@ const todayClasses = todayJson.data || [];
 
   const card = document.createElement("div");
   card.className = "today-card";
+  card.style.width = "260px";
   card.innerHTML = `
     <img src="${customImage}" alt="${title}" />
     <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
