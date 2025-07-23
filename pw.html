@@ -1644,47 +1644,17 @@ todayScrollContainer.appendChild(card);
       }
     }
 
-  async function loadChapters(batchId, subjectSlug, page = 1) {
+  async function loadChapters(batchId, subjectSlug) {
   const chaptersDiv = document.getElementById("chaptersDiv");
-  let loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
-
-if (!loadMoreWrapper) {
-  loadMoreWrapper = document.createElement("div");
-  loadMoreWrapper.id = "chapterLoadMoreWrapper";
-  loadMoreWrapper.style.textAlign = "center";
-  loadMoreWrapper.style.marginTop = "20px";
-
-  const loadMoreBtn = document.createElement("button");
-  loadMoreBtn.id = "chapterLoadMoreBtn";
-  loadMoreBtn.textContent = "Load More Chapters";
-  loadMoreBtn.style.padding = "10px 20px";
-  loadMoreBtn.style.fontSize = "1rem";
-
-  loadMoreBtn.addEventListener("click", () => {
-    if (!chapterLoading) {
-      loadChapters(batchId, subjectSlug, chapterPage);
-    }
-  });
-
-  loadMoreWrapper.appendChild(loadMoreBtn);
-  chaptersDiv.parentNode.appendChild(loadMoreWrapper);
-}
+ const oldWrapper = document.getElementById("chapterLoadMoreWrapper");
+  if (oldWrapper) oldWrapper.remove();
 
   if (chapterLoading) return;
 
-  if (page === 1) {
-  history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}`);
-  chapterPage = 1;
-  chapterTotal = Infinity;
+ history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}`);
   chaptersDiv.innerHTML = "";
-  if (loadMoreWrapper) loadMoreWrapper.style.display = "none";
-
-  clearAll(); // hides main, subjectsDiv, etc.
-  document.getElementById("subjects").style.display = "none"; // 👈 explicitly hide subjects
-}
-
-
-  if (page > Math.ceil(chapterTotal / 20)) return;
+  clearAll();
+  document.getElementById("subjects").style.display = "none";
 
   chapterLoading = true;
   showLoader(true);
@@ -1693,45 +1663,42 @@ if (!loadMoreWrapper) {
   currentSubjectSlug = subjectSlug;
 
   try {
-    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
+  const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics`);
     const result = await res.json();
 
     const chapters = result.data || [];
-    chapterTotal = result.paginate?.totalCount || chapters.length;
 
-    if (chapters.length === 0 && page === 1) {
+    if (chapters.length === 0) {
       const emptyMsg = document.createElement("div");
       emptyMsg.className = "empty-state";
       emptyMsg.innerText = "No chapters found.";
       chaptersDiv.appendChild(emptyMsg);
+    } else {
+      chapters.forEach(ch => {
+        const card = document.createElement("div");
+        card.className = "chapter-card";
+        card.innerHTML = `
+          <div class="chapter-title">${ch.name}</div>
+          <div class="chapter-meta">
+            <div><i class="fas fa-video"></i> ${ch.lectureVideos || 0} Lectures</div>
+            <div><i class="fas fa-file-alt"></i> ${ch.notes || 0} Notes</div>
+            <div><i class="fas fa-book"></i> ${ch.exercises || 0} DPPs</div>
+          </div>
+        `;
+     card.addEventListener("click", () => {
+          if (!ch._id) {
+            alert("Chapter ID missing. Cannot load lectures.");
+            return;
+          }
+          pushView(() => loadChapters(batchId, subjectSlug));
+          currentTopicName = ch.name;
+          loadLecturesContent(batchId, subjectSlug, ch._id);
+        });
+
+        chaptersDiv.appendChild(card);
+      });
     }
 
-    chapters.forEach(ch => {
-      const card = document.createElement("div");
-      card.className = "chapter-card";
-      card.innerHTML = `
-        <div class="chapter-title">${ch.name}</div>
-        <div class="chapter-meta">
-          <div><i class="fas fa-video"></i> ${ch.lectureVideos || 0} Lectures</div>
-          <div><i class="fas fa-file-alt"></i> ${ch.notes || 0} Notes</div>
-          <div><i class="fas fa-book"></i> ${ch.exercises || 0} DPPs</div>
-        </div>
-      `;
-
-      card.addEventListener("click", () => {
-        if (!ch._id) {
-          alert("Chapter ID missing. Cannot load lectures.");
-          return;
-        }
-        pushView(() => loadChapters(batchId, subjectSlug));
-        currentTopicName = ch.name;
-        loadLecturesContent(batchId, subjectSlug, ch._id);
-      });
-
-      chaptersDiv.appendChild(card);
-    });
-
-    chapterPage++;
   } catch (err) {
     console.error("Failed to load chapters:", err);
     const errorMsg = document.createElement("div");
@@ -1740,30 +1707,17 @@ if (!loadMoreWrapper) {
     chaptersDiv.appendChild(errorMsg);
   } finally {
     showLoader(false);
-
-    // Show chapters container after all logic completes
     show(chaptersDiv);
-
-    // Handle "Load More" visibility
-   if (chaptersDiv.querySelectorAll(".chapter-card").length < chapterTotal) {
-  loadMoreWrapper.style.display = "block";
-} else {
-  loadMoreWrapper.style.display = "none";
-}
-
     chapterLoading = false;
   }
 }
 
-
-    async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes", page = 1) {
-      if (lectureLoading || page > Math.ceil(lectureTotal / 20)) return;
+    async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes") {
+     if (lectureLoading) return;
       lectureLoading = true;
 
-      if (page === 1) {
-        history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}&topic=${topicId}&type=${contentType}`);
-        document.getElementById("lectureContent").innerHTML = "";
-      }
+      history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}&topic=${topicId}&type=${contentType}`);
+  document.getElementById("lectureContent").innerHTML = "";
 
       show(document.getElementById("lectureSection"));
       showLoader(true);
@@ -1773,16 +1727,15 @@ if (!loadMoreWrapper) {
       currentTopicId = topicId;
       currentContentType = contentType;
 
-      const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}&page=${page}`;
+      const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}`;
 
       try {
         const res = await fetch(url);
-        const data = await res.json();
-        const items = data.data || [];
-        lectureTotal = data.paginate?.totalCount || items.length;
+    const data = await res.json();
+    const items = data.data || [];
 
-        const lectureContent = document.getElementById("lectureContent");
-        if (page === 1 && items.length === 0) {
+    const lectureContent = document.getElementById("lectureContent");
+        if (items.length === 0) {
           lectureContent.innerHTML = `<div style="color: var(--text-muted); text-align: center; margin-top: 20px;">No content found in this arena.</div>`;
           return;
         }
@@ -1935,16 +1888,15 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
       };
 
       currentContentType = typeMap[tab] || "vidoes";
-      lecturePage = 1;
-      lectureTotal = Infinity;
+    
 
       ["lectures", "notes", "dppnotes", "dpplecture"].forEach(t => {
         document.getElementById("tab-" + t).classList.remove("active");
       });
       document.getElementById("tab-" + tab).classList.add("active");
 
-      loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
-    }
+      loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType);
+}
 
     backBtn.onclick = () => {
   history.back(); // ✅ triggers popstate event
@@ -1956,30 +1908,6 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
       const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
       renderBatches(filtered);
     });
-
-    document.getElementById("chapterLoadMoreBtn").onclick = () => {
-      loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
-    };
-
-    window.addEventListener("scroll", () => {
-      if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 &&
-        document.getElementById("lectureSection").style.display !== "none"
-      ) {
-        loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType, lecturePage);
-      }
-    });
-
-    window.onload = () => {
-      const sentinel = document.getElementById("loadMoreChapters");
-      if (sentinel) {
-        const chapterObserver = new IntersectionObserver(entries => {
-          if (entries[0].isIntersecting && chaptersDiv.style.display !== "none") {
-            loadChapters(currentBatchId, currentSubjectSlug, chapterPage);
-          }
-        });
-        chapterObserver.observe(sentinel);
-      }
 
       loadBatches();
     };
