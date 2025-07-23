@@ -1653,6 +1653,7 @@ todayScrollContainer.appendChild(card);
     chapterTotal = Infinity;
     chaptersDiv.innerHTML = "";
     document.getElementById("chapterLoadMoreWrapper").style.display = "none";
+     clearAll(); 
   }
 
   if (page > Math.ceil(chapterTotal / 20)) return;
