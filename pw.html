@@ -1772,7 +1772,7 @@ if (item.topic) {
               <div class="card-title">${title}</div>
             `;
 
-    div.onclick = async () => {
+   div.onclick = async () => {
   showLoader(true);
   try {
     let finalUrl = mediaUrl;
@@ -1783,7 +1783,6 @@ if (item.topic) {
       window.open(finalUrl, '_blank');
       return;
     }
-
     // ✅ Always call stream-info API for non-YouTube videos
     const realVid = item.videoDetails || item;
     const batch = currentBatchName || 'Unknown Batch';
@@ -1831,13 +1830,9 @@ if (item.topic) {
   }
 };
 
-    } 
-
           lectureContent.appendChild(div);
         });
-
-        lecturePage++;
-      } catch (err) {
+       catch (err) {
         console.error("Failed to load content:", err);
       } finally {
         lectureLoading = false;
