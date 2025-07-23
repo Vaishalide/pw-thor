@@ -633,18 +633,31 @@
       gap: 0.5rem;
     }
 
- .today-schedule-container {
+.today-classes-container {
   display: flex;
-  flex-direction: row;
-  overflow-x: auto;
+  flex-direction: row;           /* force horizontal */
   gap: 16px;
+  overflow-x: auto;              /* scroll horizontally */
   padding: 12px 0;
   scroll-snap-type: x mandatory;
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE/Edge */
 }
 
-.today-schedule-container::-webkit-scrollbar {
-  display: none; /* optional: hide scrollbar on mobile */
+.today-classes-container::-webkit-scrollbar {
+  display: none;                 /* Chrome/Safari */
 }
+
+.today-class-card {
+  flex: 0 0 auto;
+  min-width: 240px;              /* adjust as needed */
+  background: #1e1e1e;
+  padding: 16px;
+  border-radius: 12px;
+  scroll-snap-align: start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .schedule-card {
   min-width: 240px; /* or 300px depending on content */
   flex-shrink: 0;
