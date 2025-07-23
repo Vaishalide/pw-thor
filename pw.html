@@ -620,6 +620,33 @@
       margin: 2rem 0;
     }
 
+    .today-scroll-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;               /* ✅ FORCE NO WRAP */
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 16px;
+  scroll-snap-type: x mandatory;
+  padding: 12px 0;
+}
+
+.today-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.today-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--squid-pink);
+  border-radius: 10px;
+}
+
+.today-scroll-container .today-card {
+  flex: 0 0 auto;
+  width: 260px;
+  scroll-snap-align: start;
+}
+
+
     .today-classes-title {
       font-size: 1.5rem;
       font-weight: 700;
@@ -1173,34 +1200,6 @@
         width: 14px;
         height: 14px;
       }
-
-.today-scroll-container {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;               /* ✅ FORCE NO WRAP */
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 16px;
-  scroll-snap-type: x mandatory;
-  padding: 12px 0;
-}
-
-
-.today-scroll-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.today-scroll-container::-webkit-scrollbar-thumb {
-  background: var(--squid-pink);
-  border-radius: 10px;
-}
-
-.today-scroll-container .today-card {
-  flex: 0 0 auto;
-  width: 260px;
-  scroll-snap-align: start;
-}
-
 
       .today-card:nth-child(3n+3)::after {
         border-left: 7px solid transparent;
