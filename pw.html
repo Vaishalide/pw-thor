@@ -1400,7 +1400,8 @@
 
     function renderBatches(batches) {
       main.innerHTML = "";
-     todayWrapper.style.display = "none";  
+     todayWrapper.style.display = "none"; 
+      backBtn.style.display = "none"; // ✅ Hide back button on home screen
       show(main);
       searchInput.style.display = "block";
       
