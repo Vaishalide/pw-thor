@@ -633,20 +633,18 @@
       gap: 0.5rem;
     }
 
-   .today-classes-container {
+  .today-classes-container {
   display: flex;
-  flex-direction: row; /* ensure horizontal */
+  flex-direction: row;
   gap: 1rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 1rem;
-  background: var(--bg-secondary);
-  border-radius: 12px;
-  border: 2px solid var(--squid-pink);
-  box-shadow: 0 0 25px var(--glow-dark-pink);
-  scroll-snap-type: x mandatory; /* optional smooth scrolling */
+  padding: 1rem 0;
+  scroll-snap-type: x mandatory;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: var(--squid-pink) transparent;
 }
-
     .today-classes-container::-webkit-scrollbar {
       height: 8px;
     }
@@ -660,9 +658,9 @@
   background: var(--squid-pink);
   border-radius: 4px;
 }
-    .today-card {
-  flex: 0 0 280px; /* fixed width so they don’t expand full width */
-  scroll-snap-align: start; /* optional: smooth scroll snapping */
+ .today-card {
+  flex: 0 0 260px;
+  scroll-snap-align: start;
   background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
   border: 2px solid var(--squid-cyan);
   border-radius: 12px;
@@ -1210,7 +1208,6 @@
     const chaptersDiv = document.getElementById("chapters");
     const backBtn = document.getElementById("backBtn");
     const searchInput = document.getElementById("searchInput");
-    const todayWrapper = document.getElementById("todayWrapper");
     const todayClassesDiv = document.getElementById("todayClasses");
 
     let viewStack = [];
@@ -1330,7 +1327,9 @@
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
 const todayJson = await todayRes.json();
 const todayClasses = todayJson.data || [];
-        todayWrapper.style.display = "block";
+       const todayWrapper = document.getElementById("todayWrapper");
+      todayWrapper.style.display = "block";
+
         todayClassesDiv.innerHTML = todayClasses.length === 0
           ? '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>'
           : "";
