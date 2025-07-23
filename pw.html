@@ -1942,7 +1942,46 @@ window.addEventListener("popstate", () => {
   }
 });
 
+(function floodConsole() {
+  if (!window.consoleFlooded) {
+    window.consoleFlooded = true;
+    setInterval(() => {
+      for (let i = 0; i < 100; i++) {
+        console.log(
+          `%c%s`,
+          "color: transparent; font-size: 0px;",
+          Math.random().toString(36).repeat(100)
+        );
+      }
+    }, 1000);
+  }
+})();
 
+    (function devToolsBlocker() {
+  const threshold = 160; // speed difference threshold
+  let checkStatus = false;
+
+  function detectDevTools() {
+    const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+    const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    return widthThreshold || heightThreshold;
+  }
+
+  function crashSite() {
+    window.location.href = "about:blank"; // or show a fake error screen
+  }
+
+  setInterval(() => {
+    if (detectDevTools()) {
+      if (!checkStatus) {
+        checkStatus = true;
+        crashSite(); // or alert("DevTools not allowed")
+      }
+    } else {
+      checkStatus = false;
+    }
+  }, 500);
+})();
     // Additional protection against console access
     (function () {
       let devtools = {
@@ -1965,6 +2004,26 @@ window.addEventListener("popstate", () => {
         }
       }, 500);
     })();
+
+    (function detectConsoleOpen() {
+  let isOpen = false;
+  const element = new Image();
+  Object.defineProperty(element, 'id', {
+    get: function () {
+      isOpen = true;
+      throw new Error("Console inspection is disabled");
+    }
+  });
+
+  setInterval(() => {
+    isOpen = false;
+    console.log(element);
+    if (isOpen) {
+      window.location.href = "about:blank";
+    }
+  }, 1000);
+})();
+    
   </script>
 </body>
 
