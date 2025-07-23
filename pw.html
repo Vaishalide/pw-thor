@@ -1646,7 +1646,29 @@ todayScrollContainer.appendChild(card);
 
   async function loadChapters(batchId, subjectSlug, page = 1) {
   const chaptersDiv = document.getElementById("chaptersDiv");
-  const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
+  let loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
+
+if (!loadMoreWrapper) {
+  loadMoreWrapper = document.createElement("div");
+  loadMoreWrapper.id = "chapterLoadMoreWrapper";
+  loadMoreWrapper.style.textAlign = "center";
+  loadMoreWrapper.style.marginTop = "20px";
+
+  const loadMoreBtn = document.createElement("button");
+  loadMoreBtn.id = "chapterLoadMoreBtn";
+  loadMoreBtn.textContent = "Load More Chapters";
+  loadMoreBtn.style.padding = "10px 20px";
+  loadMoreBtn.style.fontSize = "1rem";
+
+  loadMoreBtn.addEventListener("click", () => {
+    if (!chapterLoading) {
+      loadChapters(batchId, subjectSlug, chapterPage);
+    }
+  });
+
+  loadMoreWrapper.appendChild(loadMoreBtn);
+  chaptersDiv.parentNode.appendChild(loadMoreWrapper);
+}
 
   if (chapterLoading) return;
 
