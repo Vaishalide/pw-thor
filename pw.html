@@ -1404,15 +1404,22 @@
       loadingOverlay.style.display = show ? "flex" : "none";
     }
 
-    function clearAll() {
-      main.style.display = "none";
-      subjectsDiv.style.display = "none";
-      chaptersDiv.style.display = "none";
-      backBtn.style.display = viewStack.length ? "block" : "none";
-     todayWrapper.style.display = "none";
-      document.getElementById("chapterLoadMoreWrapper").style.display = "none";
-      document.getElementById("lectureSection").style.display = "none";
-    }
+   function clearAll() {
+  const main = document.getElementById("main");
+  const subjectsDiv = document.getElementById("subjectsDiv");
+  const chaptersDiv = document.getElementById("chaptersDiv");
+  const backBtn = document.getElementById("backBtn");
+  const chapterLoadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
+  const lectureSection = document.getElementById("lectureSection");
+
+  if (main) main.style.display = "none";
+  if (subjectsDiv) subjectsDiv.style.display = "none";
+  if (chaptersDiv) chaptersDiv.style.display = "none";
+  if (backBtn) backBtn.style.display = viewStack.length ? "block" : "none";
+  if (chapterLoadMoreWrapper) chapterLoadMoreWrapper.style.display = "none";
+  if (lectureSection) lectureSection.style.display = "none";
+}
+
 
     function pushView(fn, state = {}) {
   viewStack.push(fn);
