@@ -1392,14 +1392,14 @@ async function loadSubjects(batchId) {
 // 👇 appendCard creates one subject card with all UI
 function appendCard(container, sub, onClick) {
   const subjectName = sub.subject;
-  const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : 'fallback-icon.png';
+  const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
   const lectureCount = sub.lectureCount || 0;
   const chapterCount = sub.tagCount || 0;
 
   const teacher = sub.teacherIds?.[0];
   const teacherImg = teacher?.imageId
     ? `${teacher.imageId.baseUrl}${teacher.imageId.key}`
-    : 'fallback-teacher.png';
+    : '';
   const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'TBA';
 
   const card = document.createElement('div');
@@ -1423,6 +1423,7 @@ function appendCard(container, sub, onClick) {
 
   container.appendChild(card);
 }
+
 
 
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
