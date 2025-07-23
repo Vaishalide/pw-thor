@@ -633,16 +633,19 @@
       gap: 0.5rem;
     }
 
-    .today-classes-container {
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      padding: 1rem;
-      background: var(--bg-secondary);
-      border-radius: 12px;
-      border: 2px solid var(--squid-pink);
-      box-shadow: 0 0 25px var(--glow-dark-pink);
-    }
+   .today-classes-container {
+  display: flex;
+  flex-direction: row; /* ensure horizontal */
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 2px solid var(--squid-pink);
+  box-shadow: 0 0 25px var(--glow-dark-pink);
+  scroll-snap-type: x mandatory; /* optional smooth scrolling */
+}
 
     .today-classes-container::-webkit-scrollbar {
       height: 8px;
@@ -654,23 +657,22 @@
     }
 
     .today-classes-container::-webkit-scrollbar-thumb {
-      background: var(--squid-pink);
-      border-radius: 4px;
-      box-shadow: 0 0 15px var(--glow-dark-pink);
-    }
-
+  background: var(--squid-pink);
+  border-radius: 4px;
+}
     .today-card {
-      flex: 0 0 280px;
-      background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-      border: 2px solid var(--squid-cyan);
-      border-radius: 12px;
-      padding: 1rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 25px var(--glow-cyan);
-    }
+  flex: 0 0 280px; /* fixed width so they don’t expand full width */
+  scroll-snap-align: start; /* optional: smooth scroll snapping */
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+  border: 2px solid var(--squid-cyan);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 25px var(--glow-cyan);
+}
 
     .today-card::after {
       content: '';
