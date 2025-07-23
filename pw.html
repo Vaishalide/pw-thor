@@ -635,18 +635,19 @@
 
 .today-classes-container {
   display: flex;
-  flex-direction: row;           /* force horizontal */
+  flex-direction: row;
+  overflow-x: auto;
   gap: 16px;
-  overflow-x: auto;              /* scroll horizontally */
-  padding: 12px 0;
   scroll-snap-type: x mandatory;
-  scrollbar-width: none;         /* Firefox */
-  -ms-overflow-style: none;      /* IE/Edge */
+  padding: 16px 0;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
 }
 
 .today-classes-container::-webkit-scrollbar {
-  display: none;                 /* Chrome/Safari */
+  display: none;                /* Chrome/Safari */
 }
+
 
 .today-class-card {
   flex: 0 0 auto;
