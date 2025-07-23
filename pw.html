@@ -1326,19 +1326,34 @@
         });
 
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
-        const todayClasses = await todayRes.json();
+const todayJson = await todayRes.json();
+const todayClasses = todayJson.data || [];
         todayWrapper.style.display = "block";
         todayClassesDiv.innerHTML = todayClasses.length === 0
           ? '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>'
           : "";
 
         todayClasses.forEach(cls => {
-          const card = document.createElement("div");
-          card.className = "today-card";
-          card.innerHTML = `
-            ${cls.image ? `<img src="${cls.image}" style="width: 100%; border-radius: 6px; margin-bottom: 5px;">` : ""}
-            <div class="today-card-title">${cls.title}</div>
-          `;
+  const title = cls.topic || "Untitled";
+  const subject = cls.subjectId?.name || "Unknown Subject";
+  const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+  const chapter = cls.tags?.[0]?.name || "General";
+  const tagLabel = cls.tag || "Upcoming";
+  const statusColor = tagLabel === "Live" ? "var(--squid-green)" : tagLabel === "Ended" ? "var(--squid-red)" : "var(--squid-cyan)";
+  
+  const customImage = cls.customThumbnail || "6055549720518051355.jpg"; // default fallback
+
+  const card = document.createElement("div");
+  card.className = "today-card";
+  card.innerHTML = `
+    <img src="${customImage}" alt="${title}" />
+    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
+    <div class="today-card-title">${title}</div>
+    <div style="font-size: 0.85rem; margin-top: 5px;">🕒 ${time} IST</div>
+    <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
+    <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
+  `;
+
           card.onclick = async () => {
             const url = cls.url;
             if (url.endsWith(".pdf") || url.includes("youtube.com") || url.includes("youtu.be")) {
