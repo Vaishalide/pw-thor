@@ -1407,8 +1407,8 @@ function show(el) {
   clearAll();
   el.style.display = "block";
 }
-  function clearAll() {
- const ids = ["main", "subjects", "chaptersDiv", "lectureSection"];
+ function clearAll() {
+  const ids = ["main", "subjects", "chaptersDiv", "lectureSection", "todayWrapper"];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
@@ -1417,6 +1417,7 @@ function show(el) {
   const backBtn = document.getElementById("backBtn");
   if (backBtn) backBtn.style.display = viewStack.length ? "block" : "none";
 }
+
 
 
     function pushView(fn, state = {}) {
