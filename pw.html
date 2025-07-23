@@ -14,6 +14,7 @@
   <script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
     disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <title>PW THOR - Enter the Arena</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
@@ -619,6 +620,58 @@
     .today-classes-wrapper {
       margin: 2rem 0;
     }
+
+    .chapter-meta i {
+  margin-right: 6px;
+  color: #ffbb33;
+}
+
+    .chapter-meta i {
+  font-size: 1rem;
+}
+
+    .card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.chapter-card {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+.chapter-card:hover {
+  transform: scale(1.02);
+}
+
+.chapter-title {
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.chapter-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.chapter-meta div {
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 
     .today-scroll-container {
   display: flex;
@@ -1282,9 +1335,14 @@
 
 
     <div id="subjects" class="subjects-container" style="display: none;"></div>
-    <div class="grid" id="chapters" style="display: none;">
-      <div id="loadMoreChapters" style="width: 100%; height: 1px;"></div>
-    </div>
+   <!-- Grid container for chapters -->
+<div id="chaptersDiv" class="card-grid" style="display: none;"></div>
+
+<!-- Load more trigger (outside grid) -->
+<div id="chapterLoadMoreWrapper" style="display: none;">
+  <div id="loadMoreChapters" style="width: 100%; height: 1px;"></div>
+</div>
+
 
     <div style="text-align:center; margin-top: 20px; display:none;" id="chapterLoadMoreWrapper">
       <button id="chapterLoadMoreBtn" class="load-more-btn">
@@ -1577,60 +1635,76 @@ todayScrollContainer.appendChild(card);
       }
     }
 
-    async function loadChapters(batchId, subjectSlug, page = 1) {
-      if (chapterLoading) return;
+  async function loadChapters(batchId, subjectSlug, page = 1) {
+  const chaptersDiv = document.getElementById("chaptersDiv"); // ✅ Place this at the top
 
-      if (page === 1) {
-        history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}`);
-        chapterPage = 1;
-        chapterTotal = Infinity;
-        chaptersDiv.innerHTML = "";
-        document.getElementById("chapterLoadMoreWrapper").style.display = "none";
-      }
+  if (chapterLoading) return;
 
-      if (page > Math.ceil(chapterTotal / 20)) return;
+  if (page === 1) {
+    history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}`);
+    chapterPage = 1;
+    chapterTotal = Infinity;
+    chaptersDiv.innerHTML = "";
+    document.getElementById("chapterLoadMoreWrapper").style.display = "none";
+  }
 
-      chapterLoading = true;
-      showLoader(true);
+  if (page > Math.ceil(chapterTotal / 20)) return;
 
-      currentBatchId = batchId;
-      currentSubjectSlug = subjectSlug;
-      show(chaptersDiv);
+  chapterLoading = true;
+  showLoader(true);
 
-      try {
-        const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
-        const result = await res.json();
-        const chapters = result.data || [];
-        chapterTotal = result.paginate?.totalCount || chapters.length;
+  currentBatchId = batchId;
+  currentSubjectSlug = subjectSlug;
+  show(chaptersDiv);
 
-        chapters.forEach(ch => {
-          appendCard(chaptersDiv, ch.name, null, () => {
-            if (!ch._id) {
-              alert("Chapter ID missing. Cannot load lectures.");
-              return;
-            }
-            pushView(() => loadChapters(batchId, subjectSlug));
-            currentTopicName = ch.name; 
-            loadLecturesContent(batchId, subjectSlug, ch._id);
-          });
-        });
+  try {
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics?page=${page}`);
+    const result = await res.json();
+    const chapters = result.data || [];
+    chapterTotal = result.paginate?.totalCount || chapters.length;
 
-        chapterPage++;
-      } catch (err) {
-        console.error("Failed to load chapters:", err);
-      } finally {
-        showLoader(false);
+    chapters.forEach(ch => {
+      const card = document.createElement("div");
+      card.className = "chapter-card";
+     card.innerHTML = `
+  <div class="chapter-title">${ch.name}</div>
+  <div class="chapter-meta">
+    <div><i class="fas fa-video"></i> ${ch.lectureVideos || 0} Lectures</div>
+    <div><i class="fas fa-file-alt"></i> ${ch.notes || 0} Notes</div>
+    <div><i class="fas fa-book"></i> ${ch.exercises || 0} DPPs</div>
+  </div>
+`;
 
-        const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
-        if (chapterPage <= Math.ceil(chapterTotal / 20)) {
-          loadMoreWrapper.style.display = "block";
-        } else {
-          loadMoreWrapper.style.display = "none";
+
+      card.addEventListener("click", () => {
+        if (!ch._id) {
+          alert("Chapter ID missing. Cannot load lectures.");
+          return;
         }
+        pushView(() => loadChapters(batchId, subjectSlug));
+        currentTopicName = ch.name;
+        loadLecturesContent(batchId, subjectSlug, ch._id);
+      });
 
-        chapterLoading = false;
-      }
+      chaptersDiv.appendChild(card);
+    });
+
+    chapterPage++;
+  } catch (err) {
+    console.error("Failed to load chapters:", err);
+  } finally {
+    showLoader(false);
+
+    const loadMoreWrapper = document.getElementById("chapterLoadMoreWrapper");
+    if (chapterPage <= Math.ceil(chapterTotal / 20)) {
+      loadMoreWrapper.style.display = "block";
+    } else {
+      loadMoreWrapper.style.display = "none";
     }
+
+    chapterLoading = false;
+  }
+}
 
     async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes", page = 1) {
       if (lectureLoading || page > Math.ceil(lectureTotal / 20)) return;
