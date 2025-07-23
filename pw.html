@@ -1546,9 +1546,10 @@ const todayClasses = todayJson.data || [];
       const todayWrapper = document.getElementById("todayWrapper");
 const todayScrollContainer = document.getElementById("todayScrollContainer");
 
-if (viewStack.length === 0) {
+if (document.getElementById("subjects").style.display !== "none") {
   todayWrapper.style.display = "block";
 }
+
 
 // If no classes, show message
 if (todayClasses.length === 0) {
