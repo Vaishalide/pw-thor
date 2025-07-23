@@ -1723,11 +1723,11 @@ todayScrollContainer.appendChild(card);
     show(chaptersDiv);
 
     // Handle "Load More" visibility
-    if (chapterPage <= Math.ceil(chapterTotal / 20)) {
-      if (loadMoreWrapper) loadMoreWrapper.style.display = "block";
-    } else {
-      if (loadMoreWrapper) loadMoreWrapper.style.display = "none";
-    }
+   if (chaptersDiv.querySelectorAll(".chapter-card").length < chapterTotal) {
+  loadMoreWrapper.style.display = "block";
+} else {
+  loadMoreWrapper.style.display = "none";
+}
 
     chapterLoading = false;
   }
