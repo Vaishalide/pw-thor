@@ -1400,9 +1400,10 @@
 
     function renderBatches(batches) {
       main.innerHTML = "";
+     todayWrapper.style.display = "none";  
       show(main);
       searchInput.style.display = "block";
-
+      
       batches.forEach(batch => {
        appendCard(main, batch.name, batch.image, () => {
   pushView(() => renderBatches(batches));
