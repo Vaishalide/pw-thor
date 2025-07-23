@@ -681,7 +681,8 @@
 }
 
  .today-card {
-  flex: 0 0 260px;
+  flex: 0 0 auto;
+   width: 260px;
   scroll-snap-align: start;
   background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
   border: 2px solid var(--squid-cyan);
@@ -1124,9 +1125,12 @@
         gap: 1rem;
       }
 
-      .today-card {
-        flex: none;
-      }
+     .today-card {
+  flex: 0 0 auto;
+  width: 260px;
+  scroll-snap-align: start;
+}
+
 
       .today-card::after {
         width: 16px;
@@ -1173,13 +1177,14 @@
 .today-scroll-container {
   display: flex;
   flex-direction: row;
+  flex-wrap: nowrap;               /* ✅ FORCE NO WRAP */
   overflow-x: auto;
   overflow-y: hidden;
   gap: 16px;
   scroll-snap-type: x mandatory;
   padding: 12px 0;
-  scrollbar-width: thin; /* Firefox */
 }
+
 
 .today-scroll-container::-webkit-scrollbar {
   height: 8px;
