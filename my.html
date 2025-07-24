@@ -1806,15 +1806,26 @@ if (item.topic) {
     }
 
     // ✅ Signed video fallback
-    if (data.signed_url && data.video_id) {
-      const urlParams = new URLSearchParams({
-        encrypted: data.signed_url,
-        iv: data.video_id
-      });
-      window.location.href = `pwplayer.html?${urlParams}`;
-    } else {
-      alert("Invalid video stream response.");
-    }
+   if (data.signed_url && data.video_id) {
+  const urlParams = new URLSearchParams({
+    encrypted: data.signed_url,
+    iv: data.video_id
+  });
+  window.location.href = `pwplayer.html?${urlParams}`;
+} else {
+  // ❗ Fallback to alternate URL API if stream-info failed
+  const res = await fetch(`${API_BASE}/api/url?batch_id=${item.batch_id}&schedule_id=${item.schedule_id}`);
+  const altData = await res.json();
+
+  if (altData.success && altData.signed_url && altData.video_id) {
+    const urlParams = new URLSearchParams({
+      encrypted: altData.signed_url,
+      iv: altData.video_id
+    });
+    window.location.href = `pwplayer.html?${urlParams}`;
+  } else {
+    alert("Invalid video stream response from both APIs.");
+  }
 
   } catch (err) {
     console.error("Video load failed:", err);
