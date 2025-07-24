@@ -1608,7 +1608,7 @@ todayClasses.forEach(cls => {
   showLoader(true);
 
   try {
-    const res = await fetch(`/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+    const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
     const data = await res.json();
 
     if (data.success && data.signed_url && data.video_id) {
