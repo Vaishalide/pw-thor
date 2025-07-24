@@ -1766,41 +1766,34 @@ if (item.topic) {
               <div class="card-title">${title}</div>
             `;
 
-   div.onclick = async () => {
+ div.onclick = async () => {
   showLoader(true);
   try {
     let finalUrl = mediaUrl;
     const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
 
-    // ✅ Open YouTube videos directly
     if (isYouTube) {
       window.open(finalUrl, '_blank');
       return;
     }
-    // ✅ Always call stream-info API for non-YouTube videos
+
     const realVid = item.videoDetails || item;
     const batch = currentBatchName || 'Unknown Batch';
     const subject = currentSubjectName || 'Unknown Subject';
     const topic = currentTopicName || 'General';
     const title = item.topic || realVid.name || '';
 
-    const params = new URLSearchParams({
-      batch,
-      subject,
-      topic,
-      title
-    });
+    const params = new URLSearchParams({ batch, subject, topic, title });
 
     const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
     const data = await resp.json();
 
-    // ✅ YouTube fallback
     if (data.youtube && data.videoUrl) {
       window.open(data.videoUrl, '_blank');
       return;
     }
 
-    // ✅ If success and signed_url is present, use it
+    // ✅ Primary success
     if (data.success && data.signed_url && data.video_id) {
       const urlParams = new URLSearchParams({
         encrypted: data.signed_url,
@@ -1810,8 +1803,9 @@ if (item.topic) {
       return;
     }
 
-    // ❗ Fallback to second API if not success or missing data
-    const res = await fetch(`${API_BASE}/api/url?batch_id=${item.batch_id}&schedule_id=${item.schedule_id}`);
+    // ❗ Fallback API using batchId and scheduleId
+    const scheduleId = item._id;
+    const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
     const altData = await res.json();
 
     if (altData.success && altData.signed_url && altData.video_id) {
@@ -1821,16 +1815,17 @@ if (item.topic) {
       });
       window.location.href = `pwplayer.html?${urlParams}`;
     } else {
-      alert("Video stream not available from either source.");
+      alert("⚠️ Video not available from either source.");
     }
 
   } catch (err) {
     console.error("Video load failed:", err);
-    alert("Failed to load video.");
+    alert("⚠️ Failed to load video.");
   } finally {
     showLoader(false);
   }
 };
+
            }
           lectureContent.appendChild(div);
         });
