@@ -1794,38 +1794,35 @@ if (item.topic) {
     const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
     const data = await resp.json();
 
-    if (!data.success) {
-      alert("Video stream not available.");
-      return;
-    }
-
     // ✅ YouTube fallback
     if (data.youtube && data.videoUrl) {
       window.open(data.videoUrl, '_blank');
       return;
     }
 
-    // ✅ Signed video fallback
-   if (data.signed_url && data.video_id) {
-  const urlParams = new URLSearchParams({
-    encrypted: data.signed_url,
-    iv: data.video_id
-  });
-  window.location.href = `pwplayer.html?${urlParams}`;
-} else {
-  // ❗ Fallback to alternate URL API if stream-info failed
-  const res = await fetch(`${API_BASE}/api/url?batch_id=${item.batch_id}&schedule_id=${item.schedule_id}`);
-  const altData = await res.json();
+    // ✅ If success and signed_url is present, use it
+    if (data.success && data.signed_url && data.video_id) {
+      const urlParams = new URLSearchParams({
+        encrypted: data.signed_url,
+        iv: data.video_id
+      });
+      window.location.href = `pwplayer.html?${urlParams}`;
+      return;
+    }
 
-  if (altData.success && altData.signed_url && altData.video_id) {
-    const urlParams = new URLSearchParams({
-      encrypted: altData.signed_url,
-      iv: altData.video_id
-    });
-    window.location.href = `pwplayer.html?${urlParams}`;
-  } else {
-    alert("Invalid video stream response from both APIs.");
-  }
+    // ❗ Fallback to second API if not success or missing data
+    const res = await fetch(`${API_BASE}/api/url?batch_id=${item.batch_id}&schedule_id=${item.schedule_id}`);
+    const altData = await res.json();
+
+    if (altData.success && altData.signed_url && altData.video_id) {
+      const urlParams = new URLSearchParams({
+        encrypted: altData.signed_url,
+        iv: altData.video_id
+      });
+      window.location.href = `pwplayer.html?${urlParams}`;
+    } else {
+      alert("Video stream not available from either source.");
+    }
 
   } catch (err) {
     console.error("Video load failed:", err);
