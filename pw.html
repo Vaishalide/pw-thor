@@ -1489,7 +1489,7 @@ async function loadSubjects(batchId) {
 
   subjectsDiv.innerHTML = "";
   searchInput.style.display = "none";
-
+  showLoader(true);
   try {
     const res = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
     const json = await res.json();
@@ -1541,7 +1541,13 @@ subs.forEach(sub => {
     loadChapters(batchId, sub.slug, 1);
   });
 });
-
+ } catch (err) {
+    console.error("Failed to load subjects", err);
+  } finally {
+    // ✅ Always hide loader, even on error
+    showLoader(false);
+  }
+}
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
 const todayJson = await todayRes.json();
 const todayClasses = todayJson.data || [];
