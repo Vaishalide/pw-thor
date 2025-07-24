@@ -744,6 +744,9 @@
         <option value="1.5">1.5x</option>
         <option value="2">2x</option>
       </select>
+<audio id="silentLoop" loop muted playsinline>
+  <source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAeAAACABAAZGF0YQAAAAA=" type="audio/mp3">
+</audio>
 
       <button id="fullscreen" class="control-btn" title="Fullscreen">
         <svg class="icon" viewBox="0 0 24 24">
@@ -812,19 +815,29 @@
       }
 
       async requestWakeLock() {
-        if (this.isWakeLockSupported) {
-          try {
-            this.wakeLock = await navigator.wakeLock.request('screen');
-            console.log("Wake lock active");
+  if (this.isWakeLockSupported) {
+    try {
+      this.wakeLock = await navigator.wakeLock.request('screen');
+      console.log("Wake lock active");
 
-            this.wakeLock.addEventListener('release', () => {
-              console.log("Wake lock released");
-            });
-          } catch (err) {
-            console.error("Failed to acquire wake lock:", err);
-          }
+      this.wakeLock.addEventListener('release', () => {
+        console.log("Wake lock was released, trying to reacquire...");
+        this.requestWakeLock(); // Attempt to re-acquire
+      });
+
+      // Re-acquire on visibility change
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && !this.video.paused) {
+          this.requestWakeLock();
         }
-      }
+      });
+
+    } catch (err) {
+      console.error("Failed to acquire wake lock:", err);
+    }
+  }
+}
+
 
       releaseWakeLock() {
         if (this.wakeLock) {
@@ -1445,6 +1458,10 @@
     }
   }, 1000);
 })();
+    document.getElementById("silentLoop").play().catch(() => {
+  console.log("Silent loop fallback failed");
+});
+
     // Initialize the video player when the DOM is loaded
     document.addEventListener('DOMContentLoaded', () => {
       new ModernVideoPlayer();
