@@ -1418,7 +1418,7 @@ function show(el) {
   clearAll();
   el.style.display = "block";
 }
- function clearAll() {
+function clearAll() {
   const ids = ["main", "subjects", "chaptersDiv", "lectureSection", "todayWrapper"];
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -1427,7 +1427,12 @@ function show(el) {
 
   const backBtn = document.getElementById("backBtn");
   if (backBtn) backBtn.style.display = viewStack.length ? "block" : "none";
+
+  // 🔻 Hide load more batches button when leaving the main batches page
+  const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
+  if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
 }
+
 
 
 
@@ -1507,20 +1512,26 @@ function show(el) {
  
 
 function renderBatches(batches, { append = false } = {}) {
-  if (!append) main.innerHTML = "";
+  if (!append) {
+    main.innerHTML = "";
+    // Only push batch view if it's a fresh render
+    pushView(() => renderBatches(allBatches, { append: false }));
+  }
 
   todayWrapper.style.display = "none";
   backBtn.style.display = "none";
   searchInput.style.display = "block";
+  loadMoreBtnWrapper.style.display = "block";
 
   batches.forEach(batch => {
     appendCard(main, batch.name, batch.image, () => {
-      pushView(() => renderBatches(batches));
+      pushView(() => renderBatches(allBatches, { append: false }));
       currentBatchName = batch.name;
       loadSubjects(batch.batchId);
     });
   });
 }
+
 
 function renderNoResults() {
   main.innerHTML = `
@@ -1569,7 +1580,11 @@ async function loadSubjects(batchId) {
   history.pushState({}, '', `?batch=${batchId}`);
   show(subjectsDiv);
   backBtn.style.display = "block";
-  backBtn.onclick = () => viewStack.pop()();
+ backBtn.onclick = () => {
+  const last = viewStack.pop();
+  if (typeof last === "function") last();
+};
+
 
   subjectsDiv.innerHTML = "";
   searchInput.style.display = "none";
