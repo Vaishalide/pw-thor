@@ -1447,8 +1447,8 @@ function show(el) {
       container.appendChild(div);
     }
 
-   async function loadBatches({ reset = false } = {}) {
-  if (isLoading || !hasMore) return;
+  async function loadBatches({ reset = false } = {}) {
+  if (isLoading || (!hasMore && !reset)) return;
 
   isLoading = true;
   showLoader(true);
@@ -1471,13 +1471,18 @@ function show(el) {
       batchId: b._id
     }));
 
-    allBatches = allBatches.concat(newBatches);
-    renderBatches(newBatches, { append: true });
-
-    if (data.batches.length < 12) {
+    if (reset && newBatches.length === 0) {
+      renderNoResults(); // show "No batches found"
       hasMore = false;
     } else {
-      currentPage++;
+      allBatches = reset ? newBatches : allBatches.concat(newBatches);
+      renderBatches(newBatches, { append: !reset });
+
+      if (newBatches.length < 12) {
+        hasMore = false;
+      } else {
+        currentPage++;
+      }
     }
 
   } catch (err) {
@@ -1504,6 +1509,14 @@ function renderBatches(batches, { append = false } = {}) {
   });
 }
 
+function renderNoResults() {
+  main.innerHTML = `
+    <div style="text-align:center; color:#666; padding:2rem;">
+      <p>🔍 No batches found.</p>
+    </div>
+  `;
+}
+
 // 📦 Infinite scroll
 window.addEventListener("scroll", () => {
   const scrollBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
@@ -1512,13 +1525,13 @@ window.addEventListener("scroll", () => {
   }
 });
 
-// 🔍 Search handling
+// 🔍 Search input listener
 searchInput.addEventListener("input", debounce(() => {
   currentQuery = searchInput.value.trim();
   loadBatches({ reset: true });
 }, 300));
 
-// Utility: debounce for better search UX
+// Utility: debounce
 function debounce(fn, delay) {
   let timeout;
   return (...args) => {
@@ -1527,7 +1540,7 @@ function debounce(fn, delay) {
   };
 }
 
-
+  
 async function loadSubjects(batchId) {
   history.pushState({}, '', `?batch=${batchId}`);
   show(subjectsDiv);
