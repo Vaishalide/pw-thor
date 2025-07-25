@@ -898,6 +898,104 @@
 }
 
     
+    /* === Load More Button (Squid Game Theme) === */
+
+#loadMoreBatchesBtn {
+  /* Basic Setup & Font */
+  background: linear-gradient(45deg, var(--squid-pink), var(--squid-dark-blue));
+  border: 2px solid var(--squid-pink);
+  color: var(--text-primary);
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  
+  /* Sizing and Shape */
+  padding: 1rem 2.5rem;
+  border-radius: 50px; /* Pill shape */
+  
+  /* Flexbox for Icon Alignment */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+
+  /* Effects */
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px var(--glow-dark-pink);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Pulsing glow animation to attract attention */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 20px var(--glow-dark-pink);
+  }
+  50% {
+    box-shadow: 0 0 35px var(--glow-pink);
+  }
+  100% {
+    box-shadow: 0 0 20px var(--glow-dark-pink);
+  }
+}
+
+#loadMoreBatchesBtn {
+    animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
+
+/* --- Hover and Active States --- */
+
+#loadMoreBatchesBtn:hover {
+  transform: scale(1.05);
+  border-color: var(--squid-cyan);
+  box-shadow: 0 0 40px var(--glow-cyan);
+  animation: none; /* Pause the pulse on hover for a direct response */
+}
+
+#loadMoreBatchesBtn:active {
+  transform: scale(0.98); /* Press-down effect */
+  filter: brightness(0.9);
+}
+
+
+/* --- Icon Styling --- */
+
+#loadMoreBatchesBtn i {
+  font-size: 1rem;
+  transition: transform 0.3s ease-in-out;
+}
+
+#loadMoreBatchesBtn:hover i {
+  transform: translateY(3px); /* Icon dips down on hover */
+}
+
+
+/* --- Cool sliding gloss effect on hover --- */
+
+#loadMoreBatchesBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 75%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.6s ease;
+}
+
+#loadMoreBatchesBtn:hover::before {
+  left: 120%;
+}
 
     .lecture-tabs {
       display: flex;
@@ -1361,7 +1459,10 @@
       <div class="grid" id="lectureContent"></div>
     </div>
 <div id="loadMoreBatchesWrapper" style="text-align: center; margin: 2rem 0; display: none;">
-  <button id="loadMoreBatchesBtn">⬇️ Load More Batches</button>
+  <button id="loadMoreBatchesBtn">
+    <span>Load More Arenas</span>
+    <i class="fas fa-chevron-down"></i>
+  </button>
 </div>
 
     <div id="popup" class="popup" style="display: none;">
