@@ -1405,11 +1405,7 @@ let isLoading = false;
 let hasMore = true;
 let currentQuery = "";
     
-    main.style.overflowY = "auto";
-main.style.height = `${window.innerHeight - 300}px`; // adjust dynamically
-main.style.marginTop = "2rem"; // keep your card spacing consistent
-main.style.scrollBehavior = "smooth";
-
+  
     function showLoader(show) {
       loadingOverlay.style.display = show ? "flex" : "none";
     }
@@ -1522,14 +1518,13 @@ function renderNoResults() {
   `;
 }
 
-main.addEventListener("scroll", () => {
-  const scrollBottom = main.scrollTop + main.clientHeight >= main.scrollHeight - 50;
-
+window.addEventListener("scroll", () => {
+  const scrollBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 100;
   if (scrollBottom && !isLoading) {
-    console.log("➡️ Reached bottom: loading more...");
     loadBatches();
   }
 });
+
 
 
 
