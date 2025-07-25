@@ -1411,6 +1411,16 @@ let currentQuery = "";
   const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
 const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
 
+    function showBatchesView() {
+  pushView(() => showBatchesView()); // This goes in stack once
+  currentPage = 1;
+  currentQuery = "";
+  hasMore = true;
+  allBatches = [];
+  loadBatches({ reset: true });
+}
+
+
     function showLoader(show) {
       loadingOverlay.style.display = show ? "flex" : "none";
     }
@@ -1512,11 +1522,7 @@ function clearAll() {
  
 
 function renderBatches(batches, { append = false } = {}) {
-  if (!append) {
-    main.innerHTML = "";
-    // Only push batch view if it's a fresh render
-    pushView(() => renderBatches(allBatches, { append: false }));
-  }
+  if (!append) main.innerHTML = "";
 
   todayWrapper.style.display = "none";
   backBtn.style.display = "none";
@@ -1525,13 +1531,12 @@ function renderBatches(batches, { append = false } = {}) {
 
   batches.forEach(batch => {
     appendCard(main, batch.name, batch.image, () => {
-      pushView(() => renderBatches(allBatches, { append: false }));
+      pushView(() => showBatchesView()); // go back to batches page
       currentBatchName = batch.name;
       loadSubjects(batch.batchId);
     });
   });
 }
-
 
 function renderNoResults() {
   main.innerHTML = `
@@ -1581,9 +1586,12 @@ async function loadSubjects(batchId) {
   show(subjectsDiv);
   backBtn.style.display = "block";
  backBtn.onclick = () => {
-  const last = viewStack.pop();
-  if (typeof last === "function") last();
+  const lastView = viewStack.pop();
+  if (typeof lastView === "function") {
+    lastView(); // go back to batches
+  }
 };
+
 
 
   subjectsDiv.innerHTML = "";
@@ -2042,6 +2050,9 @@ window.addEventListener("popstate", () => {
   } else {
     loadBatches(); // fallback
   }
+});
+document.addEventListener("DOMContentLoaded", () => {
+  showBatchesView();
 });
 
 
