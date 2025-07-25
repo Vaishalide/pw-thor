@@ -980,7 +980,7 @@ async loadVideo() {
     const urlObj = new URL(this.videoURL);
 
     // Check if it's a DASH/MPD file
-    if (urlObj.pathname.endsWith(".mpd")) {
+    if (urlObj.pathname.includes(".mpd")) {
       console.log("Detected MPD file. Using Shaka Player...");
 
       // Fetch the MPD text
@@ -1019,7 +1019,23 @@ async loadVideo() {
       }
 
       const player = new shaka.Player(this.video);
+      const signedParams = Object.fromEntries(urlObj.searchParams.entries());
 
+player.getNetworkingEngine().registerRequestFilter((type, request) => {
+  if (
+    type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+    type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+  ) {
+    const uri = new URL(request.uris[0]);
+    Object.keys(signedParams).forEach(key => {
+      if (!uri.searchParams.has(key)) {
+        uri.searchParams.set(key, signedParams[key]);
+      }
+    });
+    request.uris[0] = uri.toString();
+  }
+});
+ 
       // Optional: Add headers for CDN tokens or auth (if needed)
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
         if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
