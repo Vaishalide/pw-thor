@@ -1400,7 +1400,11 @@
     let currentTopicId = "";
     let currentContentType = "vidoes";
     let currentSubjectId = "";
-
+    let currentPage = 1;
+let isLoading = false;
+let hasMore = true;
+let currentQuery = "";
+    
     function showLoader(show) {
       loadingOverlay.style.display = show ? "flex" : "none";
     }
@@ -1443,42 +1447,86 @@ function show(el) {
       container.appendChild(div);
     }
 
-    async function loadBatches() {
-      showLoader(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/batches`);
-        const data = await res.json();
+   async function loadBatches({ reset = false } = {}) {
+  if (isLoading || !hasMore) return;
 
-        allBatches = data.batches.map(b => ({
-          name: b.name,
-          image: b.previewImage,
-          batchId: b._id
-        }));
+  isLoading = true;
+  showLoader(true);
 
-        renderBatches(allBatches);
-      } catch (err) {
-        console.error("Failed to load batches:", err);
-      } finally {
-        showLoader(false);
-      }
+  if (reset) {
+    currentPage = 1;
+    allBatches = [];
+    main.innerHTML = "";
+    hasMore = true;
+  }
+
+  try {
+    const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
+    const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
+    const data = await res.json();
+
+    const newBatches = data.batches.map(b => ({
+      name: b.name,
+      image: b.previewImage,
+      batchId: b._id
+    }));
+
+    allBatches = allBatches.concat(newBatches);
+    renderBatches(newBatches, { append: true });
+
+    if (data.batches.length < 12) {
+      hasMore = false;
+    } else {
+      currentPage++;
     }
 
-    function renderBatches(batches) {
-      main.innerHTML = "";
-     todayWrapper.style.display = "none"; 
-      backBtn.style.display = "none"; // ✅ Hide back button on home screen
-      show(main);
-      searchInput.style.display = "block";
-      
-      batches.forEach(batch => {
-       appendCard(main, batch.name, batch.image, () => {
-  pushView(() => renderBatches(batches));
-  currentBatchName = batch.name; // ✅ STORE THE NAME HERE
-  loadSubjects(batch.batchId);
+  } catch (err) {
+    console.error("Failed to load batches:", err);
+  } finally {
+    isLoading = false;
+    showLoader(false);
+  }
+}
+
+function renderBatches(batches, { append = false } = {}) {
+  if (!append) main.innerHTML = "";
+
+  todayWrapper.style.display = "none";
+  backBtn.style.display = "none";
+  searchInput.style.display = "block";
+
+  batches.forEach(batch => {
+    appendCard(main, batch.name, batch.image, () => {
+      pushView(() => renderBatches(batches));
+      currentBatchName = batch.name;
+      loadSubjects(batch.batchId);
+    });
+  });
+}
+
+// 📦 Infinite scroll
+window.addEventListener("scroll", () => {
+  const scrollBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+  if (scrollBottom && !isLoading) {
+    loadBatches();
+  }
 });
 
-      });
-    }
+// 🔍 Search handling
+searchInput.addEventListener("input", debounce(() => {
+  currentQuery = searchInput.value.trim();
+  loadBatches({ reset: true });
+}, 300));
+
+// Utility: debounce for better search UX
+function debounce(fn, delay) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), delay);
+  };
+}
+
 
 async function loadSubjects(batchId) {
   history.pushState({}, '', `?batch=${batchId}`);
