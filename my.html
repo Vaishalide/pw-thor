@@ -1517,13 +1517,13 @@ function renderNoResults() {
   `;
 }
 
-// 📦 Infinite scroll
-window.addEventListener("scroll", () => {
-  const scrollBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
+main.addEventListener("scroll", () => {
+  const scrollBottom = main.scrollTop + main.clientHeight >= main.scrollHeight - 50;
   if (scrollBottom && !isLoading) {
     loadBatches();
   }
 });
+
 
 // 🔍 Search input listener
 searchInput.addEventListener("input", debounce(() => {
