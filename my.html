@@ -1420,9 +1420,6 @@ const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
   loadBatches({ reset: true });
 }
 
-function showSubjectsView(batchId) {
-  loadSubjects(batchId);
-}
 
     function showLoader(show) {
       loadingOverlay.style.display = show ? "flex" : "none";
@@ -1585,9 +1582,6 @@ function debounce(fn, delay) {
 
   
 async function loadSubjects(batchId) {
-  // ✅ Fix: push batches view instead of self
-  pushView(() => showBatchesView());
-
   history.pushState({}, '', `?batch=${batchId}`);
   show(subjectsDiv);
   backBtn.style.display = "block";
@@ -1646,7 +1640,7 @@ function appendCard(container, sub, onClick) {
 // 2. Then call it inside your loop
 subs.forEach(sub => {
   appendCard(subjectsDiv, sub, () => {
-   pushView(() => showBatchesView()); // ✅ correctly goes back to batch list
+    pushView(() => loadSubjects(batchId));
     chapterPage = 1;
     chapterLoading = false;
     currentSubjectId = sub.subjectId || sub._id;
