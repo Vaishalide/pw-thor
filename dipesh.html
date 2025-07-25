@@ -919,10 +919,10 @@
         });
       }
 
-      // ✅ Replace your entire handleQualityChange function with this
+// ✅ Replace your entire handleQualityChange function with this
 handleQualityChange() {
     const selectedValue = this.qualitySelector.value;
-    
+
     // --- HLS LOGIC ---
     if (this.hls) {
         if (selectedValue === "auto") {
@@ -932,7 +932,7 @@ handleQualityChange() {
             const targetHeight = parseInt(selectedValue);
             let bestLevel = -1;
             let bestMatch = Infinity;
-            
+
             this.hlsLevels.forEach((level, index) => {
                 const heightDiff = Math.abs(level.height - targetHeight);
                 if (heightDiff < bestMatch) {
@@ -940,13 +940,14 @@ handleQualityChange() {
                     bestLevel = index;
                 }
             });
-            
+
             if (bestLevel >= 0) {
                 this.hls.currentLevel = bestLevel;
+                // Add backticks here
                 console.log(HLS quality changed to ${this.hlsLevels[bestLevel].height}p);
             }
         }
-    } 
+    }
     // --- SHAKA PLAYER LOGIC ---
     else if (this.player) {
         if (selectedValue === "-1") { // -1 is our value for Auto
@@ -955,18 +956,19 @@ handleQualityChange() {
         } else {
             const trackId = parseInt(selectedValue);
             // Disable ABR for manual selection
-            this.player.configure({ abr: { enabled: false } }); 
-            
+            this.player.configure({ abr: { enabled: false } });
+
             // Find the track by its ID and select it
             const track = this.player.getVariantTracks().find(t => t.id === trackId);
             if (track) {
                 this.player.selectVariantTrack(track, true); // true to clear buffer
+                // Add backticks here
                 console.log(Shaka quality changed to ${track.height}p (Track ID: ${track.id}));
             }
         }
     }
 }
-
+      
       decryptAESCBC(base64CipherText, base64Iv, keyString) {
         const key = CryptoJS.SHA256(keyString);
         const iv = CryptoJS.enc.Base64.parse(base64Iv);
@@ -1110,6 +1112,7 @@ player.getNetworkingEngine().registerRequestFilter((type, request) => {
   }
 }
 
+// ✅ Replace your updateShakaQualityOptions function with this
 updateShakaQualityOptions() {
     if (!this.player) return;
 
@@ -1122,6 +1125,7 @@ updateShakaQualityOptions() {
     tracks.forEach(track => {
         const option = document.createElement('option');
         option.value = track.id; // Store the unique track ID
+        // Add backticks here
         option.textContent = ${track.height}p;
         this.qualitySelector.appendChild(option);
     });
