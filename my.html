@@ -1531,7 +1531,6 @@ function renderBatches(batches, { append = false } = {}) {
 
   batches.forEach(batch => {
     appendCard(main, batch.name, batch.image, () => {
-      pushView(() => showBatchesView()); // go back to batches page
       currentBatchName = batch.name;
       loadSubjects(batch.batchId);
     });
