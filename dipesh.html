@@ -921,53 +921,51 @@
 
 // ✅ Replace your entire handleQualityChange function with this
 handleQualityChange() {
-    const selectedValue = this.qualitySelector.value;
+  const selectedValue = this.qualitySelector.value;
 
-    // --- HLS LOGIC ---
-    if (this.hls) {
-        if (selectedValue === "auto") {
-            this.hls.currentLevel = -1; // Auto quality
-            console.log("HLS quality set to Auto");
-        } else {
-            const targetHeight = parseInt(selectedValue);
-            let bestLevel = -1;
-            let bestMatch = Infinity;
+  // --- HLS LOGIC ---
+  if (this.hls) {
+    if (selectedValue === "auto") {
+      this.hls.currentLevel = -1; // Auto quality
+      console.log("HLS quality set to Auto");
+    } else {
+      const targetHeight = parseInt(selectedValue);
+      let bestLevel = -1;
+      let bestMatch = Infinity;
 
-            this.hlsLevels.forEach((level, index) => {
-                const heightDiff = Math.abs(level.height - targetHeight);
-                if (heightDiff < bestMatch) {
-                    bestMatch = heightDiff;
-                    bestLevel = index;
-                }
-            });
-
-            if (bestLevel >= 0) {
-                this.hls.currentLevel = bestLevel;
-                // Add backticks here
-                console.log(HLS quality changed to ${this.hlsLevels[bestLevel].height}p);
-            }
+      this.hlsLevels.forEach((level, index) => {
+        const heightDiff = Math.abs(level.height - targetHeight);
+        if (heightDiff < bestMatch) {
+          bestMatch = heightDiff;
+          bestLevel = index;
         }
-    }
-    // --- SHAKA PLAYER LOGIC ---
-    else if (this.player) {
-        if (selectedValue === "-1") { // -1 is our value for Auto
-            this.player.configure({ abr: { enabled: true } });
-            console.log("Shaka quality set to Auto (ABR enabled)");
-        } else {
-            const trackId = parseInt(selectedValue);
-            // Disable ABR for manual selection
-            this.player.configure({ abr: { enabled: false } });
+      });
 
-            // Find the track by its ID and select it
-            const track = this.player.getVariantTracks().find(t => t.id === trackId);
-            if (track) {
-                this.player.selectVariantTrack(track, true); // true to clear buffer
-                // Add backticks here
-                console.log(Shaka quality changed to ${track.height}p (Track ID: ${track.id}));
-            }
-        }
+      if (bestLevel >= 0) {
+        this.hls.currentLevel = bestLevel;
+        console.log(`HLS quality changed to ${this.hlsLevels[bestLevel].height}p`);
+      }
     }
+  }
+
+  // --- SHAKA PLAYER LOGIC ---
+  else if (this.player) {
+    if (selectedValue === "-1") { // -1 is our value for Auto
+      this.player.configure({ abr: { enabled: true } });
+      console.log("Shaka quality set to Auto (ABR enabled)");
+    } else {
+      const trackId = parseInt(selectedValue);
+      this.player.configure({ abr: { enabled: false } });
+
+      const track = this.player.getVariantTracks().find(t => t.id === trackId);
+      if (track) {
+        this.player.selectVariantTrack(track, true); // clear buffer
+        console.log(`Shaka quality changed to ${track.height}p (Track ID: ${track.id})`);
+      }
+    }
+  }
 }
+
       
       decryptAESCBC(base64CipherText, base64Iv, keyString) {
         const key = CryptoJS.SHA256(keyString);
@@ -1112,26 +1110,26 @@ player.getNetworkingEngine().registerRequestFilter((type, request) => {
   }
 }
 
-// ✅ Replace your updateShakaQualityOptions function with this
 updateShakaQualityOptions() {
-    if (!this.player) return;
+  if (!this.player) return;
 
-    this.qualitySelector.innerHTML = '<option value="-1">Auto</option>'; // Use -1 for auto in Shaka
-    const tracks = this.player.getVariantTracks();
+  this.qualitySelector.innerHTML = '<option value="-1">Auto</option>'; // Use -1 for auto in Shaka
 
-    // Sort tracks by height, descending
-    tracks.sort((a, b) => b.height - a.height);
+  const tracks = this.player.getVariantTracks();
 
-    tracks.forEach(track => {
-        const option = document.createElement('option');
-        option.value = track.id; // Store the unique track ID
-        // Add backticks here
-        option.textContent = ${track.height}p;
-        this.qualitySelector.appendChild(option);
-    });
+  // Sort tracks by height, descending
+  tracks.sort((a, b) => b.height - a.height);
 
-    console.log('Available Shaka qualities:', tracks.map(t => t.height));
+  tracks.forEach(track => {
+    const option = document.createElement('option');
+    option.value = track.id; // Store the unique track ID
+    option.textContent = `${track.height}p`; // ✅ Fixed interpolation with backticks
+    this.qualitySelector.appendChild(option);
+  });
+
+  console.log('Available Shaka qualities:', tracks.map(t => t.height));
 }
+
 
       updateQualityOptions() {
         if (!this.hlsLevels.length) return;
