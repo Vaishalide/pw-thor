@@ -40,12 +40,17 @@
 }
 
 
-    async function getKeyFromAPI(kid) {
-      const response = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?kid=${kid}`);
-      const data = await response.json();
-      if (!data.success || !data.data?.key) throw new Error("Key fetch failed");
-      return data.data.key;
-    }
+   async function getKeyFromAPI(kid) {
+  const response = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?kid=${kid}`);
+  const data = await response.json();
+
+  if (!data.success || !data.data?.clearKeys || !data.data.clearKeys[kid]) {
+    throw new Error("Key fetch failed");
+  }
+
+  return data.data.clearKeys[kid];
+}
+
 
     function parseClearKeys(kid, key) {
       const obj = {};
