@@ -1360,6 +1360,9 @@
       </div>
       <div class="grid" id="lectureContent"></div>
     </div>
+<div id="loadMoreBatchesWrapper" style="text-align: center; margin: 2rem 0; display: none;">
+  <button id="loadMoreBatchesBtn">⬇️ Load More Batches</button>
+</div>
 
     <div id="popup" class="popup" style="display: none;">
       <button onclick="document.getElementById('popup').style.display='none'" class="popup-close">&times;</button>
@@ -1405,7 +1408,9 @@ let isLoading = false;
 let hasMore = true;
 let currentQuery = "";
     
-  
+  const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
+const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
+
     function showLoader(show) {
       loadingOverlay.style.display = show ? "flex" : "none";
     }
@@ -1448,7 +1453,7 @@ function show(el) {
       container.appendChild(div);
     }
 
-  async function loadBatches({ reset = false } = {}) {
+ async function loadBatches({ reset = false } = {}) {
   if (isLoading || (!hasMore && !reset)) return;
 
   isLoading = true;
@@ -1473,19 +1478,21 @@ function show(el) {
     }));
 
     if (reset && newBatches.length === 0) {
-      renderNoResults(); // show "No batches found"
+      renderNoResults();
       hasMore = false;
+      loadMoreBtnWrapper.style.display = "none";
     } else {
       allBatches = reset ? newBatches : allBatches.concat(newBatches);
       renderBatches(newBatches, { append: !reset });
 
       if (newBatches.length < 12) {
         hasMore = false;
+        loadMoreBtnWrapper.style.display = "none";
       } else {
         currentPage++;
+        loadMoreBtnWrapper.style.display = "block";
       }
     }
-
   } catch (err) {
     console.error("Failed to load batches:", err);
   } finally {
@@ -1493,6 +1500,11 @@ function show(el) {
     showLoader(false);
   }
 }
+
+   loadMoreBtn.addEventListener("click", () => {
+  loadBatches();
+});
+ 
 
 function renderBatches(batches, { append = false } = {}) {
   if (!append) main.innerHTML = "";
