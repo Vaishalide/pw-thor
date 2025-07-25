@@ -972,10 +972,12 @@
         return decrypted.toString(CryptoJS.enc.Utf8);
       }
 async loadVideo() {
-  this.showLoading();
+ this.showLoading();
 
-  try {
-    if (this.videoURL.endsWith(".mpd")) {
+try {
+  const urlObj = new URL(this.videoURL);
+  if (urlObj.pathname.endsWith(".mpd")) {
+
       console.log("Detected MPD file. Using Shaka Player...");
 
       const mpdRes = await fetch(this.videoURL);
