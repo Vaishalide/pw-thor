@@ -1519,17 +1519,20 @@ function renderNoResults() {
 }
 
 window.addEventListener("scroll", () => {
-  const scrollBottom = window.innerHeight + window.scrollY >= document.body.scrollHeight - 100;
+  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
 
-  // Only trigger if on the main batches screen
-  const isMainVisible = main && getComputedStyle(main).display !== "none";
-  const isSubjectsHidden = subjectsDiv && getComputedStyle(subjectsDiv).display === "none";
-  const isChaptersHidden = chaptersDiv && getComputedStyle(chaptersDiv).display === "none";
+  const isBatchesView =
+    main.style.display !== "none" &&
+    subjectsDiv.style.display === "none" &&
+    chaptersDiv.style.display === "none" &&
+    document.getElementById("lectureSection").style.display === "none" &&
+    document.getElementById("todayWrapper").style.display === "none";
 
-  if (scrollBottom && isMainVisible && isSubjectsHidden && isChaptersHidden && !isLoading) {
+  if (nearBottom && isBatchesView && !isLoading) {
     loadBatches();
   }
 });
+;
 
 
 
