@@ -1411,8 +1411,12 @@ let currentQuery = "";
   const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
 const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
 
-    function showBatchesView() {
-  pushView(() => showBatchesView()); // This goes in stack once
+   function showBatchesView() {
+  // ✅ No pushView(). This function now ONLY renders the batches view.
+  clearAll(); 
+  main.style.display = "grid"; // Ensure the main grid is visible
+  document.getElementById("todayWrapper").style.display = 'block'; // Show today's wrapper on main page
+  
   currentPage = 1;
   currentQuery = "";
   hasMore = true;
@@ -1584,15 +1588,7 @@ async function loadSubjects(batchId) {
    pushView(() => showBatchesView()); 
   show(subjectsDiv);
   backBtn.style.display = "block";
- backBtn.onclick = () => {
-  const lastView = viewStack.pop();
-  if (typeof lastView === "function") {
-    lastView(); // go back to batches
-  }
-};
-
-
-
+ 
   subjectsDiv.innerHTML = "";
   searchInput.style.display = "none";
   showLoader(true);
@@ -2040,14 +2036,11 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
       }
     });
 window.addEventListener("popstate", () => {
-  if (viewStack.length > 1) {
-    viewStack.pop(); // remove current
-    const lastView = viewStack[viewStack.length - 1];
-    if (typeof lastView === 'function') {
-      lastView();
+  if (viewStack.length > 0) {
+    const restoreView = viewStack.pop(); // ✅ Pop the function for the view we are returning TO.
+    if (typeof restoreView === 'function') {
+      restoreView(); // ✅ Execute it.
     }
-  } else {
-    loadBatches(); // fallback
   }
 });
 document.addEventListener("DOMContentLoaded", () => {
