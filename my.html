@@ -1581,7 +1581,7 @@ function debounce(fn, delay) {
 
   
 async function loadSubjects(batchId) {
-  history.pushState({}, '', `?batch=${batchId}`);
+   pushView(() => showBatchesView()); 
   show(subjectsDiv);
   backBtn.style.display = "block";
  backBtn.onclick = () => {
