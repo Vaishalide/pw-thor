@@ -1080,10 +1080,47 @@ player.getNetworkingEngine().registerRequestFilter((type, request) => {
       this.hideLoading();
       console.log("MPD video loaded successfully with ClearKey.");
 
-    } else {
-      // HLS fallback logic
+     } else {
       if (window.Hls && Hls.isSupported()) {
-        this.hls = new Hls({ enableWorker: true, lowLatencyMode: true });
+        
+        // Get the signature parameters from the main URL
+        const signedParams = Object.fromEntries(urlObj.searchParams.entries());
+
+        // Create a custom loader class that extends the default HLS loader
+        class SignedLoader extends Hls.DefaultConfig.loader {
+          constructor(config) {
+            super(config);
+          }
+
+          load(context, config, callbacks) {
+            try {
+              // Create a URL object to safely add the signature params
+              const urlObject = new URL(context.url);
+              
+              // Add the signed parameters to the request URL
+              Object.keys(signedParams).forEach(key => {
+                urlObject.searchParams.set(key, signedParams[key]);
+              });
+              
+              // Update the context with the newly signed URL
+              context.url = urlObject.toString();
+
+            } catch(e) {
+                console.error("Error creating signed URL:", e);
+            }
+            
+            // Call the original loader's load method to continue the request
+            super.load(context, config, callbacks);
+          }
+        }
+        
+        // Initialize HLS.js with our new custom loader
+        this.hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          loader: SignedLoader // Use the custom loader
+        });
+
         this.hls.loadSource(this.videoURL);
         this.hls.attachMedia(this.video);
 
@@ -1111,7 +1148,6 @@ player.getNetworkingEngine().registerRequestFilter((type, request) => {
     alert("Failed to load video: " + error.message);
   }
 }
-
 updateShakaQualityOptions() {
   if (!this.player) return;
 
