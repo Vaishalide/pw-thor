@@ -993,94 +993,67 @@ async loadVideo() {
 
   try {
     const urlObj = new URL(this.videoURL);
+    const isMPD = urlObj.pathname.includes(".mpd");
 
-    // Check if it's a DASH/MPD file
-    if (urlObj.pathname.includes(".mpd")) {
+    if (isMPD) {
       console.log("Detected MPD file. Using Shaka Player...");
 
-      // Fetch the MPD text
-      const mpdRes = await fetch(this.videoURL);
-      if (!mpdRes.ok) throw new Error("Failed to load MPD file");
+      // ✅ Step 1: Call OTP API to get KID and ClearKey
+      const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
+      const otpData = await otpRes.json();
 
-      const mpdText = await mpdRes.text();
-      const parser = new DOMParser();
-      const mpdDoc = parser.parseFromString(mpdText, "application/xml");
-
-      // Extract the default_KID (ClearKey ID)
-      const contentProtections = mpdDoc.getElementsByTagName("ContentProtection");
-      let kid = null;
-      for (const cp of contentProtections) {
-        kid = cp.getAttribute("cenc:default_KID") || cp.getAttribute("default_KID");
-        if (kid) break;
+      if (!otpData.success || !otpData.data?.keys?.length) {
+        throw new Error("Failed to retrieve keys from OTP API.");
       }
 
-      if (!kid) throw new Error("No default_KID found in MPD.");
-      const cleanKid = kid.replace(/-/g, "");
+      // ✅ Step 2: Extract key + kid from response
+      const [keyEntry] = otpData.data.keys;
+      const [kidRaw, clearKey] = keyEntry.split(":");
+      const kid = kidRaw.toLowerCase().replace(/-/g, "");
 
-      // Fetch the ClearKey from your API
-      const keyRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?kid=${cleanKid}`);
-      const keyData = await keyRes.json();
-
-      if (!keyData.success || !keyData.data?.clearKeys || !keyData.data.clearKeys[cleanKid]) {
-        throw new Error("Failed to retrieve ClearKey.");
-      }
-
-      const clearKey = keyData.data.clearKeys[cleanKid];
-
-      // Load Shaka Player
+      // ✅ Step 3: Init Shaka
       shaka.polyfill.installAll();
       if (!shaka.Player.isBrowserSupported()) {
         throw new Error("Shaka Player not supported in this browser.");
       }
-      this.player = new shaka.Player(this.video); 
-      const player = this.player; // for convenience
+
+      this.player = new shaka.Player(this.video);
+      const player = this.player;
       const signedParams = Object.fromEntries(urlObj.searchParams.entries());
 
-player.getNetworkingEngine().registerRequestFilter((type, request) => {
-  if (
-    type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-    type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-  ) {
-    const uri = new URL(request.uris[0]);
-    Object.keys(signedParams).forEach(key => {
-      if (!uri.searchParams.has(key)) {
-        uri.searchParams.set(key, signedParams[key]);
-      }
-    });
-    request.uris[0] = uri.toString();
-  }
-});
- 
-      // Optional: Add headers for CDN tokens or auth (if needed)
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-            type === shaka.net.NetworkingEngine.RequestType.SEGMENT) {
-          // Example:
-          // request.headers['Authorization'] = 'Bearer your_token';
-          // request.headers['Referer'] = 'https://yourdomain.com';
+        if (
+          type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+          type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+        ) {
+          const uri = new URL(request.uris[0]);
+          Object.keys(signedParams).forEach(key => {
+            if (!uri.searchParams.has(key)) {
+              uri.searchParams.set(key, signedParams[key]);
+            }
+          });
+          request.uris[0] = uri.toString();
         }
       });
 
-      // Set ClearKey
       player.configure({
         drm: {
           clearKeys: {
-            [cleanKid]: clearKey
+            [kid]: clearKey
           }
         }
       });
 
-      // Handle errors
       player.addEventListener("error", e => {
         console.error("Shaka error:", e.detail);
       });
 
       await player.load(this.videoURL);
-       this.updateShakaQualityOptions();
+      this.updateShakaQualityOptions();
       this.hideLoading();
-      console.log("MPD video loaded successfully with ClearKey.");
+      console.log("✅ MPD video loaded successfully with ClearKey.");
 
-     } else {
+    } else {
       if (window.Hls && Hls.isSupported()) {
         
         // Get the signature parameters from the main URL
