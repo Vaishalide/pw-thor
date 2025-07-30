@@ -998,7 +998,7 @@ async loadVideo() {
     if (isMPD) {
       console.log("Detected MPD file. Using Shaka Player...");
 
-      // 🔄 Step 1: Fetch ClearKey from API
+      // 🔄 Step 1: Try to fetch ClearKey from API
       let clearKeys = null;
       try {
         console.time("OTP API fetch");
@@ -1022,7 +1022,7 @@ async loadVideo() {
             console.log("✅ ClearKey loaded:", clearKeys);
           }
         } else {
-          console.warn("⚠️ No keys returned from OTP API. Proceeding without ClearKey.");
+          console.warn("⚠️ No keys returned from OTP API. Will attempt playback assuming unencrypted segments.");
         }
       } catch (apiErr) {
         console.error("OTP API error:", apiErr);
@@ -1038,6 +1038,7 @@ async loadVideo() {
       this.player = new shaka.Player(this.video);
       const player = this.player;
 
+      // 🔧 Sign URL parameters
       const signedParams = Object.fromEntries(urlObj.searchParams.entries());
       player.getNetworkingEngine().registerRequestFilter((type, request) => {
         if (
@@ -1054,26 +1055,36 @@ async loadVideo() {
         }
       });
 
-      // ✅ Apply ClearKey config if present
-     player.configure({
-  drm: {
-    servers: {}, // Don't use any license server
-    clearKeys: {}, // Tell Shaka: “no decryption keys, even if you see encryption tags”
-  }
-});
-
+      // ✅ Apply DRM configuration
+      if (clearKeys) {
+        console.log("Applying ClearKey config...");
+        player.configure({
+          drm: {
+            clearKeys: clearKeys,
+            servers: {}
+          }
+        });
+      } else {
+        console.warn("No ClearKey. Forcing playback assuming unencrypted segments...");
+        player.configure({
+          drm: {
+            clearKeys: {}, // Allows playback even if ContentProtection is present
+            servers: {}
+          }
+        });
+      }
 
       player.addEventListener("error", e => {
         console.error("Shaka error event:", e.detail);
       });
 
-      // 🔄 Step 3: Load video with error isolation
+      // 🔄 Step 3: Load video
       try {
         console.log("Loading MPD via Shaka...");
         await player.load(this.videoURL);
         this.updateShakaQualityOptions();
         this.hideLoading();
-        console.log("✅ MPD loaded successfully.");
+        console.log("✅ MPD video loaded successfully.");
       } catch (loadErr) {
         console.error("❌ Shaka failed to load stream:", loadErr);
         this.hideLoading();
@@ -1147,6 +1158,7 @@ async loadVideo() {
     alert("Failed to load video: " + message);
   }
 }
+
 
 updateShakaQualityOptions() {
   if (!this.player) return;
