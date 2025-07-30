@@ -1002,9 +1002,17 @@ async loadVideo() {
       const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
       const otpData = await otpRes.json();
 
-      if (!otpData.success || !otpData.data?.keys?.length) {
-        throw new Error("Failed to retrieve keys from OTP API.");
-      }
+     let clearKeys = null;
+
+if (otpData.success && otpData.data?.keys?.length) {
+  const [keyEntry] = otpData.data.keys;
+  const [kidRaw, clearKey] = keyEntry.split(":");
+  const kid = kidRaw.toLowerCase().replace(/-/g, "");
+  clearKeys = { [kid]: clearKey };
+} else {
+  console.warn("⚠️ No keys found from OTP API. Attempting to load without ClearKey...");
+}
+
 
       // ✅ Step 2: Extract key + kid from response
       const [keyEntry] = otpData.data.keys;
