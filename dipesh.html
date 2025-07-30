@@ -1055,11 +1055,13 @@ async loadVideo() {
       });
 
       // ✅ Apply ClearKey config if present
-      player.configure({
-        drm: {
-          clearKeys: clearKeys || {}
-        }
-      });
+     player.configure({
+  drm: {
+    servers: {}, // Don't use any license server
+    clearKeys: {}, // Tell Shaka: “no decryption keys, even if you see encryption tags”
+  }
+});
+
 
       player.addEventListener("error", e => {
         console.error("Shaka error event:", e.detail);
