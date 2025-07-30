@@ -2012,15 +2012,24 @@ if (item.topic) {
     const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
     const altData = await res.json();
 
-    if (altData.success && altData.signed_url && altData.video_id) {
-      const urlParams = new URLSearchParams({
-        encrypted: altData.signed_url,
-        iv: altData.video_id
-      });
-      window.location.href = `dipesh.html?${urlParams}`;
-    } else {
-      alert("⚠️ Video not available from either source.");
-    }
+   if (altData.success && altData.signed_url && altData.video_id) {
+  const urlParams = new URLSearchParams({
+    encrypted: altData.signed_url,
+    iv: altData.video_id
+  });
+
+  // Add optional pally_data and pally_iv if present
+  if (altData.pally_data && altData.pally_iv) {
+    urlParams.append('pally', altData.pally_data);
+    urlParams.append('piv', altData.pally_iv);
+  }
+
+  // Navigate with all params
+  window.location.href = `dipesh.html?${urlParams.toString()}`;
+} else {
+  alert("⚠️ Video not available from either source.");
+}
+
 
   } catch (err) {
     console.error("Video load failed:", err);
