@@ -798,23 +798,65 @@
         this.hlsLevels = [];
         this.player = null;
         // Get video URL from query params or use default
-        const params = new URLSearchParams(window.location.search);
-        const encrypted = params.get("encrypted");
-        const iv = params.get("iv");
-        const key = "$2y$10$YgSaj3OmNEt/PLyk47Zq.uPi62W4/l2DLOKEEIkfgyxZXdITbYE1C";
+       const params = new URLSearchParams(window.location.search);
 
-        if (encrypted && iv) {
-          try {
-            const decryptedUrl = this.decryptAESCBC(encrypted, iv, key);
-            this.videoURL = decryptedUrl;
-          } catch (err) {
-            console.error("Decryption failed:", err);
-            alert("Invalid video stream.");
-          }
-        } else {
-          this.videoURL = params.get("playurl");
+const encrypted = params.get("encrypted");
+const iv = params.get("iv");
+const pallyEncrypted = params.get("pally_data");
+const pallyIv = params.get("pally_iv");
+const key = "$2y$10$YgSaj3OmNEt/PLyk47Zq.uPi62W4/l2DLOKEEIkfgyxZXdITbYE1C";
+
+// Step 1: Decrypt video URL
+if (encrypted && iv) {
+  try {
+    const decryptedUrl = this.decryptAESCBC(encrypted, iv, key);
+    this.videoURL = decryptedUrl;
+  } catch (err) {
+    console.error("Video URL decryption failed:", err);
+    alert("Invalid video stream.");
+  }
+} else {
+  this.videoURL = params.get("playurl");
+}
+
+// Step 2: Decrypt PallyCon data
+this.pallyData = null;
+this.pallyClearKeys = null;
+
+if (pallyEncrypted && pallyIv) {
+  try {
+    const decryptedPallyBase64 = this.decryptAESCBC(pallyEncrypted, pallyIv, key);
+    const decoded = atob(decryptedPallyBase64);
+    const parsed = JSON.parse(decoded);
+
+    this.pallyData = parsed;
+
+    // If the `policy` field is a base64-encoded string that might be a ClearKey kid:key map,
+    // we *attempt* to decode it (for rare fallback cases):
+    try {
+      const policyDecoded = atob(parsed.policy);
+      try {
+        const asJson = JSON.parse(policyDecoded);
+        if (typeof asJson === "object") {
+          this.pallyClearKeys = asJson;
+        }
+      } catch {
+        const [kid, key] = policyDecoded.split(":");
+        if (kid && key) {
+          this.pallyClearKeys = {
+            [kid.toLowerCase().replace(/-/g, "")]: key
+          };
         }
       }
+    } catch (err) {
+      console.warn("Policy field is not base64-decoded JSON:", err);
+    }
+
+  } catch (err) {
+    console.warn("Failed to decrypt or parse pally_data:", err);
+  }
+}
+
 
       async requestWakeLock() {
   if (this.isWakeLockSupported) {
@@ -996,20 +1038,19 @@ async loadVideo() {
     const isMPD = urlObj.pathname.includes(".mpd");
 
     if (isMPD) {
-      console.log("Detected MPD file. Using Shaka Player or Dash.js fallback...");
+      console.log("Detected MPD file. Using Shaka Player...");
 
       let clearKeys = null;
 
+      // Fetch ClearKey from OTP API
       try {
         const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
         const otpData = await otpRes.json();
         console.log("OTP API response:", otpData);
 
         if (
-          otpData &&
-          otpData.success &&
-          otpData.data &&
-          Array.isArray(otpData.data.keys) &&
+          otpData?.success &&
+          Array.isArray(otpData.data?.keys) &&
           otpData.data.keys.length > 0
         ) {
           const [keyEntry] = otpData.data.keys;
@@ -1026,70 +1067,77 @@ async loadVideo() {
         console.warn("OTP API error:", apiErr);
       }
 
-      if (clearKeys) {
-        // ✅ Shaka Player with ClearKey
-        shaka.polyfill.installAll();
-        if (!shaka.Player.isBrowserSupported()) {
-          throw new Error("Shaka Player not supported.");
+      // ✅ Setup Shaka Player
+      shaka.polyfill.installAll();
+      if (!shaka.Player.isBrowserSupported()) {
+        throw new Error("Shaka Player not supported.");
+      }
+
+      this.player = new shaka.Player(this.video);
+      const player = this.player;
+
+      // Pass signed params in requests
+      const signedParams = Object.fromEntries(urlObj.searchParams.entries());
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        if (
+          type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+          type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+        ) {
+          const uri = new URL(request.uris[0]);
+          Object.keys(signedParams).forEach(key => {
+            if (!uri.searchParams.has(key)) {
+              uri.searchParams.set(key, signedParams[key]);
+            }
+          });
+          request.uris[0] = uri.toString();
         }
 
-        this.player = new shaka.Player(this.video);
-        const player = this.player;
+        // ✅ If PallyCon Widevine is used
+        if (
+          type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
+          this.pallyData
+        ) {
+          request.headers['Content-Type'] = 'application/json';
+          request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
+        }
+      });
 
-        const signedParams = Object.fromEntries(urlObj.searchParams.entries());
-        player.getNetworkingEngine().registerRequestFilter((type, request) => {
-          if (
-            type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-            type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-          ) {
-            const uri = new URL(request.uris[0]);
-            Object.keys(signedParams).forEach(key => {
-              if (!uri.searchParams.has(key)) {
-                uri.searchParams.set(key, signedParams[key]);
-              }
-            });
-            request.uris[0] = uri.toString();
+      // Choose DRM config
+      if (this.pallyData) {
+        console.log("Using Widevine DRM via PallyCon.");
+        player.configure({
+          drm: {
+            servers: {
+              "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
+            }
           }
         });
-
+      } else if (clearKeys) {
+        console.log("Using ClearKey DRM.");
         player.configure({
           drm: {
             clearKeys: clearKeys,
             servers: {}
           }
         });
-
-        player.addEventListener("error", e => {
-          console.error("Shaka error:", e.detail);
-        });
-
-        try {
-          await player.load(this.videoURL);
-          this.updateShakaQualityOptions();
-          console.log("✅ Shaka loaded MPD successfully.");
-        } catch (err) {
-          console.error("Shaka load error:", err);
-          alert("Shaka failed to load video.");
-        }
-
-        this.hideLoading();
-        return;
       }
 
-      // 🔁 Fallback to Dash.js (if no ClearKey)
-      console.warn("No ClearKey. Falling back to Dash.js.");
-      if (dashjs && dashjs.MediaPlayer) {
-        this.dashPlayer = dashjs.MediaPlayer().create();
-        this.dashPlayer.initialize(this.video, this.videoURL, true);
-        this.dashPlayer.on("error", e => {
-          console.error("Dash.js error:", e);
-          alert("Dash.js failed to load video.");
-        });
-        this.hideLoading();
-        return;
-      } else {
-        throw new Error("Dash.js not available.");
+      // Shaka Error handling
+      player.addEventListener("error", e => {
+        console.error("Shaka error:", e.detail);
+      });
+
+      try {
+        await player.load(this.videoURL);
+        this.updateShakaQualityOptions();
+        console.log("✅ Shaka loaded MPD successfully.");
+      } catch (err) {
+        console.error("Shaka load error:", err);
+        alert("Shaka failed to load video.");
       }
+
+      this.hideLoading();
+      return;
     }
 
     // ✅ HLS (.m3u8) Handling
@@ -1157,7 +1205,6 @@ async loadVideo() {
     alert("Failed to load video: " + message);
   }
 }
-
 
 
 updateShakaQualityOptions() {
