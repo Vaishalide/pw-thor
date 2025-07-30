@@ -1039,13 +1039,12 @@ if (otpData && otpData.success && otpData.data && Array.isArray(otpData.data.key
         }
       });
 
-      player.configure({
-        drm: {
-          clearKeys: {
-            [kid]: clearKey
-          }
-        }
-      });
+     player.configure({
+  drm: {
+    clearKeys: clearKeys || {}
+  }
+});
+
 
       player.addEventListener("error", e => {
         console.error("Shaka error:", e.detail);
