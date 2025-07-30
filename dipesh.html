@@ -1117,11 +1117,15 @@ if (otpData && otpData.success && otpData.data && Array.isArray(otpData.data.key
         throw new Error("Unsupported video format.");
       }
     }
-  } catch (error) {
-    console.error("Video loading error:", error);
-    this.hideLoading();
-    alert("Failed to load video: " + error.message);
-  }
+ } catch (error) {
+  console.error("Video loading error:", error);
+  this.hideLoading();
+
+  // Show a fallback message if error.message is undefined
+  const message = error?.message || "Unknown error occurred.";
+  alert("Failed to load video: " + message);
+}
+
 }
 updateShakaQualityOptions() {
   if (!this.player) return;
