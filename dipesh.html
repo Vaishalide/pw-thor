@@ -1002,9 +1002,9 @@ async loadVideo() {
       const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
       const otpData = await otpRes.json();
 
-     let clearKeys = null;
+   let clearKeys = null;
 
-if (otpData.success && otpData.data?.keys?.length) {
+if (otpData && otpData.success && otpData.data && Array.isArray(otpData.data.keys) && otpData.data.keys.length > 0) {
   const [keyEntry] = otpData.data.keys;
   const [kidRaw, clearKey] = keyEntry.split(":");
   const kid = kidRaw.toLowerCase().replace(/-/g, "");
@@ -1013,11 +1013,6 @@ if (otpData.success && otpData.data?.keys?.length) {
   console.warn("⚠️ No keys found from OTP API. Attempting to load without ClearKey...");
 }
 
-
-      // ✅ Step 2: Extract key + kid from response
-      const [keyEntry] = otpData.data.keys;
-      const [kidRaw, clearKey] = keyEntry.split(":");
-      const kid = kidRaw.toLowerCase().replace(/-/g, "");
 
       // ✅ Step 3: Init Shaka
       shaka.polyfill.installAll();
