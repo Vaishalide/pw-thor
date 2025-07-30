@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
- 
+ <script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.min.js"></script>
@@ -996,15 +996,13 @@ async loadVideo() {
     const isMPD = urlObj.pathname.includes(".mpd");
 
     if (isMPD) {
-      console.log("Detected MPD file. Using Shaka Player...");
+      console.log("Detected MPD file. Using Shaka Player or Dash.js fallback...");
 
-      // 🔄 Step 1: Try to fetch ClearKey from API
       let clearKeys = null;
+
       try {
-        console.time("OTP API fetch");
         const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
         const otpData = await otpRes.json();
-        console.timeEnd("OTP API fetch");
         console.log("OTP API response:", otpData);
 
         if (
@@ -1019,134 +1017,135 @@ async loadVideo() {
           if (kidRaw && clearKey) {
             const kid = kidRaw.toLowerCase().replace(/-/g, "");
             clearKeys = { [kid]: clearKey };
-            console.log("✅ ClearKey loaded:", clearKeys);
+            console.log("✅ ClearKey found:", clearKeys);
           }
         } else {
-          console.warn("⚠️ No keys returned from OTP API. Will attempt playback assuming unencrypted segments.");
+          console.warn("⚠️ No keys returned from OTP API.");
         }
       } catch (apiErr) {
-        console.error("OTP API error:", apiErr);
-        console.warn("Proceeding without ClearKey.");
+        console.warn("OTP API error:", apiErr);
       }
 
-      // 🔄 Step 2: Init Shaka Player
-      shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) {
-        throw new Error("Shaka Player not supported in this browser.");
-      }
-
-      this.player = new shaka.Player(this.video);
-      const player = this.player;
-
-      // 🔧 Sign URL parameters
-      const signedParams = Object.fromEntries(urlObj.searchParams.entries());
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (
-          type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-          type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-        ) {
-          const uri = new URL(request.uris[0]);
-          Object.keys(signedParams).forEach(key => {
-            if (!uri.searchParams.has(key)) {
-              uri.searchParams.set(key, signedParams[key]);
-            }
-          });
-          request.uris[0] = uri.toString();
-        }
-      });
-
-      // ✅ Apply DRM configuration
       if (clearKeys) {
-        console.log("Applying ClearKey config...");
+        // ✅ Shaka Player with ClearKey
+        shaka.polyfill.installAll();
+        if (!shaka.Player.isBrowserSupported()) {
+          throw new Error("Shaka Player not supported.");
+        }
+
+        this.player = new shaka.Player(this.video);
+        const player = this.player;
+
+        const signedParams = Object.fromEntries(urlObj.searchParams.entries());
+        player.getNetworkingEngine().registerRequestFilter((type, request) => {
+          if (
+            type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+            type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+          ) {
+            const uri = new URL(request.uris[0]);
+            Object.keys(signedParams).forEach(key => {
+              if (!uri.searchParams.has(key)) {
+                uri.searchParams.set(key, signedParams[key]);
+              }
+            });
+            request.uris[0] = uri.toString();
+          }
+        });
+
         player.configure({
           drm: {
             clearKeys: clearKeys,
             servers: {}
           }
         });
-      } else {
-        console.warn("No ClearKey. Forcing playback assuming unencrypted segments...");
-        player.configure({
-          drm: {
-            clearKeys: {}, // Allows playback even if ContentProtection is present
-            servers: {}
-          }
+
+        player.addEventListener("error", e => {
+          console.error("Shaka error:", e.detail);
         });
-      }
 
-      player.addEventListener("error", e => {
-        console.error("Shaka error event:", e.detail);
-      });
+        try {
+          await player.load(this.videoURL);
+          this.updateShakaQualityOptions();
+          console.log("✅ Shaka loaded MPD successfully.");
+        } catch (err) {
+          console.error("Shaka load error:", err);
+          alert("Shaka failed to load video.");
+        }
 
-      // 🔄 Step 3: Load video
-      try {
-        console.log("Loading MPD via Shaka...");
-        await player.load(this.videoURL);
-        this.updateShakaQualityOptions();
         this.hideLoading();
-        console.log("✅ MPD video loaded successfully.");
-      } catch (loadErr) {
-        console.error("❌ Shaka failed to load stream:", loadErr);
-        this.hideLoading();
-        alert("Failed to load video stream. It may require a ClearKey or be invalid.");
         return;
       }
 
-    } else {
-      // ✅ HLS Handling
-      if (window.Hls && Hls.isSupported()) {
-        console.log("Detected HLS stream. Using HLS.js...");
-        const signedParams = Object.fromEntries(urlObj.searchParams.entries());
+      // 🔁 Fallback to Dash.js (if no ClearKey)
+      console.warn("No ClearKey. Falling back to Dash.js.");
+      if (dashjs && dashjs.MediaPlayer) {
+        this.dashPlayer = dashjs.MediaPlayer().create();
+        this.dashPlayer.initialize(this.video, this.videoURL, true);
+        this.dashPlayer.on("error", e => {
+          console.error("Dash.js error:", e);
+          alert("Dash.js failed to load video.");
+        });
+        this.hideLoading();
+        return;
+      } else {
+        throw new Error("Dash.js not available.");
+      }
+    }
 
-        class SignedLoader extends Hls.DefaultConfig.loader {
-          constructor(config) {
-            super(config);
-          }
+    // ✅ HLS (.m3u8) Handling
+    if (window.Hls && Hls.isSupported()) {
+      console.log("Detected HLS stream. Using Hls.js...");
+      const signedParams = Object.fromEntries(urlObj.searchParams.entries());
 
-          load(context, config, callbacks) {
-            try {
-              const urlObject = new URL(context.url);
-              Object.keys(signedParams).forEach(key => {
-                urlObject.searchParams.set(key, signedParams[key]);
-              });
-              context.url = urlObject.toString();
-            } catch (e) {
-              console.error("SignedLoader URL error:", e);
-            }
-            super.load(context, config, callbacks);
-          }
+      class SignedLoader extends Hls.DefaultConfig.loader {
+        constructor(config) {
+          super(config);
         }
 
-        this.hls = new Hls({
-          enableWorker: true,
-          lowLatencyMode: true,
-          loader: SignedLoader
-        });
-
-        this.hls.loadSource(this.videoURL);
-        this.hls.attachMedia(this.video);
-
-        this.hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-          console.log("✅ HLS manifest parsed");
-          this.hlsLevels = data.levels;
-          this.updateQualityOptions();
-          this.hideLoading();
-        });
-
-        this.hls.on(Hls.Events.ERROR, (event, data) => {
-          console.error("HLS error:", data);
-          if (data.fatal) {
-            this.hls.destroy();
-            alert("Fatal HLS playback error.");
+        load(context, config, callbacks) {
+          try {
+            const urlObject = new URL(context.url);
+            Object.keys(signedParams).forEach(key => {
+              urlObject.searchParams.set(key, signedParams[key]);
+            });
+            context.url = urlObject.toString();
+          } catch (e) {
+            console.error("SignedLoader URL error:", e);
           }
-        });
-
-      } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
-        this.video.src = this.videoURL;
-        this.hideLoading();
-      } else {
-        throw new Error("Unsupported video format. Neither MPD nor HLS supported.");
+          super.load(context, config, callbacks);
+        }
       }
+
+      this.hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+        loader: SignedLoader
+      });
+
+      this.hls.loadSource(this.videoURL);
+      this.hls.attachMedia(this.video);
+
+      this.hls.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
+        console.log("✅ HLS manifest parsed");
+        this.hlsLevels = data.levels;
+        this.updateQualityOptions();
+        this.hideLoading();
+      });
+
+      this.hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("HLS error:", data);
+        if (data.fatal) {
+          this.hls.destroy();
+          alert("Fatal HLS playback error.");
+        }
+      });
+
+    } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Fallback native HLS (Safari)
+      this.video.src = this.videoURL;
+      this.hideLoading();
+    } else {
+      throw new Error("Unsupported video format.");
     }
 
   } catch (error) {
@@ -1158,6 +1157,7 @@ async loadVideo() {
     alert("Failed to load video: " + message);
   }
 }
+
 
 
 updateShakaQualityOptions() {
