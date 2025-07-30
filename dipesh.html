@@ -785,80 +785,80 @@
         this.speedSelector = document.getElementById("speedSelector");
       }
 
-      initializeState() {
-        this.isFullscreen = false;
-        this.controlsVisible = true;
-        this.hideTimer = null;
-        this.isMouseMoving = false;
-        this.mouseMoveTimeout = null;
-        this.orientationLocked = false;
-        this.wakeLock = null;
-        this.isWakeLockSupported = 'wakeLock' in navigator;
-        this.availableQualities = [];
-        this.hlsLevels = [];
-        this.player = null;
-        // Get video URL from query params or use default
-       const params = new URLSearchParams(window.location.search);
+    // ✅ Good: This is your state initialization method
+initializeState() {
+  this.isFullscreen = false;
+  this.controlsVisible = true;
+  this.hideTimer = null;
+  this.isMouseMoving = false;
+  this.mouseMoveTimeout = null;
+  this.orientationLocked = false;
+  this.wakeLock = null;
+  this.isWakeLockSupported = 'wakeLock' in navigator;
+  this.availableQualities = [];
+  this.hlsLevels = [];
+  this.player = null;
 
-const encrypted = params.get("encrypted");
-const iv = params.get("iv");
-const pallyEncrypted = params.get("pally_data");
-const pallyIv = params.get("pally_iv");
-const key = "$2y$10$YgSaj3OmNEt/PLyk47Zq.uPi62W4/l2DLOKEEIkfgyxZXdITbYE1C";
+  const params = new URLSearchParams(window.location.search);
+  const encrypted = params.get("encrypted");
+  const iv = params.get("iv");
+  const pallyEncrypted = params.get("pally_data");
+  const pallyIv = params.get("pally_iv");
+  const key = "$2y$10$YgSaj3OmNEt/PLyk47Zq.uPi62W4/l2DLOKEEIkfgyxZXdITbYE1C";
 
-// Step 1: Decrypt video URL
-if (encrypted && iv) {
-  try {
-    const decryptedUrl = this.decryptAESCBC(encrypted, iv, key);
-    this.videoURL = decryptedUrl;
-  } catch (err) {
-    console.error("Video URL decryption failed:", err);
-    alert("Invalid video stream.");
-  }
-} else {
-  this.videoURL = params.get("playurl");
-}
-
-// Step 2: Decrypt PallyCon data
-this.pallyData = null;
-this.pallyClearKeys = null;
-
-if (pallyEncrypted && pallyIv) {
-  try {
-    const decryptedPallyBase64 = this.decryptAESCBC(pallyEncrypted, pallyIv, key);
-    const decoded = atob(decryptedPallyBase64);
-    const parsed = JSON.parse(decoded);
-
-    this.pallyData = parsed;
-
-    // If the `policy` field is a base64-encoded string that might be a ClearKey kid:key map,
-    // we *attempt* to decode it (for rare fallback cases):
+  // Decrypt video URL
+  if (encrypted && iv) {
     try {
-      const policyDecoded = atob(parsed.policy);
-      try {
-        const asJson = JSON.parse(policyDecoded);
-        if (typeof asJson === "object") {
-          this.pallyClearKeys = asJson;
-        }
-      } catch {
-        const [kid, key] = policyDecoded.split(":");
-        if (kid && key) {
-          this.pallyClearKeys = {
-            [kid.toLowerCase().replace(/-/g, "")]: key
-          };
-        }
-      }
+      const decryptedUrl = this.decryptAESCBC(encrypted, iv, key);
+      this.videoURL = decryptedUrl;
     } catch (err) {
-      console.warn("Policy field is not base64-decoded JSON:", err);
+      console.error("Video URL decryption failed:", err);
+      alert("Invalid video stream.");
     }
+  } else {
+    this.videoURL = params.get("playurl");
+  }
 
-  } catch (err) {
-    console.warn("Failed to decrypt or parse pally_data:", err);
+  // Decrypt PallyCon data
+  this.pallyData = null;
+  this.pallyClearKeys = null;
+
+  if (pallyEncrypted && pallyIv) {
+    try {
+      const decryptedPallyBase64 = this.decryptAESCBC(pallyEncrypted, pallyIv, key);
+      const decoded = atob(decryptedPallyBase64);
+      const parsed = JSON.parse(decoded);
+
+      this.pallyData = parsed;
+
+      // Try to extract ClearKey from policy if applicable
+      try {
+        const policyDecoded = atob(parsed.policy);
+        try {
+          const asJson = JSON.parse(policyDecoded);
+          if (typeof asJson === "object") {
+            this.pallyClearKeys = asJson;
+          }
+        } catch {
+          const [kid, key] = policyDecoded.split(":");
+          if (kid && key) {
+            this.pallyClearKeys = {
+              [kid.toLowerCase().replace(/-/g, "")]: key
+            };
+          }
+        }
+      } catch (err) {
+        console.warn("Policy field is not base64-decoded JSON:", err);
+      }
+
+    } catch (err) {
+      console.warn("Failed to decrypt or parse pally_data:", err);
+    }
   }
 }
 
-
-      async requestWakeLock() {
+// ✅ Good: Define this *outside* of initializeState()
+async requestWakeLock() {
   if (this.isWakeLockSupported) {
     try {
       this.wakeLock = await navigator.wakeLock.request('screen');
@@ -869,7 +869,6 @@ if (pallyEncrypted && pallyIv) {
         this.requestWakeLock(); // Attempt to re-acquire
       });
 
-      // Re-acquire on visibility change
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible" && !this.video.paused) {
           this.requestWakeLock();
@@ -882,15 +881,15 @@ if (pallyEncrypted && pallyIv) {
   }
 }
 
+releaseWakeLock() {
+  if (this.wakeLock) {
+    this.wakeLock.release().then(() => {
+      this.wakeLock = null;
+      console.log("Wake lock manually released");
+    });
+  }
+}
 
-      releaseWakeLock() {
-        if (this.wakeLock) {
-          this.wakeLock.release().then(() => {
-            this.wakeLock = null;
-            console.log("Wake lock manually released");
-          });
-        }
-      }
 
       setupEventListeners() {
         // Video events
