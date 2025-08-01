@@ -1702,7 +1702,7 @@ function appendCard(container, title, image, onClick, batchId) {
 
 
 
- async function loadBatches({ reset = false } = {}) {
+async function loadBatches({ reset = false } = {}) {
   if (isLoading || (!hasMore && !reset)) return;
 
   isLoading = true;
@@ -1726,13 +1726,31 @@ function appendCard(container, title, image, onClick, batchId) {
       batchId: b._id
     }));
 
-    if (reset && newBatches.length === 0) {
+    // 🔥 Merge favorited batches that are missing
+    const favorites = getFavoriteBatches();
+    const missingFavs = favorites
+      .filter(fid => !allBatches.find(b => b.batchId === fid) && !newBatches.find(b => b._id === fid));
+
+    // 🧠 If we’re resetting the list, fetch those missing favorites manually
+    if (reset && missingFavs.length > 0) {
+      const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${missingFavs.join(',')}`);
+      const favData = await favRes.json();
+      const favBatches = favData.batches.map(b => ({
+        name: b.name,
+        image: b.previewImage,
+        batchId: b._id
+      }));
+      allBatches = [...favBatches, ...newBatches];
+    } else {
+      allBatches = reset ? newBatches : allBatches.concat(newBatches);
+    }
+
+    if (reset && allBatches.length === 0) {
       renderNoResults();
       hasMore = false;
       loadMoreBtnWrapper.style.display = "none";
     } else {
-      allBatches = reset ? newBatches : allBatches.concat(newBatches);
-     renderBatches(allBatches, { append: false });
+      renderBatches(allBatches, { append: false });
 
       if (newBatches.length < 12) {
         hasMore = false;
@@ -1749,6 +1767,7 @@ function appendCard(container, title, image, onClick, batchId) {
     showLoader(false);
   }
 }
+
 
    loadMoreBtn.addEventListener("click", () => {
   loadBatches();
