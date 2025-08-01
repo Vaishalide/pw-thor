@@ -1684,19 +1684,25 @@ function appendCard(container, title, image, onClick, batchId) {
     <div class="card-title">${title}</div>
   `;
 
-  // Image click → open subjects
-  div.querySelector(".card-image-wrapper img")?.addEventListener("click", onClick);
-  container.appendChild(div);
+  // ✅ Make entire card clickable (excluding heart icon)
+  div.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("heart-icon")) {
+      onClick();
+    }
+  });
 
-  // Handle heart icon toggle
+  // ❤️ Heart icon toggle
   const heart = div.querySelector(".heart-icon");
   heart.onclick = (e) => {
-    e.stopPropagation();
+    e.stopPropagation(); // prevent card click
     toggleFavoriteBatch(batchId);
     heart.classList.toggle("active");
     renderBatches(allBatches, { append: false }); // rerender full card list
   };
+
+  container.appendChild(div);
 }
+
 
 
 
