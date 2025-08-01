@@ -1733,19 +1733,20 @@ async function loadBatches({ reset = false } = {}) {
       !newBatches.find(b => b.batchId === fid)
     );
 
-    if (reset && missingFavs.length > 0) {
-      const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${missingFavs.join(',')}`);
-      const favData = await favRes.json();
-      const favBatches = favData.batches.map(b => ({
-        name: b.name,
-        image: b.previewImage,
-        batchId: b._id
-      }));
+    if (reset && currentQuery === "" && missingFavs.length > 0) {
+  const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${missingFavs.join(',')}`);
+  const favData = await favRes.json();
+  const favBatches = favData.batches.map(b => ({
+    name: b.name,
+    image: b.previewImage,
+    batchId: b._id
+  }));
 
-      allBatches = [...favBatches, ...newBatches];
-    } else {
-      allBatches = reset ? newBatches : allBatches.concat(newBatches);
-    }
+  allBatches = [...favBatches, ...newBatches];
+} else {
+  allBatches = reset ? newBatches : allBatches.concat(newBatches);
+}
+
 
     if (reset && allBatches.length === 0) {
       renderNoResults();
