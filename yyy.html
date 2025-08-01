@@ -1721,15 +1721,16 @@ async function loadBatches({ reset = false } = {}) {
     let favBatches = [];
 
     // 🔥 Always load all favorited batches if any
-    if (favorites.length > 0) {
-      const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
-      const favData = await favRes.json();
-      favBatches = favData.batches.map(b => ({
-        name: b.name,
-        image: b.previewImage,
-        batchId: b._id
-      }));
-    }
+   if (favorites.length > 0 && !currentQuery) {
+  // Load all favorites only if NOT searching
+  const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
+  const favData = await favRes.json();
+  favBatches = favData.batches.map(b => ({
+    name: b.name,
+    image: b.previewImage,
+    batchId: b._id
+  }));
+}
 
     // 🔁 Load regular paginated batches
     const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
