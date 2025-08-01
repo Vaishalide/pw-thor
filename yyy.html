@@ -1670,29 +1670,33 @@ function clearAll() {
       div.style.display = div.id === "lectureSection" ? "block" : "grid";
     }
 
-   function appendCard(container, title, image, onClick, batchId) {
+function appendCard(container, title, image, onClick, batchId) {
   const isFav = isFavoriteBatch(batchId);
 
   const div = document.createElement("div");
   div.className = "card";
   div.innerHTML = `
     <div class="card-image-wrapper">
-      <span class="heart-icon ${isFav ? "active" : ""}" data-batchid="${batchId}">❤️</span>
+      <span class="heart-icon ${isFav ? "active" : ""}" data-batchid="${batchId}">&#10084;</span>
       ${image ? `<img src="${image}" alt="${title}" />` : ""}
     </div>
     <div class="card-title">${title}</div>
   `;
+
+  // Image click → open subjects
   div.querySelector(".card-image-wrapper img")?.addEventListener("click", onClick);
   container.appendChild(div);
 
-  // Heart toggle
+  // Handle heart icon toggle
   const heart = div.querySelector(".heart-icon");
   heart.onclick = (e) => {
     e.stopPropagation();
     toggleFavoriteBatch(batchId);
-    showBatchesView(); // Rerender to update order
+    heart.classList.toggle("active");
+    renderBatches(allBatches, { append: false }); // rerender full card list
   };
 }
+
 
 
  async function loadBatches({ reset = false } = {}) {
@@ -1759,13 +1763,11 @@ function renderBatches(batches, { append = false } = {}) {
     return aFav === bFav ? 0 : aFav ? -1 : 1;
   });
 
-  sorted.forEach(batch => {
-    if (!favorites.length || favorites.includes(batch.batchId)) {
+ sorted.forEach(batch => {
       appendCard(main, batch.name, batch.image, () => {
         currentBatchName = batch.name;
         loadSubjects(batch.batchId);
       }, batch.batchId);
-    }
   });
 }
     
