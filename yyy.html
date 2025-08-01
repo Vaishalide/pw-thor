@@ -1717,23 +1717,13 @@ async function loadBatches({ reset = false } = {}) {
 
   try {
     const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
-    const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
-    const data = await res.json();
-
-    let newBatches = data.batches.map(b => ({
-      name: b.name,
-      image: b.previewImage,
-      batchId: b._id
-    }));
-
-    // 🔥 Fetch favorite batches from localStorage
     const favorites = getFavoriteBatches();
     let favBatches = [];
 
-    if (reset && favorites.length > 0) {
+    // 🔥 Always load all favorited batches if any
+    if (favorites.length > 0) {
       const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
       const favData = await favRes.json();
-
       favBatches = favData.batches.map(b => ({
         name: b.name,
         image: b.previewImage,
@@ -1741,16 +1731,23 @@ async function loadBatches({ reset = false } = {}) {
       }));
     }
 
-    // 🧠 Remove duplicates before merging
-    const seen = new Set();
-    const mergeUnique = (list) =>
-      list.filter(b => {
-        if (seen.has(b.batchId)) return false;
-        seen.add(b.batchId);
-        return true;
-      });
+    // 🔁 Load regular paginated batches
+    const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
+    const data = await res.json();
+    const newBatches = data.batches.map(b => ({
+      name: b.name,
+      image: b.previewImage,
+      batchId: b._id
+    }));
 
-    const merged = mergeUnique([...favBatches, ...(reset ? newBatches : allBatches.concat(newBatches))]);
+    // 🧠 Merge unique batches (favorites first)
+    const seen = new Set();
+    const merged = [...favBatches, ...(reset ? newBatches : allBatches.concat(newBatches))].filter(b => {
+      if (seen.has(b.batchId)) return false;
+      seen.add(b.batchId);
+      return true;
+    });
+
     allBatches = merged;
 
     if (reset && allBatches.length === 0) {
@@ -1775,8 +1772,6 @@ async function loadBatches({ reset = false } = {}) {
     showLoader(false);
   }
 }
-
-
 
    loadMoreBtn.addEventListener("click", () => {
   loadBatches();
