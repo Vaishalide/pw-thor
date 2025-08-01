@@ -673,6 +673,96 @@
   gap: 6px;
 }
 
+#lectureContent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;          /* ↑ slightly increased from 16px */
+  padding: 8px 12px;  /* ↓ reduced from 16px */
+}
+
+
+.lecture-card {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  width: 100%;
+  max-width: 380px; /* ← increased from 320px to 380px */
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.lecture-card:hover {
+  transform: translateY(-3px);
+}
+
+.lecture-card-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.lecture-thumbnail {
+  position: relative;
+  width: 100%;
+}
+.lecture-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.status-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lecture-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lecture-title {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.lecture-meta {
+  font-size: 0.85rem;
+  color: #aaa;
+  display: flex;
+  justify-content: space-between;
+}
+.icon-calendar::before {
+  content: "📅";
+  margin-right: 5px;
+}
+.icon-clock::before {
+  content: "⏱";
+  margin-right: 5px;
+}
+
+@media screen and (max-width: 600px) {
+  .lecture-card {
+    max-width: 100%;
+  }
+}
+
 
     .today-scroll-container {
   display: flex;
@@ -1960,87 +2050,100 @@ if (item.topic) {
     </div>
   `;
 }
-           else {
-            const vid = item.videoDetails || item;
-            const title = item.topic || vid.name || "Untitled Video";
-            const image = vid.image || vid.thumbnail || "";
-            const mediaUrl = vid.hls_url || item.url || "";
-            div.innerHTML = `
-              ${image ? `<img src="${image}" alt="${title}" />` : ""}
-              <div class="card-title">${title}</div>
-            `;
+else {
+  const vid = item.videoDetails || item;
+  const title = item.topic || vid.name || "Untitled Video";
+  const image = vid.image || vid.thumbnail || "";
+  const mediaUrl = vid.hls_url || item.url || "";
+  const duration = vid.duration || "00:00:00";
 
- div.onclick = async () => {
-  showLoader(true);
-  try {
-    let finalUrl = mediaUrl;
-    const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
-
-    if (isYouTube) {
-      window.open(finalUrl, '_blank');
-      return;
-    }
-
-    const realVid = item.videoDetails || item;
-    const batch = currentBatchName || 'Unknown Batch';
-    const subject = currentSubjectName || 'Unknown Subject';
-    const topic = currentTopicName || 'General';
-    const title = item.topic || realVid.name || '';
-
-    const params = new URLSearchParams({ batch, subject, topic, title });
-
-    const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-    const data = await resp.json();
-
-    if (data.youtube && data.videoUrl) {
-      window.open(data.videoUrl, '_blank');
-      return;
-    }
-
-    // ✅ Primary success
-    if (data.success && data.signed_url && data.video_id) {
-      const urlParams = new URLSearchParams({
-        encrypted: data.signed_url,
-        iv: data.video_id
-      });
-      window.location.href = `dipesh.html?${urlParams}`;
-      return;
-    }
-
-    // ❗ Fallback API using batchId and scheduleId
-    const scheduleId = item._id;
-    const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
-    const altData = await res.json();
-
-   if (altData.success && altData.signed_url && altData.video_id) {
-  const urlParams = new URLSearchParams({
-    encrypted: altData.signed_url,
-    iv: altData.video_id
+  const startTime = new Date(item.startTime);
+  const formattedDate = startTime.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
   });
 
-  // Add optional pally_data and pally_iv if present
-  if (altData.pally_data && altData.pally_iv) {
-    urlParams.append('pally', altData.pally_data);
-    urlParams.append('piv', altData.pally_iv);
-  }
+  div.className = "lecture-card";
+  div.innerHTML = `
+    <div class="lecture-card-inner">
+      <div class="lecture-thumbnail">
+        <img src="${image}" alt="${title}" class="lecture-image" />
+        ${item.status === "COMPLETED" ? `
+          <div class="status-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#00cc66" viewBox="0 0 16 16">
+              <circle cx="8" cy="8" r="8" fill="white"/>
+              <path fill="#00cc66" d="M13.485 4.485a1 1 0 0 0-1.414-1.414L6.5 8.643 4.929 7.071a1 1 0 0 0-1.414 1.415l2.586 2.586a1 1 0 0 0 1.415 0l6.97-6.97z"/>
+            </svg>
+          </div>` : ""}
+      </div>
+      <div class="lecture-info">
+        <h3 class="lecture-title">${title}</h3>
+        <div class="lecture-meta">
+          <span class="lecture-date"><i class="icon-calendar"></i> ${formattedDate}</span>
+          <span class="lecture-duration"><i class="icon-clock"></i> ${duration}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  div.onclick = async () => {
+    showLoader(true);
+    try {
+      let finalUrl = mediaUrl;
+      const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
+      if (isYouTube) return window.open(finalUrl, '_blank');
 
-  // Navigate with all params
-  window.location.href = `dipesh.html?${urlParams.toString()}`;
-} else {
-  alert("⚠️ Video not available from either source.");
+      const realVid = item.videoDetails || item;
+      const params = new URLSearchParams({
+        batch: currentBatchName || 'Unknown Batch',
+        subject: currentSubjectName || 'Unknown Subject',
+        topic: currentTopicName || 'General',
+        title: item.topic || realVid.name || ''
+      });
+
+      const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+      const data = await resp.json();
+
+      if (data.youtube && data.videoUrl) {
+        window.open(data.videoUrl, '_blank');
+        return;
+      }
+
+      if (data.success && data.signed_url && data.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: data.signed_url,
+          iv: data.video_id
+        });
+        window.location.href = `dipesh.html?${urlParams}`;
+        return;
+      }
+
+      const scheduleId = item._id;
+      const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+      const altData = await res.json();
+
+      if (altData.success && altData.signed_url && altData.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: altData.signed_url,
+          iv: altData.video_id
+        });
+        if (altData.pally_data && altData.pally_iv) {
+          urlParams.append('pally', altData.pally_data);
+          urlParams.append('piv', altData.pally_iv);
+        }
+        window.location.href = `dipesh.html?${urlParams.toString()}`;
+      } else {
+        alert("⚠️ Video not available from either source.");
+      }
+    } catch (err) {
+      console.error("Video load failed:", err);
+      alert("⚠️ Failed to load video.");
+    } finally {
+      showLoader(false);
+    }
+  };
 }
-
-
-  } catch (err) {
-    console.error("Video load failed:", err);
-    alert("⚠️ Failed to load video.");
-  } finally {
-    showLoader(false);
-  }
-};
-
-           }
-          lectureContent.appendChild(div);
+       lectureContent.appendChild(div);
         });
       } catch (err) {
         console.error("Failed to load content:", err);
