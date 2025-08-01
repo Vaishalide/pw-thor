@@ -1720,33 +1720,38 @@ async function loadBatches({ reset = false } = {}) {
     const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
     const data = await res.json();
 
-    const newBatches = data.batches.map(b => ({
+    let newBatches = data.batches.map(b => ({
       name: b.name,
       image: b.previewImage,
       batchId: b._id
     }));
 
-    // 🔥 Merge favorited batches that are missing
+    // 🔥 Fetch favorite batches from localStorage
     const favorites = getFavoriteBatches();
-    const missingFavs = favorites.filter(fid =>
-      !allBatches.find(b => b.batchId === fid) &&
-      !newBatches.find(b => b.batchId === fid)
-    );
+    let favBatches = [];
 
-    if (reset && currentQuery === "" && missingFavs.length > 0) {
-  const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${missingFavs.join(',')}`);
-  const favData = await favRes.json();
-  const favBatches = favData.batches.map(b => ({
-    name: b.name,
-    image: b.previewImage,
-    batchId: b._id
-  }));
+    if (reset && favorites.length > 0) {
+      const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
+      const favData = await favRes.json();
 
-  allBatches = [...favBatches, ...newBatches];
-} else {
-  allBatches = reset ? newBatches : allBatches.concat(newBatches);
-}
+      favBatches = favData.batches.map(b => ({
+        name: b.name,
+        image: b.previewImage,
+        batchId: b._id
+      }));
+    }
 
+    // 🧠 Remove duplicates before merging
+    const seen = new Set();
+    const mergeUnique = (list) =>
+      list.filter(b => {
+        if (seen.has(b.batchId)) return false;
+        seen.add(b.batchId);
+        return true;
+      });
+
+    const merged = mergeUnique([...favBatches, ...(reset ? newBatches : allBatches.concat(newBatches))]);
+    allBatches = merged;
 
     if (reset && allBatches.length === 0) {
       renderNoResults();
@@ -1770,6 +1775,7 @@ async function loadBatches({ reset = false } = {}) {
     showLoader(false);
   }
 }
+
 
 
    loadMoreBtn.addEventListener("click", () => {
