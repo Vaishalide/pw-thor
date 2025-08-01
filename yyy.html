@@ -1728,10 +1728,11 @@ async function loadBatches({ reset = false } = {}) {
 
     // 🔥 Merge favorited batches that are missing
     const favorites = getFavoriteBatches();
-    const missingFavs = favorites
-      .filter(fid => !allBatches.find(b => b.batchId === fid) && !newBatches.find(b => b._id === fid));
+    const missingFavs = favorites.filter(fid =>
+      !allBatches.find(b => b.batchId === fid) &&
+      !newBatches.find(b => b.batchId === fid)
+    );
 
-    // 🧠 If we’re resetting the list, fetch those missing favorites manually
     if (reset && missingFavs.length > 0) {
       const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${missingFavs.join(',')}`);
       const favData = await favRes.json();
@@ -1740,6 +1741,7 @@ async function loadBatches({ reset = false } = {}) {
         image: b.previewImage,
         batchId: b._id
       }));
+
       allBatches = [...favBatches, ...newBatches];
     } else {
       allBatches = reset ? newBatches : allBatches.concat(newBatches);
