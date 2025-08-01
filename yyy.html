@@ -768,15 +768,16 @@
   top: 8px;
   left: 8px;
   font-size: 18px;
-  color: #aaa;
+  color: white;
   cursor: pointer;
   z-index: 1;
-  transition: transform 0.2s;
+  transition: transform 0.2s, color 0.3s;
 }
 
 .heart-icon.active {
   color: red;
 }
+
 
 .card-image-wrapper {
   position: relative;
@@ -1620,18 +1621,20 @@ let currentQuery = "";
   const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
 const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
 
-   function showBatchesView() {
-  // ✅ No pushView(). This function now ONLY renders the batches view.
+ function showBatchesView() {
   clearAll(); 
-  main.style.display = "grid"; // Ensure the main grid is visible
-  document.getElementById("todayWrapper").style.display = 'block'; // Show today's wrapper on main page
-  
-  currentPage = 1;
+  main.style.display = "grid";
+  document.getElementById("todayWrapper").style.display = 'block';
+
+  searchInput.style.display = "block"; // ✅ Show search bar again
+  searchInput.value = "";              // ✅ Clear previous search
   currentQuery = "";
+  currentPage = 1;
   hasMore = true;
   allBatches = [];
   loadBatches({ reset: true });
 }
+
 
 
     function showLoader(show) {
@@ -1729,7 +1732,7 @@ function appendCard(container, title, image, onClick, batchId) {
       loadMoreBtnWrapper.style.display = "none";
     } else {
       allBatches = reset ? newBatches : allBatches.concat(newBatches);
-      renderBatches(newBatches, { append: !reset });
+     renderBatches(allBatches, { append: false });
 
       if (newBatches.length < 12) {
         hasMore = false;
