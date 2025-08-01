@@ -763,6 +763,24 @@
   }
 }
 
+.heart-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 18px;
+  color: #aaa;
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s;
+}
+
+.heart-icon.active {
+  color: red;
+}
+
+.card-image-wrapper {
+  position: relative;
+}
 
     .today-scroll-container {
   display: flex;
@@ -1652,16 +1670,30 @@ function clearAll() {
       div.style.display = div.id === "lectureSection" ? "block" : "grid";
     }
 
-    function appendCard(container, title, image, onClick) {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        ${image ? `<img src="${image}" alt="${title}" />` : ""}
-        <div class="card-title">${title}</div>
-      `;
-      div.onclick = onClick;
-      container.appendChild(div);
-    }
+   function appendCard(container, title, image, onClick, batchId) {
+  const isFav = isFavoriteBatch(batchId);
+
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+    <div class="card-image-wrapper">
+      <span class="heart-icon ${isFav ? "active" : ""}" data-batchid="${batchId}">❤️</span>
+      ${image ? `<img src="${image}" alt="${title}" />` : ""}
+    </div>
+    <div class="card-title">${title}</div>
+  `;
+  div.querySelector(".card-image-wrapper img")?.addEventListener("click", onClick);
+  container.appendChild(div);
+
+  // Heart toggle
+  const heart = div.querySelector(".heart-icon");
+  heart.onclick = (e) => {
+    e.stopPropagation();
+    toggleFavoriteBatch(batchId);
+    showBatchesView(); // Rerender to update order
+  };
+}
+
 
  async function loadBatches({ reset = false } = {}) {
   if (isLoading || (!hasMore && !reset)) return;
@@ -1719,17 +1751,42 @@ function clearAll() {
 function renderBatches(batches, { append = false } = {}) {
   if (!append) main.innerHTML = "";
 
-  todayWrapper.style.display = "none";
-  backBtn.style.display = "none";
-  searchInput.style.display = "block";
-  loadMoreBtnWrapper.style.display = "block";
+  const favorites = getFavoriteBatches();
 
-  batches.forEach(batch => {
-    appendCard(main, batch.name, batch.image, () => {
-      currentBatchName = batch.name;
-      loadSubjects(batch.batchId);
-    });
+  const sorted = [...batches].sort((a, b) => {
+    const aFav = favorites.includes(a.batchId);
+    const bFav = favorites.includes(b.batchId);
+    return aFav === bFav ? 0 : aFav ? -1 : 1;
   });
+
+  sorted.forEach(batch => {
+    if (!favorites.length || favorites.includes(batch.batchId)) {
+      appendCard(main, batch.name, batch.image, () => {
+        currentBatchName = batch.name;
+        loadSubjects(batch.batchId);
+      }, batch.batchId);
+    }
+  });
+}
+    
+function getFavoriteBatches() {
+  const stored = localStorage.getItem("favoriteBatches");
+  return stored ? JSON.parse(stored) : [];
+}
+
+function isFavoriteBatch(batchId) {
+  return getFavoriteBatches().includes(batchId);
+}
+
+function toggleFavoriteBatch(batchId) {
+  const favs = getFavoriteBatches();
+  const index = favs.indexOf(batchId);
+  if (index > -1) {
+    favs.splice(index, 1);
+  } else {
+    favs.push(batchId);
+  }
+  localStorage.setItem("favoriteBatches", JSON.stringify(favs));
 }
 
 function renderNoResults() {
