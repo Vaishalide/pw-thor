@@ -1036,113 +1036,108 @@ async loadVideo() {
     const urlObj = new URL(this.videoURL);
     const isMPD = urlObj.pathname.includes(".mpd");
 
- if (isMPD) {
-  console.log("Detected MPD file. Using Shaka Player...");
+    if (isMPD) {
+      console.log("Detected MPD file. Using Shaka Player...");
 
-  let clearKeys = null;
+      let clearKeys = null;
 
-  try {
-    const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
-    const otpData = await otpRes.json();
-    console.log("OTP API response:", otpData);
+      // Fetch ClearKey from OTP API
+      try {
+        const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
+        const otpData = await otpRes.json();
+        console.log("OTP API response:", otpData);
 
-    if (
-      otpData?.success &&
-      Array.isArray(otpData.data?.keys) &&
-      otpData.data.keys.length > 0
-    ) {
-      const [keyEntry] = otpData.data.keys;
-      const [kidRaw, clearKey] = keyEntry.split(":");
-      if (kidRaw && clearKey) {
-        const kid = kidRaw.toLowerCase().replace(/-/g, "");
-        clearKeys = { [kid]: clearKey };
-        console.log("✅ ClearKey found:", clearKeys);
+        if (
+          otpData?.success &&
+          Array.isArray(otpData.data?.keys) &&
+          otpData.data.keys.length > 0
+        ) {
+          const [keyEntry] = otpData.data.keys;
+          const [kidRaw, clearKey] = keyEntry.split(":");
+          if (kidRaw && clearKey) {
+            const kid = kidRaw.toLowerCase().replace(/-/g, "");
+            clearKeys = { [kid]: clearKey };
+            console.log("✅ ClearKey found:", clearKeys);
+          }
+        } else {
+          console.warn("⚠️ No keys returned from OTP API.");
+        }
+      } catch (apiErr) {
+        console.warn("OTP API error:", apiErr);
       }
-    } else {
-      console.warn("⚠️ No keys returned from OTP API.");
-    }
-  } catch (apiErr) {
-    console.warn("OTP API error:", apiErr);
-  }
 
-  // ✅ Setup Shaka
-  shaka.polyfill.installAll();
-  if (!shaka.Player.isBrowserSupported()) {
-    throw new Error("Shaka Player is not supported in this browser.");
-  }
+      // ✅ Setup Shaka Player
+      shaka.polyfill.installAll();
+      if (!shaka.Player.isBrowserSupported()) {
+        throw new Error("Shaka Player not supported.");
+      }
 
-  this.player = new shaka.Player(this.video);
-  const player = this.player;
+      this.player = new shaka.Player(this.video);
+      const player = this.player;
 
-  // Attach headers
-  const signedParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+      // Pass signed params in requests
+      const signedParams = Object.fromEntries(urlObj.searchParams.entries());
+      player.getNetworkingEngine().registerRequestFilter((type, request) => {
+        if (
+          type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+          type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+        ) {
+          const uri = new URL(request.uris[0]);
+          Object.keys(signedParams).forEach(key => {
+            if (!uri.searchParams.has(key)) {
+              uri.searchParams.set(key, signedParams[key]);
+            }
+          });
+          request.uris[0] = uri.toString();
+        }
 
-  player.getNetworkingEngine().registerRequestFilter((type, request) => {
-    if (
-      type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-      type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-    ) {
-      const uri = new URL(request.uris[0]);
-      Object.keys(signedParams).forEach(key => {
-        if (!uri.searchParams.has(key)) {
-          uri.searchParams.set(key, signedParams[key]);
+        // ✅ If PallyCon Widevine is used
+        if (
+          type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
+          this.pallyData
+        ) {
+          request.headers['Content-Type'] = 'application/json';
+          request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
         }
       });
-      request.uris[0] = uri.toString();
-    }
 
-    if (
-      type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
-      this.pallyData
-    ) {
-      request.headers['Content-Type'] = 'application/json';
-      request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
-    }
-  });
-
-  // ✅ DRM Setup
-  if (clearKeys) {
-    console.log("Using ClearKey DRM.");
-    player.configure({
-      drm: {
-        clearKeys: clearKeys,
-        servers: {}
+      // Choose DRM config
+      if (this.pallyData) {
+        console.log("Using Widevine DRM via PallyCon.");
+        player.configure({
+          drm: {
+            servers: {
+              "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
+            }
+          }
+        });
+      } else if (clearKeys) {
+        console.log("Using ClearKey DRM.");
+        player.configure({
+          drm: {
+            clearKeys: clearKeys,
+            servers: {}
+          }
+        });
       }
-    });
-  } else {
-    const drmType = await this.getSupportedDRM();
-    if (!drmType) {
-      throw new Error("No supported DRM found.");
-    }
 
-    console.log("✅ Using DRM:", drmType);
-    player.configure({
-      drm: {
-        servers: {
-          [drmType]: "https://license.pallycon.com/ri/licenseManager.do"
-        }
+      // Shaka Error handling
+      player.addEventListener("error", e => {
+        console.error("Shaka error:", e.detail);
+      });
+
+      try {
+        await player.load(this.videoURL);
+        this.updateShakaQualityOptions();
+        console.log("✅ Shaka loaded MPD successfully.");
+      } catch (err) {
+        console.error("Shaka load error:", err);
+        alert("Shaka failed to load video.");
       }
-    });
-  }
 
-  // Load video
-  player.addEventListener("error", e => {
-    console.error("Shaka error:", e.detail);
-  });
-
-  try {
-    await player.load(this.videoURL);
-    this.updateShakaQualityOptions();
-    console.log("✅ Shaka loaded MPD successfully.");
-  } catch (err) {
-    console.error("Shaka load error:", err);
-    alert("Shaka failed to load video.");
-  }
-
-  this.hideLoading();
-  return;
-}
-
+      this.hideLoading();
+      return;
+    }
 
     // ✅ HLS (.m3u8) Handling
     if (window.Hls && Hls.isSupported()) {
@@ -1210,51 +1205,27 @@ async loadVideo() {
   }
 }
 
-// ✅ Function to detect supported DRM
-async function getSupportedDRM() {
-  const config = [{
-    initDataTypes: ['cenc'],
-    audioCapabilities: [{ contentType: 'audio/mp4; codecs="mp4a.40.2"' }],
-    videoCapabilities: [{ contentType: 'video/mp4; codecs="avc1.42E01E"' }]
-  }];
 
-  try {
-    await navigator.requestMediaKeySystemAccess('com.widevine.alpha', config);
-    return 'com.widevine.alpha';
-  } catch (e) {}
+updateShakaQualityOptions() {
+  if (!this.player) return;
 
-  try {
-    await navigator.requestMediaKeySystemAccess('com.microsoft.playready', config);
-    return 'com.microsoft.playready';
-  } catch (e) {}
+  this.qualitySelector.innerHTML = '<option value="-1">Auto</option>'; // Use -1 for auto in Shaka
 
-  return null;
+  const tracks = this.player.getVariantTracks();
+
+  // Sort tracks by height, descending
+  tracks.sort((a, b) => b.height - a.height);
+
+  tracks.forEach(track => {
+    const option = document.createElement('option');
+    option.value = track.id; // Store the unique track ID
+    option.textContent = `${track.height}p`; // ✅ Fixed interpolation with backticks
+    this.qualitySelector.appendChild(option);
+  });
+
+  console.log('Available Shaka qualities:', tracks.map(t => t.height));
 }
-
-// ✅ Set DRM config based on what the browser actually supports
-getSupportedDRM().then(drmType => {
-  if (!drmType) {
-    console.error("❌ No supported DRM system found.");
-    return;
-  }
-
-  console.log("✅ Using DRM:", drmType);
-  player.configure({
-    drm: {
-      servers: {
-        [drmType]: 'https://license.pallycon.com/ri/licenseManager.do'
-      }
-    }
-  });
-
-  // ✅ Finally, load the video
-  player.load("your_manifest.mpd").then(() => {
-    console.log("✅ Video loaded successfully.");
-  }).catch(error => {
-    console.error("❌ Error loading video:", error);
-  });
-});
-
+      
 updateShakaQualityOptions() {
   if (!this.player) return;
 
