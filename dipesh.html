@@ -1066,52 +1066,88 @@ async loadVideo() {
         console.warn("OTP API error:", apiErr);
       }
 
-      // ✅ Setup Shaka Player
-      shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) {
-        throw new Error("Shaka Player not supported.");
+// ✅ Load Shaka polyfills and check browser support
+shaka.polyfill.installAll();
+if (!shaka.Player.isBrowserSupported()) {
+  throw new Error("Shaka Player is not supported in this browser.");
+}
+
+// ✅ Create player
+this.player = new shaka.Player(this.video);
+const player = this.player;
+
+// ✅ Get signed URL params from current page
+const signedParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+
+// ✅ Attach headers & signed params to license and segment/manifest requests
+player.getNetworkingEngine().registerRequestFilter((type, request) => {
+  if (
+    type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+    type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+  ) {
+    const uri = new URL(request.uris[0]);
+    Object.keys(signedParams).forEach(key => {
+      if (!uri.searchParams.has(key)) {
+        uri.searchParams.set(key, signedParams[key]);
       }
+    });
+    request.uris[0] = uri.toString();
+  }
 
-      this.player = new shaka.Player(this.video);
-      const player = this.player;
-
-      // Pass signed params in requests
-      const signedParams = Object.fromEntries(urlObj.searchParams.entries());
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (
-          type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-          type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-        ) {
-          const uri = new URL(request.uris[0]);
-          Object.keys(signedParams).forEach(key => {
-            if (!uri.searchParams.has(key)) {
-              uri.searchParams.set(key, signedParams[key]);
-            }
-          });
-          request.uris[0] = uri.toString();
-        }
-
-        // ✅ If PallyCon Widevine is used
-        if (
-          type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
-          this.pallyData
-        ) {
-          request.headers['Content-Type'] = 'application/json';
-          request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
-        }
-      });
-
-      // Choose DRM config
-      if (this.pallyData) {
-        console.log("Using Widevine DRM via PallyCon.");
-  player.configure({
-  drm: {
-    servers: {
-      'com.widevine.alpha': 'https://license.pallycon.com/ri/licenseManager.do',
-      'com.microsoft.playready': 'https://license.pallycon.com/ri/licenseManager.do'
-    }
+  if (
+    type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
+    this.pallyData
+  ) {
+    request.headers['Content-Type'] = 'application/json';
+    request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
   }
 });
+
+// ✅ Function to detect supported DRM
+async function getSupportedDRM() {
+  const config = [{
+    initDataTypes: ['cenc'],
+    audioCapabilities: [{ contentType: 'audio/mp4; codecs="mp4a.40.2"' }],
+    videoCapabilities: [{ contentType: 'video/mp4; codecs="avc1.42E01E"' }]
+  }];
+
+  try {
+    await navigator.requestMediaKeySystemAccess('com.widevine.alpha', config);
+    return 'com.widevine.alpha';
+  } catch (e) {}
+
+  try {
+    await navigator.requestMediaKeySystemAccess('com.microsoft.playready', config);
+    return 'com.microsoft.playready';
+  } catch (e) {}
+
+  return null;
+}
+
+// ✅ Set DRM config based on what the browser actually supports
+getSupportedDRM().then(drmType => {
+  if (!drmType) {
+    console.error("❌ No supported DRM system found.");
+    return;
+  }
+
+  console.log("✅ Using DRM:", drmType);
+  player.configure({
+    drm: {
+      servers: {
+        [drmType]: 'https://license.pallycon.com/ri/licenseManager.do'
+      }
+    }
+  });
+
+  // ✅ Finally, load the video
+  player.load("your_manifest.mpd").then(() => {
+    console.log("✅ Video loaded successfully.");
+  }).catch(error => {
+    console.error("❌ Error loading video:", error);
+  });
+});
+
 
       } else if (clearKeys) {
         console.log("Using ClearKey DRM.");
