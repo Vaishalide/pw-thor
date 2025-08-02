@@ -1036,100 +1036,113 @@ async loadVideo() {
     const urlObj = new URL(this.videoURL);
     const isMPD = urlObj.pathname.includes(".mpd");
 
-    if (isMPD) {
-      console.log("Detected MPD file. Using Shaka Player...");
+ if (isMPD) {
+  console.log("Detected MPD file. Using Shaka Player...");
 
-      let clearKeys = null;
+  let clearKeys = null;
 
-      // Fetch ClearKey from OTP API
-      try {
-        const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
-        const otpData = await otpRes.json();
-        console.log("OTP API response:", otpData);
+  try {
+    const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
+    const otpData = await otpRes.json();
+    console.log("OTP API response:", otpData);
 
-        if (
-          otpData?.success &&
-          Array.isArray(otpData.data?.keys) &&
-          otpData.data.keys.length > 0
-        ) {
-          const [keyEntry] = otpData.data.keys;
-          const [kidRaw, clearKey] = keyEntry.split(":");
-          if (kidRaw && clearKey) {
-            const kid = kidRaw.toLowerCase().replace(/-/g, "");
-            clearKeys = { [kid]: clearKey };
-            console.log("✅ ClearKey found:", clearKeys);
-          }
-        } else {
-          console.warn("⚠️ No keys returned from OTP API.");
-        }
-      } catch (apiErr) {
-        console.warn("OTP API error:", apiErr);
+    if (
+      otpData?.success &&
+      Array.isArray(otpData.data?.keys) &&
+      otpData.data.keys.length > 0
+    ) {
+      const [keyEntry] = otpData.data.keys;
+      const [kidRaw, clearKey] = keyEntry.split(":");
+      if (kidRaw && clearKey) {
+        const kid = kidRaw.toLowerCase().replace(/-/g, "");
+        clearKeys = { [kid]: clearKey };
+        console.log("✅ ClearKey found:", clearKeys);
       }
+    } else {
+      console.warn("⚠️ No keys returned from OTP API.");
+    }
+  } catch (apiErr) {
+    console.warn("OTP API error:", apiErr);
+  }
 
-// ✅ Load Shaka polyfills and check browser support
-shaka.polyfill.installAll();
-if (!shaka.Player.isBrowserSupported()) {
-  throw new Error("Shaka Player is not supported in this browser.");
-}
+  // ✅ Setup Shaka
+  shaka.polyfill.installAll();
+  if (!shaka.Player.isBrowserSupported()) {
+    throw new Error("Shaka Player is not supported in this browser.");
+  }
 
-// ✅ Create player
-this.player = new shaka.Player(this.video);
-const player = this.player;
+  this.player = new shaka.Player(this.video);
+  const player = this.player;
 
-// ✅ Get signed URL params from current page
-const signedParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+  // Attach headers
+  const signedParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 
-// ✅ Attach headers & signed params to license and segment/manifest requests
-player.getNetworkingEngine().registerRequestFilter((type, request) => {
-  if (
-    type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-    type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-  ) {
-    const uri = new URL(request.uris[0]);
-    Object.keys(signedParams).forEach(key => {
-      if (!uri.searchParams.has(key)) {
-        uri.searchParams.set(key, signedParams[key]);
+  player.getNetworkingEngine().registerRequestFilter((type, request) => {
+    if (
+      type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+      type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+    ) {
+      const uri = new URL(request.uris[0]);
+      Object.keys(signedParams).forEach(key => {
+        if (!uri.searchParams.has(key)) {
+          uri.searchParams.set(key, signedParams[key]);
+        }
+      });
+      request.uris[0] = uri.toString();
+    }
+
+    if (
+      type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
+      this.pallyData
+    ) {
+      request.headers['Content-Type'] = 'application/json';
+      request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
+    }
+  });
+
+  // ✅ DRM Setup
+  if (clearKeys) {
+    console.log("Using ClearKey DRM.");
+    player.configure({
+      drm: {
+        clearKeys: clearKeys,
+        servers: {}
       }
     });
-    request.uris[0] = uri.toString();
-  }
-
-  if (
-    type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
-    this.pallyData
-  ) {
-    request.headers['Content-Type'] = 'application/json';
-    request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
-  }
-});
-
-      } else if (clearKeys) {
-        console.log("Using ClearKey DRM.");
-        player.configure({
-          drm: {
-            clearKeys: clearKeys,
-            servers: {}
-          }
-        });
-      }
-
-      // Shaka Error handling
-      player.addEventListener("error", e => {
-        console.error("Shaka error:", e.detail);
-      });
-
-      try {
-        await player.load(this.videoURL);
-        this.updateShakaQualityOptions();
-        console.log("✅ Shaka loaded MPD successfully.");
-      } catch (err) {
-        console.error("Shaka load error:", err);
-        alert("Shaka failed to load video.");
-      }
-
-      this.hideLoading();
-      return;
+  } else {
+    const drmType = await this.getSupportedDRM();
+    if (!drmType) {
+      throw new Error("No supported DRM found.");
     }
+
+    console.log("✅ Using DRM:", drmType);
+    player.configure({
+      drm: {
+        servers: {
+          [drmType]: "https://license.pallycon.com/ri/licenseManager.do"
+        }
+      }
+    });
+  }
+
+  // Load video
+  player.addEventListener("error", e => {
+    console.error("Shaka error:", e.detail);
+  });
+
+  try {
+    await player.load(this.videoURL);
+    this.updateShakaQualityOptions();
+    console.log("✅ Shaka loaded MPD successfully.");
+  } catch (err) {
+    console.error("Shaka load error:", err);
+    alert("Shaka failed to load video.");
+  }
+
+  this.hideLoading();
+  return;
+}
+
 
     // ✅ HLS (.m3u8) Handling
     if (window.Hls && Hls.isSupported()) {
