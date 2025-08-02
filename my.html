@@ -2128,8 +2128,8 @@ else {
           iv: altData.video_id
         });
         if (altData.pally_data && altData.pally_iv) {
-          urlParams.append('pally', altData.pally_data);
-          urlParams.append('piv', altData.pally_iv);
+          urlParams.append('pally_data', altData.pally_data);
+          urlParams.append('pally_iv', altData.pally_iv);
         }
         window.location.href = `dipesh.html?${urlParams.toString()}`;
       } else {
