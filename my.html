@@ -1905,12 +1905,16 @@ todayClasses.forEach(cls => {
     const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
     const data = await res.json();
 
-    if (data.success && data.signed_url && data.video_id) {
-      const urlParams = new URLSearchParams({
-        encrypted: data.signed_url,
-        iv: data.video_id
-      });
-      window.location.href = `dipesh.html?${urlParams}`;
+      if (data.success && data.signed_url && data.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: data.signed_url,
+          iv: data.video_id
+        });
+        if (data.pally_data && data.pally_iv) {
+          urlParams.append('pally_data', data.pally_data);
+          urlParams.append('pally_iv', data.pally_iv);
+        }
+        window.location.href = `dipesh.html?${urlParams.toString()}`;
     } else {
       alert("⚠️ Failed to get live stream URL.");
     }
