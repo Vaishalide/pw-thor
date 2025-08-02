@@ -1104,17 +1104,22 @@ async loadVideo() {
       // Choose DRM config
       if (this.pallyData) {
         console.log("Using Widevine DRM via PallyCon.");
-        player.configure({
+     player.configure({
   drm: {
+    // ONLY use Widevine (correct for Chrome/Android)
     servers: {
       "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
     },
+    // Advanced robustness (optional, can remove if unnecessary)
     advanced: {
       "com.widevine.alpha": {
         videoRobustness: "SW_SECURE_DECODE",
         audioRobustness: "SW_SECURE_DECODE"
       }
-    }
+    },
+    // Optional but recommended: remove any fallback to other DRM
+    clearKeys: {}, // disables fallback to clear keys
+    delayLicenseRequestUntilPlayed: false
   }
 });
 
