@@ -1105,12 +1105,19 @@ async loadVideo() {
       if (this.pallyData) {
         console.log("Using Widevine DRM via PallyCon.");
         player.configure({
-          drm: {
-            servers: {
-              "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
-            }
-          }
-        });
+  drm: {
+    servers: {
+      "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
+    },
+    advanced: {
+      "com.widevine.alpha": {
+        videoRobustness: "SW_SECURE_DECODE",
+        audioRobustness: "SW_SECURE_DECODE"
+      }
+    }
+  }
+});
+
       } else if (clearKeys) {
         console.log("Using ClearKey DRM.");
         player.configure({
