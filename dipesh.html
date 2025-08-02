@@ -798,7 +798,8 @@ initializeState() {
   this.availableQualities = [];
   this.hlsLevels = [];
   this.player = null;
-
+  this.pallyconCustomDataToken = null;
+  
   const params = new URLSearchParams(window.location.search);
   const encrypted = params.get("encrypted");
   const iv = params.get("iv");
@@ -826,6 +827,7 @@ initializeState() {
   if (pallyEncrypted && pallyIv) {
     try {
       const decryptedPallyBase64 = this.decryptAESCBC(pallyEncrypted, pallyIv, key);
+      this.pallyconCustomDataToken = decryptedPallyBase64; // Store the token
       const decoded = atob(decryptedPallyBase64);
       const parsed = JSON.parse(decoded);
 
@@ -1092,26 +1094,23 @@ async loadVideo() {
         }
 
         // ✅ If PallyCon Widevine is used
-        // ✅ CORRECTED
-if (type === shaka.net.NetworkingEngine.RequestType.LICENSE && this.pallyData) {
-  // PallyCon expects the custom data in this header.
-  // The data must be a stringified JSON object.
-  const customData = JSON.stringify(this.pallyData);
+ if (
+    type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
+    this.pallyconCustomDataToken
+  ) {
+    // Send the raw Base64 token in the header. Do NOT stringify it.
+    request.headers['pallycon-customdata-v2'] = this.pallyconCustomDataToken;
 
-  request.headers['pallycon-customdata-v2'] = customData;
-
-  // Set the Content-Type based on the DRM system Shaka is using.
-  // Shaka Player sets the correct request body automatically (the license challenge).
-  // We just need to set the corresponding Content-Type.
-  const keySystem = player.keySystem();
-  if (keySystem === 'com.widevine.alpha') {
-    request.headers['Content-Type'] = 'application/octet-stream';
-  } else if (keySystem === 'com.microsoft.playready') {
-    request.headers['Content-Type'] = 'text/xml';
+    // Set the Content-Type based on the DRM system Shaka is using.
+    // This part from the previous advice is still correct.
+    const keySystem = player.keySystem();
+    if (keySystem === 'com.widevine.alpha') {
+      request.headers['Content-Type'] = 'application/octet-stream';
+    } else if (keySystem === 'com.microsoft.playready') {
+      request.headers['Content-Type'] = 'text/xml';
+    }
   }
-}
-      });
-
+});
       // Choose DRM config
      // ✅ CORRECTED
 if (this.pallyData) {
