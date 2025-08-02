@@ -1107,16 +1107,12 @@ async loadVideo() {
   player.configure({
   drm: {
     servers: {
-      "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
-    },
-    advanced: {
-      "com.widevine.alpha": {
-        videoRobustness: "",
-        audioRobustness: ""
-      }
+      'com.widevine.alpha': 'https://license.pallycon.com/ri/licenseManager.do',
+      'com.microsoft.playready': 'https://license.pallycon.com/ri/licenseManager.do'
     }
   }
 });
+
       } else if (clearKeys) {
         console.log("Using ClearKey DRM.");
         player.configure({
