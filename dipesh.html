@@ -1092,25 +1092,38 @@ async loadVideo() {
         }
 
         // ✅ If PallyCon Widevine is used
-        if (
-          type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
-          this.pallyData
-        ) {
-          request.headers['Content-Type'] = 'application/json';
-          request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
-        }
+        // ✅ CORRECTED
+if (type === shaka.net.NetworkingEngine.RequestType.LICENSE && this.pallyData) {
+  // PallyCon expects the custom data in this header.
+  // The data must be a stringified JSON object.
+  const customData = JSON.stringify(this.pallyData);
+
+  request.headers['pallycon-customdata-v2'] = customData;
+
+  // Set the Content-Type based on the DRM system Shaka is using.
+  // Shaka Player sets the correct request body automatically (the license challenge).
+  // We just need to set the corresponding Content-Type.
+  const keySystem = player.keySystem();
+  if (keySystem === 'com.widevine.alpha') {
+    request.headers['Content-Type'] = 'application/octet-stream';
+  } else if (keySystem === 'com.microsoft.playready') {
+    request.headers['Content-Type'] = 'text/xml';
+  }
+}
       });
 
       // Choose DRM config
-      if (this.pallyData) {
-        console.log("Using Widevine DRM via PallyCon.");
-        player.configure({
-          drm: {
-            servers: {
-              "com.widevine.alpha": "https://license-global.pallycon.com/ri/licenseManager.do"
-            }
-          }
-        });
+     // ✅ CORRECTED
+if (this.pallyData) {
+  console.log("Using PallyCon Multi-DRM.");
+  player.configure({
+    drm: {
+      servers: {
+        'com.widevine.alpha': 'https://license.pallycon.com/ri/licenseManager.do',
+        'com.microsoft.playready': 'https://license.pallycon.com/ri/licenseManager.do'
+      }
+    }
+  });
       } else if (clearKeys) {
         console.log("Using ClearKey DRM.");
         player.configure({
