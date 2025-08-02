@@ -1041,13 +1041,17 @@ async loadVideo() {
 
       let clearKeys = null;
 
-      // 🔐 Try to get ClearKey from OTP API
+      // Fetch ClearKey from OTP API
       try {
         const otpRes = await fetch(`https://pw-api1-ab3091004643.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
         const otpData = await otpRes.json();
         console.log("OTP API response:", otpData);
 
-        if (otpData?.success && Array.isArray(otpData.data?.keys)) {
+        if (
+          otpData?.success &&
+          Array.isArray(otpData.data?.keys) &&
+          otpData.data.keys.length > 0
+        ) {
           const [keyEntry] = otpData.data.keys;
           const [kidRaw, clearKey] = keyEntry.split(":");
           if (kidRaw && clearKey) {
@@ -1062,84 +1066,75 @@ async loadVideo() {
         console.warn("OTP API error:", apiErr);
       }
 
-      // ✅ Setup Shaka
-      shaka.polyfill.installAll();
-      if (!shaka.Player.isBrowserSupported()) {
-        throw new Error("Shaka Player is not supported in this browser.");
+// ✅ Load Shaka polyfills and check browser support
+shaka.polyfill.installAll();
+if (!shaka.Player.isBrowserSupported()) {
+  throw new Error("Shaka Player is not supported in this browser.");
+}
+
+// ✅ Create player
+this.player = new shaka.Player(this.video);
+const player = this.player;
+
+// ✅ Get signed URL params from current page
+const signedParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+
+// ✅ Attach headers & signed params to license and segment/manifest requests
+player.getNetworkingEngine().registerRequestFilter((type, request) => {
+  if (
+    type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
+    type === shaka.net.NetworkingEngine.RequestType.SEGMENT
+  ) {
+    const uri = new URL(request.uris[0]);
+    Object.keys(signedParams).forEach(key => {
+      if (!uri.searchParams.has(key)) {
+        uri.searchParams.set(key, signedParams[key]);
       }
+    });
+    request.uris[0] = uri.toString();
+  }
 
-      this.player = new shaka.Player(this.video);
-      const player = this.player;
+  if (
+    type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
+    this.pallyData
+  ) {
+    request.headers['Content-Type'] = 'application/json';
+    request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
+  }
+});
 
-      // ✅ Attach headers to segment/license requests
-      const signedParams = Object.fromEntries(new URLSearchParams(window.location.search).entries());
-
-      player.getNetworkingEngine().registerRequestFilter((type, request) => {
-        if (
-          type === shaka.net.NetworkingEngine.RequestType.MANIFEST ||
-          type === shaka.net.NetworkingEngine.RequestType.SEGMENT
-        ) {
-          const uri = new URL(request.uris[0]);
-          Object.keys(signedParams).forEach(key => {
-            if (!uri.searchParams.has(key)) {
-              uri.searchParams.set(key, signedParams[key]);
-            }
-          });
-          request.uris[0] = uri.toString();
-        }
-
-        if (
-          type === shaka.net.NetworkingEngine.RequestType.LICENSE &&
-          this.pallyData
-        ) {
-          request.headers['Content-Type'] = 'application/json';
-          request.body = new TextEncoder().encode(JSON.stringify(this.pallyData));
-        }
-      });
-
-      // 🎯 Decide DRM method: ClearKey vs Widevine/PlayReady
-      if (clearKeys) {
+      } else if (clearKeys) {
         console.log("Using ClearKey DRM.");
         player.configure({
           drm: {
-            clearKeys,
+            clearKeys: clearKeys,
             servers: {}
-          }
-        });
-      } else {
-        const drmType = await this.getSupportedDRM();
-        if (!drmType) {
-          throw new Error("No supported DRM found.");
-        }
-
-        console.log("✅ Using DRM:", drmType);
-        player.configure({
-          drm: {
-            servers: {
-              [drmType]: "https://license.pallycon.com/ri/licenseManager.do"
-            }
           }
         });
       }
 
-      // 🎥 Load the video
+      // Shaka Error handling
       player.addEventListener("error", e => {
         console.error("Shaka error:", e.detail);
       });
 
-      await player.load(this.videoURL);
-      this.updateShakaQualityOptions();
-      console.log("✅ Shaka loaded MPD successfully.");
+      try {
+        await player.load(this.videoURL);
+        this.updateShakaQualityOptions();
+        console.log("✅ Shaka loaded MPD successfully.");
+      } catch (err) {
+        console.error("Shaka load error:", err);
+        alert("Shaka failed to load video.");
+      }
+
       this.hideLoading();
       return;
     }
 
-    // ✅ Fallback: HLS (.m3u8)
+    // ✅ HLS (.m3u8) Handling
     if (window.Hls && Hls.isSupported()) {
       console.log("Detected HLS stream. Using Hls.js...");
-
       const signedParams = Object.fromEntries(urlObj.searchParams.entries());
-      const self = this;
 
       class SignedLoader extends Hls.DefaultConfig.loader {
         constructor(config) {
@@ -1184,7 +1179,8 @@ async loadVideo() {
         }
       });
 
-    } else if (this.video.canPlayType("application/vnd.apple.mpegurl")) {
+    } else if (this.video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Fallback native HLS (Safari)
       this.video.src = this.videoURL;
       this.hideLoading();
     } else {
@@ -1199,10 +1195,10 @@ async loadVideo() {
       : JSON.stringify(error) || "Unknown error occurred.";
     alert("Failed to load video: " + message);
   }
-},
+}
 
-// ✅ Add this helper method outside of loadVideo()
-async getSupportedDRM() {
+// ✅ Function to detect supported DRM
+async function getSupportedDRM() {
   const config = [{
     initDataTypes: ['cenc'],
     audioCapabilities: [{ contentType: 'audio/mp4; codecs="mp4a.40.2"' }],
@@ -1212,15 +1208,39 @@ async getSupportedDRM() {
   try {
     await navigator.requestMediaKeySystemAccess('com.widevine.alpha', config);
     return 'com.widevine.alpha';
-  } catch {}
+  } catch (e) {}
 
   try {
     await navigator.requestMediaKeySystemAccess('com.microsoft.playready', config);
     return 'com.microsoft.playready';
-  } catch {}
+  } catch (e) {}
 
   return null;
 }
+
+// ✅ Set DRM config based on what the browser actually supports
+getSupportedDRM().then(drmType => {
+  if (!drmType) {
+    console.error("❌ No supported DRM system found.");
+    return;
+  }
+
+  console.log("✅ Using DRM:", drmType);
+  player.configure({
+    drm: {
+      servers: {
+        [drmType]: 'https://license.pallycon.com/ri/licenseManager.do'
+      }
+    }
+  });
+
+  // ✅ Finally, load the video
+  player.load("your_manifest.mpd").then(() => {
+    console.log("✅ Video loaded successfully.");
+  }).catch(error => {
+    console.error("❌ Error loading video:", error);
+  });
+});
 
 updateShakaQualityOptions() {
   if (!this.player) return;
