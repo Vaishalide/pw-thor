@@ -1995,12 +1995,16 @@ todayClasses.forEach(cls => {
     const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
     const data = await res.json();
 
-    if (data.success && data.signed_url && data.video_id) {
-      const urlParams = new URLSearchParams({
-        encrypted: data.signed_url,
-        iv: data.video_id
-      });
-      window.location.href = `dipesh.html?${urlParams}`;
+ if (data.success && data.signed_url && data.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: data.signed_url,
+          iv: data.video_id
+        });
+        if (data.pally_data && data.pally_iv) {
+          urlParams.append('pally_data', data.pally_data);
+          urlParams.append('pally_iv', data.pally_iv);
+        }
+        window.location.href = `pwplayer.html?${urlParams.toString()}`;
     } else {
       alert("⚠️ Failed to get live stream URL.");
     }
@@ -2204,7 +2208,7 @@ else {
           encrypted: data.signed_url,
           iv: data.video_id
         });
-        window.location.href = `dipesh.html?${urlParams}`;
+        window.location.href = `pwplayer.html?${urlParams}`;
         return;
       }
 
@@ -2212,16 +2216,16 @@ else {
       const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
       const altData = await res.json();
 
-      if (altData.success && altData.signed_url && altData.video_id) {
+           if (altData.success && altData.signed_url && altData.video_id) {
         const urlParams = new URLSearchParams({
           encrypted: altData.signed_url,
           iv: altData.video_id
         });
         if (altData.pally_data && altData.pally_iv) {
-          urlParams.append('pally', altData.pally_data);
-          urlParams.append('piv', altData.pally_iv);
+          urlParams.append('pally_data', altData.pally_data);
+          urlParams.append('pally_iv', altData.pally_iv);
         }
-        window.location.href = `dipesh.html?${urlParams.toString()}`;
+        window.location.href = `pwplayer.html?${urlParams.toString()}`;
       } else {
         alert("⚠️ Video not available from either source.");
       }
