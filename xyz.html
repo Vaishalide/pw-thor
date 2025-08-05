@@ -1170,77 +1170,62 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
       loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType);
 }
 
-    // Your existing listener
 document.addEventListener("DOMContentLoaded", () => {
-    // --- INITIALIZE DOM ELEMENTS ---
-    // This is the critical part you were missing.
-    loadingOverlay = document.getElementById('loadingOverlay');
-    main = document.getElementById('main');
-    subjectsDiv = document.getElementById('subjects');
-    chaptersDiv = document.getElementById('chaptersDiv');
-    backBtn = document.getElementById('backBtn'); // <-- Now backBtn will be the HTML element
-    searchInput = document.getElementById('searchInput');
-    loadMoreBtnWrapper = document.getElementById('loadMoreBatchesWrapper');
-    loadMoreBtn = document.getElementById('loadMoreBatchesBtn');
-    lectureSection = document.getElementById('lectureSection');
-    lectureContent = document.getElementById('lectureContent');
+        // --- INITIALIZE DOM ELEMENTS ---
+        loadingOverlay = document.getElementById('loadingOverlay');
+        main = document.getElementById('main');
+        subjectsDiv = document.getElementById('subjects');
+        chaptersDiv = document.getElementById('chaptersDiv');
+        backBtn = document.getElementById('backBtn');
+        searchInput = document.getElementById('searchInput');
+        loadMoreBtnWrapper = document.getElementById('loadMoreBatchesWrapper');
+        loadMoreBtn = document.getElementById('loadMoreBatchesBtn');
+        lectureSection = document.getElementById('lectureSection');
+        lectureContent = document.getElementById('lectureContent');
 
+        // --- SETUP EVENT LISTENERS ---
+        backBtn.onclick = () => {
+            history.back();
+        };
 
-    backBtn.onclick = () => {
-  history.back(); // ✅ triggers popstate event
-};
+        searchInput.addEventListener("input", () => {
+            const keyword = searchInput.value.toLowerCase();
+            const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
+            renderBatches(filtered);
+        });
 
+        window.addEventListener("popstate", () => {
+            if (viewStack.length > 0) {
+                const restoreView = viewStack.pop();
+                if (typeof restoreView === 'function') {
+                    restoreView();
+                }
+            }
+        });
 
-    searchInput.addEventListener("input", () => {
-      const keyword = searchInput.value.toLowerCase();
-      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
-      renderBatches(filtered);
+        // Disable right-click and DevTools
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('keydown', function (event) {
+            if (
+                event.key === "F12" ||
+                (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
+                (event.ctrlKey && event.key === 'U') ||
+                (event.ctrlKey && event.shiftKey && event.key === 'C') ||
+                (event.ctrlKey && event.key === 'A') ||
+                (event.ctrlKey && event.key === 'S') ||
+                (event.ctrlKey && event.key === 'P')
+            ) {
+                event.preventDefault();
+            }
+        });
+
+        // --- INITIAL DATA LOAD ---
+        loadBatches(); // Initial call to load batches
+        showBatchesView(); // Show the main view
+
+        // Note: The popup fetch is removed as its HTML elements are not in the provided code.
+        // If you have them, you can add that fetch logic back in here.
     });
-
-      loadBatches();
-   
-
-    // Popup functionality
-    fetch('/popup.json')
-      .then(res => res.json())
-      .then(popup => {
-        if (popup.show) {
-          document.getElementById('popupImage').src = popup.image;
-          document.getElementById('popupText').textContent = popup.text;
-          document.getElementById('popupLink').href = popup.link;
-          document.getElementById('popup').style.display = 'block';
-        }
-      })
-      .catch(err => console.error('Error loading popup data:', err));
-
-    // Disable right-click and DevTools
-    document.addEventListener('contextmenu', event => event.preventDefault());
-    document.addEventListener('keydown', function (event) {
-      if (
-        event.key === "F12" ||
-        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
-        (event.ctrlKey && event.key === 'U') ||
-        (event.ctrlKey && event.shiftKey && event.key === 'C') ||
-        (event.ctrlKey && event.key === 'A') ||
-        (event.ctrlKey && event.key === 'S') ||
-        (event.ctrlKey && event.key === 'P')
-      ) {
-        event.preventDefault();
-      }
-    });
-window.addEventListener("popstate", () => {
-  if (viewStack.length > 0) {
-    const restoreView = viewStack.pop(); // ✅ Pop the function for the view we are returning TO.
-    if (typeof restoreView === 'function') {
-      restoreView(); // ✅ Execute it.
-    }
-  }
-});
-document.addEventListener("DOMContentLoaded", () => {
-  showBatchesView();
-});
-
-
   </script>
 </body>
 
