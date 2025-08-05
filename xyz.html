@@ -305,128 +305,129 @@
   margin-top: 2rem;
 }
 
+/* === NEW BATCH CARD STYLES === */
+.batch-card {
+    background: #121829;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #2a3042;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
 
-    .card {
-      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-      border: 2px solid var(--squid-pink);
-      border-radius: 16px;
-      padding: 1.5rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 30px var(--glow-dark-pink);
-    }
+.batch-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.2);
+    border-color: var(--squid-cyan);
+}
 
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 24px;
-      height: 24px;
-      opacity: 0;
-      transition: all 0.3s ease;
-      z-index: 10;
-    }
+.batch-card-image-wrapper {
+    position: relative;
+}
 
-    .card:nth-child(3n+1)::after {
-      background: var(--squid-pink);
-      border-radius: 50%;
-    }
+.batch-card-image {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    display: block;
+    background-color: var(--bg-tertiary);
+}
 
-    .card:nth-child(3n+2)::after {
-      background: var(--squid-cyan);
-      border-radius: 4px;
-    }
+.batch-card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Allows footer to stick to the bottom */
+}
 
-    .card:nth-child(3n+3)::after {
-      width: 0;
-      height: 0;
-      border-left: 12px solid transparent;
-      border-right: 12px solid transparent;
-      border-bottom: 20px solid var(--squid-green);
-      background: transparent;
-    }
+.batch-card-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
 
-    .card::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: linear-gradient(45deg, var(--squid-dark-blue), var(--squid-pink), var(--squid-dark-blue));
-      border-radius: 16px;
-      z-index: -1;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      animation: border-glow 2s linear infinite;
-    }
+.tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: capitalize;
+}
 
-    @keyframes border-glow {
-      0%, 100% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-    }
+.tag-language {
+    background-color: rgba(0, 229, 255, 0.1);
+    color: var(--squid-cyan);
+    border: 1px solid var(--squid-cyan);
+}
 
-    .card:hover::before {
-      opacity: 1;
-    }
+.tag-exam {
+    background-color: rgba(0, 255, 136, 0.1);
+    color: var(--squid-green);
+    border: 1px solid var(--squid-green);
+}
 
-    .card:hover::after {
-      opacity: 1;
-      transform: scale(1.1) rotate(5deg);
-    }
+.batch-card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 4px;
+    /* Allow title to take up necessary space */
+    flex-grow: 1;
+}
 
-    .card:hover {
-      transform: translateY(-10px) scale(1.03);
-      box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 40px var(--glow-dark-pink);
-      border-color: var(--squid-cyan);
-    }
+.batch-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto; /* Important for alignment */
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
 
-    .card:nth-child(even) {
-      border-color: var(--squid-dark-blue);
-      box-shadow: 0 0 30px var(--glow-pink);
-    }
+.batch-card-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
 
-    .card:nth-child(even):hover {
-      box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 40px var(--glow-pink);
-      border-color: var(--glow-green);
-    }
+.study-button {
+    background: linear-gradient(45deg, var(--squid-dark-blue), var(--squid-cyan));
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
 
-    .card img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      transition: transform 0.3s ease;
-      border: 1px solid var(--squid-pink);
-      box-shadow: 0 0 15px var(--glow-dark-pink);
-    }
+.study-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--glow-cyan);
+}
 
-    .card:hover img {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px var(--glow-dark-pink);
-    }
+/* Ensure heart icon is on top and styled correctly */
+.heart-icon {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.2s, color 0.3s;
+    text-shadow: 0 0 8px rgba(0,0,0,0.9);
+}
 
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 1rem;
-      color: var(--text-primary);
-    }
-
+.heart-icon.active {
+    color: #ff4757; /* A bright red for active state */
+    transform: scale(1.1);
+}
+  
     /* Loading overlay */
     .loading-overlay {
       position: fixed;
@@ -1670,137 +1671,146 @@ function clearAll() {
       clearAll();
       div.style.display = div.id === "lectureSection" ? "block" : "grid";
     }
+    
+function appendBatchCard(container, batch) {
+    const isFav = isFavoriteBatch(batch.batchId);
+    const card = document.createElement("div");
+    card.className = "batch-card";
 
-function appendCard(container, title, image, onClick, batchId) {
-  const isFav = isFavoriteBatch(batchId);
-
-  const div = document.createElement("div");
-  div.className = "card";
-  div.innerHTML = `
-    <div class="card-image-wrapper">
-      <span class="heart-icon ${isFav ? "active" : ""}" data-batchid="${batchId}">&#10084;</span>
-      ${image ? `<img src="${image}" alt="${title}" />` : ""}
-    </div>
-    <div class="card-title">${title}</div>
-  `;
-
-  // ✅ Make entire card clickable (excluding heart icon)
-  div.addEventListener("click", (e) => {
-    if (!e.target.classList.contains("heart-icon")) {
-      onClick();
+    // Format the date, with a fallback for invalid dates
+    let formattedDate = 'N/A';
+    if (batch.startDate) {
+        const date = new Date(batch.startDate);
+        if (!isNaN(date)) {
+             formattedDate = date.toLocaleDateString('en-GB', {
+                day: 'numeric', month: 'short', year: 'numeric'
+            });
+        }
     }
-  });
 
-  // ❤️ Heart icon toggle
-  const heart = div.querySelector(".heart-icon");
-  heart.onclick = (e) => {
-    e.stopPropagation(); // prevent card click
-    toggleFavoriteBatch(batchId);
-    heart.classList.toggle("active");
-    renderBatches(allBatches, { append: false }); // rerender full card list
-  };
+    card.innerHTML = `
+        <div class="batch-card-image-wrapper">
+            <img src="${batch.image}" alt="${batch.name}" class="batch-card-image">
+            <span class="heart-icon ${isFav ? 'active' : ''}" data-batchid="${batch.batchId}">♥</span>
+        </div>
+        <div class="batch-card-content">
+            <div class="batch-card-tags">
+                ${batch.language ? `<span class="tag tag-language">${batch.language}</span>` : ''}
+                ${batch.exam ? `<span class="tag tag-exam">${batch.exam}</span>` : ''}
+            </div>
+            <h3 class="batch-card-title">${batch.name}</h3>
+            <div class="batch-card-footer">
+                <span class="batch-card-date">Starts: ${formattedDate}</span>
+                <button class="study-button">Enter Arena</button>
+            </div>
+        </div>
+    `;
 
-  container.appendChild(div);
+    // Add click listener to the whole card (except the heart)
+    card.addEventListener("click", (e) => {
+        if (e.target.classList.contains('heart-icon') || e.target.classList.contains('study-button')) {
+            return;
+        }
+        pushView(showBatchesView);
+        loadSubjects(batch.batchId);
+    });
+
+    // Add click listener to the button specifically
+    card.querySelector(".study-button").addEventListener("click", (e) => {
+        e.stopPropagation();
+        pushView(showBatchesView);
+        loadSubjects(batch.batchId);
+    });
+
+    // Add click listener to the heart icon
+    const heart = card.querySelector(".heart-icon");
+    heart.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavoriteBatch(batch.batchId);
+        // Re-render the entire list to show the favorited item at the top
+        renderBatches(allBatches);
+    });
+
+    container.appendChild(card);
 }
-
 
 
 
 async function loadBatches({ reset = false } = {}) {
-  if (isLoading || (!hasMore && !reset)) return;
+    if (isLoading || (!hasMore && !reset)) return;
 
-  isLoading = true;
-  showLoader(true);
+    isLoading = true;
+    showLoader(true);
+    if (loadMoreBtn) loadMoreBtn.disabled = true;
 
-  if (reset) {
-    currentPage = 1;
-    allBatches = [];
-    main.innerHTML = "";
-    hasMore = true;
-  }
+    if (reset) {
+        currentPage = 1;
+        allBatches = [];
+        main.innerHTML = "";
+        hasMore = true;
+    }
 
-  try {
-    const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
-    const favorites = getFavoriteBatches();
-    let favBatches = [];
+    try {
+        const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
+        const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
+        const data = await res.json();
 
-    // 🔥 Always load all favorited batches if any
-   if (favorites.length > 0 && !currentQuery) {
-  // Load all favorites only if NOT searching
-  const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
-  const favData = await favRes.json();
-  favBatches = favData.batches.map(b => ({
-    name: b.name,
-    image: b.previewImage,
-    batchId: b._id
-  }));
+        if (data.success && data.batches && data.batches.length > 0) {
+            const newBatches = data.batches.map(b => ({
+                batchId: b._id,
+                name: b.name,
+                byName: b.byName, // We need this for the byline
+                image: b.previewImage || 'https://placehold.co/600x340/1a1a1a/ffffff?text=No+Image',
+                language: b.language,
+                exam: b.exam,
+                startDate: b.start_date,
+            }));
+
+            allBatches = [...allBatches, ...newBatches];
+            renderBatches(allBatches); // Re-render the whole list to maintain order
+
+            // Check if there are more pages
+            if (!data.totalPages || currentPage >= data.totalPages) {
+                hasMore = false;
+                if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
+            } else {
+                currentPage++;
+                if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "block";
+            }
+        } else {
+            hasMore = false;
+            if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
+            if(allBatches.length === 0) renderNoResults();
+        }
+    } catch (err) {
+        console.error("Failed to load batches:", err);
+        renderNoResults();
+    } finally {
+        isLoading = false;
+        showLoader(false);
+        if (loadMoreBtn) loadMoreBtn.disabled = false;
+    }
 }
 
-    // 🔁 Load regular paginated batches
-    const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
-    const data = await res.json();
-    const newBatches = data.batches.map(b => ({
-      name: b.name,
-      image: b.previewImage,
-      batchId: b._id
-    }));
+function renderBatches(batches) {
+    main.innerHTML = ""; // Clear previous render
+    if(batches.length === 0 && currentQuery) {
+        renderNoResults();
+        return;
+    }
 
-    // 🧠 Merge unique batches (favorites first)
-    const seen = new Set();
-    const merged = [...favBatches, ...(reset ? newBatches : allBatches.concat(newBatches))].filter(b => {
-      if (seen.has(b.batchId)) return false;
-      seen.add(b.batchId);
-      return true;
+    const favorites = getFavoriteBatches();
+    // Sort batches: favorited ones come first
+    const sorted = [...batches].sort((a, b) => {
+        const aFav = favorites.includes(a.batchId);
+        const bFav = favorites.includes(b.batchId);
+        if (aFav === bFav) return 0;
+        return aFav ? -1 : 1;
     });
 
-    allBatches = merged;
-
-    if (reset && allBatches.length === 0) {
-      renderNoResults();
-      hasMore = false;
-      loadMoreBtnWrapper.style.display = "none";
-    } else {
-      renderBatches(allBatches, { append: false });
-
-      if (newBatches.length < 12) {
-        hasMore = false;
-        loadMoreBtnWrapper.style.display = "none";
-      } else {
-        currentPage++;
-        loadMoreBtnWrapper.style.display = "block";
-      }
-    }
-  } catch (err) {
-    console.error("Failed to load batches:", err);
-  } finally {
-    isLoading = false;
-    showLoader(false);
-  }
+    sorted.forEach(batch => appendBatchCard(main, batch));
 }
-
-   loadMoreBtn.addEventListener("click", () => {
-  loadBatches();
-});
- 
-
-function renderBatches(batches, { append = false } = {}) {
-  if (!append) main.innerHTML = "";
-
-  const favorites = getFavoriteBatches();
-
-  const sorted = [...batches].sort((a, b) => {
-    const aFav = favorites.includes(a.batchId);
-    const bFav = favorites.includes(b.batchId);
-    return aFav === bFav ? 0 : aFav ? -1 : 1;
-  });
-
- sorted.forEach(batch => {
-      appendCard(main, batch.name, batch.image, () => {
-        currentBatchName = batch.name;
-        loadSubjects(batch.batchId);
-      }, batch.batchId);
-  });
-}
+    
     
 function getFavoriteBatches() {
   const stored = localStorage.getItem("favoriteBatches");
@@ -1866,52 +1876,59 @@ function debounce(fn, delay) {
 
   
 async function loadSubjects(batchId) {
-   pushView(() => showBatchesView()); 
-  show(subjectsDiv);
-  backBtn.style.display = "block";
- 
-  subjectsDiv.innerHTML = "";
-  searchInput.style.display = "none";
-  showLoader(true);
-  try {
-    const res = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
-    const json = await res.json();
-    const subs = (json.data && json.data.subjects) || [];
+    pushView(() => showBatchesView()); 
 
-   // 1. Define appendCard FIRST
-function appendCard(container, sub, onClick) {
-  const subjectName = sub.subject;
-  const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
-  const lectureCount = sub.lectureCount || 0;
-  const chapterCount = sub.tagCount || 0;
+    // Use your existing clearAll/show logic correctly
+    clearAll();
+    const subjectsContainer = document.getElementById("subjects");
+    subjectsContainer.style.display = "grid";
+    backBtn.style.display = "inline-flex";
+    searchInput.style.display = "none";
 
-  const teacher = sub.teacherIds?.[0];
-  const teacherImg = teacher?.imageId
-    ? `${teacher.imageId.baseUrl}${teacher.imageId.key}`
-    : '';
-  const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'TBA';
+    subjectsContainer.innerHTML = "";
+    showLoader(true);
 
-  const card = document.createElement('div');
-  card.className = 'subject-card';
-  card.onclick = onClick;
+    try {
+        const res = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
+        const json = await res.json();
+        const subs = (json.data && json.data.subjects) || [];
 
-  card.innerHTML = `
-    <div class="card-header">
-      <img class="subject-icon" src="${iconUrl}" alt="${subjectName}" />
-      <div class="subject-title">${subjectName}</div>
-    </div>
-    <div class="card-details">
-      <div>🎥 <strong>${lectureCount}</strong> Lectures</div>
-      <div>📚 <strong>${chapterCount}</strong> Chapters</div>
-    </div>
-    <div class="teacher-info">
-      <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" />
-      <div class="teacher-name">${teacherName}</div>
-    </div>
-  `;
+        if (subs.length > 0) {
+            subs.forEach(sub => {
+                // Create the subject card
+                const card = document.createElement('div');
+                card.className = 'subject-card'; // Use the specific class for subjects
+                card.onclick = () => {
+                    pushView(() => loadSubjects(batchId));
+                    currentSubjectId = sub.subjectId || sub._id;
+                    currentSubjectName = sub.subject;
+                    loadChapters(batchId, sub.slug);
+                };
 
-  container.appendChild(card);
-}
+                const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
+                const teacher = sub.teacherIds?.[0];
+                const teacherImg = teacher?.imageId ? `${teacher.imageId.baseUrl}${teacher.imageId.key}` : '';
+                const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'TBA';
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <img class="subject-icon" src="${iconUrl}" alt="${sub.subject}" />
+                        <div class="subject-title">${sub.subject}</div>
+                    </div>
+                    <div class="card-details">
+                        <div>🎥 <strong>${sub.lectureCount || 0}</strong> Lectures</div>
+                        <div>📚 <strong>${sub.tagCount || 0}</strong> Chapters</div>
+                    </div>
+                    <div class="teacher-info">
+                        <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" />
+                        <div class="teacher-name">${teacherName}</div>
+                    </div>
+                `;
+                subjectsContainer.appendChild(card);
+            });
+        } else {
+            subjectsContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">No subjects found in this arena.</p>';
+        }
 
 // 2. Then call it inside your loop
 subs.forEach(sub => {
