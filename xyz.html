@@ -1793,37 +1793,72 @@ async function loadBatches({ reset = false } = {}) {
     }
 
     try {
+        let favBatches = [];
+        const favorites = getFavoriteBatches();
+
+        // --- NEW LOGIC: Start ---
+        // On the very first load (when reset is true) and if not searching,
+        // fetch all favorited batches first.
+        if (reset && favorites.length > 0 && !currentQuery) {
+            try {
+                const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
+                const favData = await favRes.json();
+                if (favData.success && favData.batches) {
+                    // Map the favorite batches to our standard card format
+                    favBatches = favData.batches.map(b => ({
+                        batchId: b._id,
+                        name: b.name,
+                        byName: b.byName,
+                        image: b.previewImage || 'https://placehold.co/600x340/1a1a1a/ffffff?text=No+Image',
+                        language: b.language,
+                        exam: b.exam,
+                        startDate: b.start_date,
+                    }));
+                }
+            } catch (favErr) {
+                console.error("Failed to load favorite batches:", favErr);
+                // Continue execution even if favorites fail to load
+            }
+        }
+        // --- NEW LOGIC: End ---
+
         const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
         const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
         const data = await res.json();
 
+        let newBatches = [];
         if (data.success && data.batches && data.batches.length > 0) {
-            const newBatches = data.batches.map(b => ({
+            newBatches = data.batches.map(b => ({
                 batchId: b._id,
                 name: b.name,
-                byName: b.byName, // We need this for the byline
+                byName: b.byName,
                 image: b.previewImage || 'https://placehold.co/600x340/1a1a1a/ffffff?text=No+Image',
                 language: b.language,
                 exam: b.exam,
                 startDate: b.start_date,
             }));
+        }
 
-            allBatches = [...allBatches, ...newBatches];
-            renderBatches(allBatches); // Re-render the whole list to maintain order
+        // Combine and de-duplicate batches
+        const combinedBatches = [...favBatches, ...allBatches, ...newBatches];
+        const uniqueBatchesMap = new Map(combinedBatches.map(batch => [batch.batchId, batch]));
+        allBatches = Array.from(uniqueBatchesMap.values());
+        
+        renderBatches(allBatches);
 
-            // Check if there are more pages
-            if (!data.totalPages || currentPage >= data.totalPages) {
-                hasMore = false;
-                if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
-            } else {
-                currentPage++;
-                if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "block";
-            }
-        } else {
+        // Update pagination status based on the regular API call result
+        if (newBatches.length === 0 || (data.totalPages && currentPage >= data.totalPages)) {
             hasMore = false;
             if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
-            if(allBatches.length === 0) renderNoResults();
+        } else {
+            currentPage++;
+            if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "block";
         }
+
+        if(allBatches.length === 0) {
+            renderNoResults();
+        }
+
     } catch (err) {
         console.error("Failed to load batches:", err);
         renderNoResults();
