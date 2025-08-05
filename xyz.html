@@ -297,135 +297,12 @@
       100% { stroke-dashoffset: 275; }
     }
 
-  /* --- NEW BATCH CARD STYLES --- */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-}
-
-.batch-card {
-    background: #121829;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #2a3042;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-}
-
-.batch-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.2);
-    border-color: var(--squid-cyan);
-}
-
-.batch-card-image-wrapper {
-    position: relative;
-}
-
-.batch-card-image {
-    width: 100%;
-    height: 170px;
-    object-fit: cover;
-    display: block;
-}
-
-.heart-icon {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-    z-index: 1;
-    transition: transform 0.2s, color 0.3s;
-    text-shadow: 0 0 5px rgba(0,0,0,0.7);
-}
-
-.heart-icon.active {
-    color: #ff4757; /* A bright red for active state */
-    transform: scale(1.1);
-}
-   
-.batch-card-content {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1; /* Allows footer to stick to the bottom */
-}
-
-.batch-card-tags {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.tag {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 4px;
-    text-transform: capitalize;
-}
-
-.tag-language {
-    background-color: rgba(0, 229, 255, 0.1);
-    color: var(--squid-cyan);
-    border: 1px solid var(--squid-cyan);
-}
-
-.tag-exam {
-    background-color: rgba(0, 255, 136, 0.1);
-    color: var(--squid-green);
-    border: 1px solid var(--squid-green);
-}
-
-.batch-card-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.3;
-    margin-bottom: 4px;
-}
-
-.batch-card-byline {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
-    flex-grow: 1; /* Pushes footer down */
-}
-
-.batch-card-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: auto; /* Important for alignment */
-}
-
-.batch-card-date {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-}
-
-.study-button {
-    background: linear-gradient(45deg, var(--squid-dark-blue), var(--squid-cyan));
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-weight: 600;
-    font-family: 'Rajdhani', sans-serif;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem;
-}
-
-.study-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 15px var(--glow-cyan);
+    .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 300px));
+  justify-content: center; /* centers cards if fewer than full row */
+  gap: 2rem;
+  margin-top: 2rem;
 }
 
 
@@ -886,6 +763,20 @@
   }
 }
 
+.heart-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s, color 0.3s;
+}
+
+.heart-icon.active {
+  color: red;
+}
 
 
 .card-image-wrapper {
@@ -1781,51 +1672,37 @@ function clearAll() {
     }
 
 function appendCard(container, title, image, onClick, batchId) {
-    const isFav = isFavoriteBatch(batch.batchId);
-    const card = document.createElement("div");
-    card.className = "batch-card";
+  const isFav = isFavoriteBatch(batchId);
 
-    const formattedDate = new Date(batch.startDate).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric'
-    });
+  const div = document.createElement("div");
+  div.className = "card";
+  div.innerHTML = `
+    <div class="card-image-wrapper">
+      <span class="heart-icon ${isFav ? "active" : ""}" data-batchid="${batchId}">&#10084;</span>
+      ${image ? `<img src="${image}" alt="${title}" />` : ""}
+    </div>
+    <div class="card-title">${title}</div>
+  `;
 
-    card.innerHTML = `
-        <div class="batch-card-image-wrapper">
-            <img src="${batch.image}" alt="${batch.name}" class="batch-card-image" onerror="this.src='https://placehold.co/600x340/1a1a1a/ffffff?text=No+Image'">
-            <span class="heart-icon ${isFav ? 'active' : ''}" data-batchid="${batch.batchId}">♥</span>
-        </div>
-        <div class="batch-card-content">
-            <div class="batch-card-tags">
-                ${batch.language ? `<span class="tag tag-language">${batch.language}</span>` : ''}
-                ${batch.exam ? `<span class="tag tag-exam">${batch.exam}</span>` : ''}
-            </div>
-            <h3 class="batch-card-title">${batch.name}</h3>
-            <p class="batch-card-byline">${batch.byName}</p>
-            <div class="batch-card-footer">
-                <span class="batch-card-date">Starts: ${formattedDate}</span>
-                <button class="study-button">Let's Study</button>
-            </div>
-        </div>
-    `;
+  // ✅ Make entire card clickable (excluding heart icon)
+  div.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("heart-icon")) {
+      onClick();
+    }
+  });
 
-    // Event listener for the study button
-    card.querySelector(".study-button").addEventListener("click", (e) => {
-        e.stopPropagation();
-        pushView(showBatchesView);
-        loadSubjects(batch.batchId);
-    });
+  // ❤️ Heart icon toggle
+  const heart = div.querySelector(".heart-icon");
+  heart.onclick = (e) => {
+    e.stopPropagation(); // prevent card click
+    toggleFavoriteBatch(batchId);
+    heart.classList.toggle("active");
+    renderBatches(allBatches, { append: false }); // rerender full card list
+  };
 
-    // Event listener for the heart icon
-    const heart = card.querySelector(".heart-icon");
-    heart.addEventListener("click", (e) => {
-        e.stopPropagation();
-        toggleFavoriteBatch(batch.batchId);
-        heart.classList.toggle("active");
-        renderBatches(allBatches); // Re-render to reflect sorting
-    });
-
-    container.appendChild(card);
+  container.appendChild(div);
 }
+
 
 
 
