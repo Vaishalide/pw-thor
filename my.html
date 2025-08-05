@@ -297,136 +297,163 @@
       100% { stroke-dashoffset: 275; }
     }
 
-    .grid {
+ .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 300px));
-  justify-content: center; /* centers cards if fewer than full row */
+  /* FIX 1: Increased the minimum card width to 350px to make them larger. */
+  /* This will force 3 cards per row on most desktops. */
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  justify-content: center;
   gap: 2rem;
   margin-top: 2rem;
 }
 
 
-    .card {
-      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-      border: 2px solid var(--squid-pink);
-      border-radius: 16px;
-      padding: 1.5rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 0 30px var(--glow-dark-pink);
-    }
+.batch-card {
+    background: #121829;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #2a3042;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
 
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 24px;
-      height: 24px;
-      opacity: 0;
-      transition: all 0.3s ease;
-      z-index: 10;
-    }
+.batch-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.2);
+    border-color: var(--squid-cyan);
+}
 
-    .card:nth-child(3n+1)::after {
-      background: var(--squid-pink);
-      border-radius: 50%;
-    }
+.batch-card-image-wrapper {
+    position: relative;
+    width: 100%;
+    /* No more fixed aspect-ratio */
+    background-color: #000;
+}
 
-    .card:nth-child(3n+2)::after {
-      background: var(--squid-cyan);
-      border-radius: 4px;
-    }
+.batch-card-image {
+    width: 100%;
+    /* Let the browser figure out the correct height */
+    height: auto; 
+    display: block;
+}
 
-    .card:nth-child(3n+3)::after {
-      width: 0;
-      height: 0;
-      border-left: 12px solid transparent;
-      border-right: 12px solid transparent;
-      border-bottom: 20px solid var(--squid-green);
-      background: transparent;
-    }
+.heart-icon {
+    /* Positioning */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
 
-    .card::before {
-      content: '';
-      position: absolute;
-      top: -2px;
-      left: -2px;
-      right: -2px;
-      bottom: -2px;
-      background: linear-gradient(45deg, var(--squid-dark-blue), var(--squid-pink), var(--squid-dark-blue));
-      border-radius: 16px;
-      z-index: -1;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      animation: border-glow 2s linear infinite;
-    }
+    /* Create the black circle */
+    width: 36px;
+    height: 36px;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+    border-radius: 50%; /* This makes it a circle */
+    
+    /* Center the heart character inside the circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-    @keyframes border-glow {
-      0%, 100% {
-        background-position: 0% 50%;
-      }
-      50% {
-        background-position: 100% 50%;
-      }
-    }
+    /* Style the heart character itself */
+    color: white;
+    font-size: 18px; /* Adjusted size for the circle */
+    text-shadow: none; /* Remove the old shadow */
+    
+    /* Effects */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
 
-    .card:hover::before {
-      opacity: 1;
-    }
+.heart-icon.active {
+  color: red;
+}
 
-    .card:hover::after {
-      opacity: 1;
-      transform: scale(1.1) rotate(5deg);
-    }
+    
+.batch-card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
 
-    .card:hover {
-      transform: translateY(-10px) scale(1.03);
-      box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 40px var(--glow-dark-pink);
-      border-color: var(--squid-cyan);
-    }
+.batch-card-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    min-height: 25px; /* Ensures space for tags even if none exist */
+}
 
-    .card:nth-child(even) {
-      border-color: var(--squid-dark-blue);
-      box-shadow: 0 0 30px var(--glow-pink);
-    }
+.tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: capitalize;
+}
 
-    .card:nth-child(even):hover {
-      box-shadow:
-        0 25px 50px rgba(0, 0, 0, 0.5),
-        0 0 40px var(--glow-pink);
-      border-color: var(--glow-green);
-    }
+.tag-language {
+    background-color: rgba(0, 229, 255, 0.1);
+    color: var(--squid-cyan);
+    border: 1px solid var(--squid-cyan);
+}
 
-    .card img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      border-radius: 12px;
-      margin-bottom: 1rem;
-      transition: transform 0.3s ease;
-      border: 1px solid var(--squid-pink);
-      box-shadow: 0 0 15px var(--glow-dark-pink);
-    }
+.tag-exam {
+    background-color: rgba(0, 255, 136, 0.1);
+    color: var(--squid-green);
+    border: 1px solid var(--squid-green);
+}
 
-    .card:hover img {
-      transform: scale(1.05);
-      box-shadow: 0 0 25px var(--glow-dark-pink);
-    }
+.batch-card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.3;
+    margin-bottom: 8px;
+    flex-grow: 1; 
+}
+    
+.batch-card-byline {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
 
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      text-align: center;
-      margin-top: 1rem;
-      color: var(--text-primary);
-    }
+.batch-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
 
+.batch-card-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.study-button {
+    background: linear-gradient(45deg, var(--squid-dark-blue), var(--squid-cyan));
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 600;
+    font-family: 'Rajdhani', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.study-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--glow-cyan);
+}
+  
     /* Loading overlay */
     .loading-overlay {
       position: fixed;
@@ -763,6 +790,25 @@
   }
 }
 
+.heart-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s, color 0.3s;
+}
+
+.heart-icon.active {
+  color: red;
+}
+
+
+.card-image-wrapper {
+  position: relative;
+}
 
     .today-scroll-container {
   display: flex;
@@ -1290,6 +1336,22 @@
       border-color: var(--squid-pink);
     }
 
+    .heart-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s, color 0.3s;
+}
+
+.heart-icon.active {
+  color: red;
+}
+
+
     /* Floating background shapes */
     .geometric-bg {
       position: fixed;
@@ -1598,22 +1660,25 @@
 let isLoading = false;
 let hasMore = true;
 let currentQuery = "";
+  let currentBatchName = "";
+  let currentSubjectName = "";
+  let currentTopicName = "";
     
   const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
 const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
 
-   function showBatchesView() {
-  // ✅ No pushView(). This function now ONLY renders the batches view.
+ function showBatchesView() {
   clearAll(); 
-  main.style.display = "grid"; // Ensure the main grid is visible
-  document.getElementById("todayWrapper").style.display = 'block'; // Show today's wrapper on main page
-  
-  currentPage = 1;
+  main.style.display = "grid";
+  searchInput.style.display = "block"; // ✅ Show search bar again
+  searchInput.value = "";              // ✅ Clear previous search
   currentQuery = "";
+  currentPage = 1;
   hasMore = true;
   allBatches = [];
   loadBatches({ reset: true });
 }
+
 
 
     function showLoader(show) {
@@ -1651,85 +1716,205 @@ function clearAll() {
       clearAll();
       div.style.display = div.id === "lectureSection" ? "block" : "grid";
     }
+    
+function appendBatchCard(container, batch) {
+    const isFav = isFavoriteBatch(batch.batchId);
+    const card = document.createElement("div");
+    card.className = "batch-card";
 
-    function appendCard(container, title, image, onClick) {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.innerHTML = `
-        ${image ? `<img src="${image}" alt="${title}" />` : ""}
-        <div class="card-title">${title}</div>
-      `;
-      div.onclick = onClick;
-      container.appendChild(div);
+    // Format the date, with a fallback for invalid dates
+    let formattedDate = 'N/A';
+    if (batch.startDate) {
+        const date = new Date(batch.startDate);
+        if (!isNaN(date)) {
+             formattedDate = date.toLocaleDateString('en-GB', {
+                day: 'numeric', month: 'short', year: 'numeric'
+            });
+        }
     }
 
- async function loadBatches({ reset = false } = {}) {
-  if (isLoading || (!hasMore && !reset)) return;
+    card.innerHTML = `
+        <div class="batch-card-image-wrapper">
+            <img src="${batch.image}" alt="${batch.name}" class="batch-card-image">
+            <span class="heart-icon ${isFav ? 'active' : ''}" data-batchid="${batch.batchId}">♥</span>
+        </div>
+        <div class="batch-card-content">
+            <div class="batch-card-tags">
+                ${batch.language ? `<span class="tag tag-language">${batch.language}</span>` : ''}
+                ${batch.exam ? `<span class="tag tag-exam">${batch.exam}</span>` : ''}
+            </div>
+            <h3 class="batch-card-title">${batch.name}</h3>
+            <div class="batch-card-footer">
+                <span class="batch-card-date">Starts: ${formattedDate}</span>
+                <button class="study-button">Enter Arena</button>
+            </div>
+        </div>
+    `;
 
-  isLoading = true;
-  showLoader(true);
+    // Add click listener to the whole card (except the heart)
+    card.addEventListener("click", (e) => {
+        if (e.target.classList.contains('heart-icon') || e.target.classList.contains('study-button')) {
+            return;
+        }
+        pushView(showBatchesView);
+        currentBatchName = batch.name;
+        loadSubjects(batch.batchId);
+    });
 
-  if (reset) {
-    currentPage = 1;
-    allBatches = [];
-    main.innerHTML = "";
-    hasMore = true;
-  }
+    // Add click listener to the button specifically
+    card.querySelector(".study-button").addEventListener("click", (e) => {
+        e.stopPropagation();
+        pushView(showBatchesView);
+        currentBatchName = batch.name;
+        loadSubjects(batch.batchId);
+    });
 
-  try {
-    const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
-    const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
-    const data = await res.json();
+    // Add click listener to the heart icon
+    const heart = card.querySelector(".heart-icon");
+    heart.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFavoriteBatch(batch.batchId);
+        // Re-render the entire list to show the favorited item at the top
+        renderBatches(allBatches);
+    });
 
-    const newBatches = data.batches.map(b => ({
-      name: b.name,
-      image: b.previewImage,
-      batchId: b._id
-    }));
-
-    if (reset && newBatches.length === 0) {
-      renderNoResults();
-      hasMore = false;
-      loadMoreBtnWrapper.style.display = "none";
-    } else {
-      allBatches = reset ? newBatches : allBatches.concat(newBatches);
-      renderBatches(newBatches, { append: !reset });
-
-      if (newBatches.length < 12) {
-        hasMore = false;
-        loadMoreBtnWrapper.style.display = "none";
-      } else {
-        currentPage++;
-        loadMoreBtnWrapper.style.display = "block";
-      }
-    }
-  } catch (err) {
-    console.error("Failed to load batches:", err);
-  } finally {
-    isLoading = false;
-    showLoader(false);
-  }
+    container.appendChild(card);
 }
 
-   loadMoreBtn.addEventListener("click", () => {
+
+
+async function loadBatches({ reset = false } = {}) {
+    if (isLoading || (!hasMore && !reset)) return;
+
+    isLoading = true;
+    showLoader(true);
+    if (loadMoreBtn) loadMoreBtn.disabled = true;
+
+    if (reset) {
+        currentPage = 1;
+        allBatches = [];
+        main.innerHTML = "";
+        hasMore = true;
+    }
+
+    try {
+        let favBatches = [];
+        const favorites = getFavoriteBatches();
+
+        // --- NEW LOGIC: Start ---
+        // On the very first load (when reset is true) and if not searching,
+        // fetch all favorited batches first.
+        if (reset && favorites.length > 0 && !currentQuery) {
+            try {
+                const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
+                const favData = await favRes.json();
+                if (favData.success && favData.batches) {
+                    // Map the favorite batches to our standard card format
+                    favBatches = favData.batches.map(b => ({
+                        batchId: b._id,
+                        name: b.name,
+                        byName: b.byName,
+                        image: b.previewImage || 'https://placehold.co/600x340/1a1a1a/ffffff?text=No+Image',
+                        language: b.language,
+                        exam: b.exam,
+                        startDate: b.start_date,
+                    }));
+                }
+            } catch (favErr) {
+                console.error("Failed to load favorite batches:", favErr);
+                // Continue execution even if favorites fail to load
+            }
+        }
+        // --- NEW LOGIC: End ---
+
+        const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
+        const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
+        const data = await res.json();
+
+        let newBatches = [];
+        if (data.success && data.batches && data.batches.length > 0) {
+            newBatches = data.batches.map(b => ({
+                batchId: b._id,
+                name: b.name,
+                byName: b.byName,
+                image: b.previewImage || 'https://placehold.co/600x340/1a1a1a/ffffff?text=No+Image',
+                language: b.language,
+                exam: b.exam,
+                startDate: b.start_date,
+            }));
+        }
+
+        // Combine and de-duplicate batches
+        const combinedBatches = [...favBatches, ...allBatches, ...newBatches];
+        const uniqueBatchesMap = new Map(combinedBatches.map(batch => [batch.batchId, batch]));
+        allBatches = Array.from(uniqueBatchesMap.values());
+        
+        renderBatches(allBatches);
+
+        // Update pagination status based on the regular API call result
+        if (newBatches.length === 0 || (data.totalPages && currentPage >= data.totalPages)) {
+            hasMore = false;
+            if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
+        } else {
+            currentPage++;
+            if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "block";
+        }
+
+        if(allBatches.length === 0) {
+            renderNoResults();
+        }
+
+    } catch (err) {
+        console.error("Failed to load batches:", err);
+        renderNoResults();
+    } finally {
+        isLoading = false;
+        showLoader(false);
+        if (loadMoreBtn) loadMoreBtn.disabled = false;
+    }
+}
+
+function renderBatches(batches) {
+    main.innerHTML = ""; // Clear previous render
+    if(batches.length === 0 && currentQuery) {
+        renderNoResults();
+        return;
+    }
+
+    const favorites = getFavoriteBatches();
+    // Sort batches: favorited ones come first
+    const sorted = [...batches].sort((a, b) => {
+        const aFav = favorites.includes(a.batchId);
+        const bFav = favorites.includes(b.batchId);
+        if (aFav === bFav) return 0;
+        return aFav ? -1 : 1;
+    });
+
+    sorted.forEach(batch => appendBatchCard(main, batch));
+}
+    
+     loadMoreBtn.addEventListener("click", () => {
   loadBatches();
 });
- 
+    
+function getFavoriteBatches() {
+  const stored = localStorage.getItem("favoriteBatches");
+  return stored ? JSON.parse(stored) : [];
+}
 
-function renderBatches(batches, { append = false } = {}) {
-  if (!append) main.innerHTML = "";
+function isFavoriteBatch(batchId) {
+  return getFavoriteBatches().includes(batchId);
+}
 
-  todayWrapper.style.display = "none";
-  backBtn.style.display = "none";
-  searchInput.style.display = "block";
-  loadMoreBtnWrapper.style.display = "block";
-
-  batches.forEach(batch => {
-    appendCard(main, batch.name, batch.image, () => {
-      currentBatchName = batch.name;
-      loadSubjects(batch.batchId);
-    });
-  });
+function toggleFavoriteBatch(batchId) {
+  const favs = getFavoriteBatches();
+  const index = favs.indexOf(batchId);
+  if (index > -1) {
+    favs.splice(index, 1);
+  } else {
+    favs.push(batchId);
+  }
+  localStorage.setItem("favoriteBatches", JSON.stringify(favs));
 }
 
 function renderNoResults() {
@@ -1739,24 +1924,6 @@ function renderNoResults() {
     </div>
   `;
 }
-
-window.addEventListener("scroll", () => {
-  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-
-  const isBatchesView =
-    main.style.display !== "none" &&
-    subjectsDiv.style.display === "none" &&
-    chaptersDiv.style.display === "none" &&
-    document.getElementById("lectureSection").style.display === "none" &&
-    document.getElementById("todayWrapper").style.display === "none";
-
-  if (nearBottom && isBatchesView && !isLoading) {
-    loadBatches();
-  }
-});
-;
-
-
 
 
 // 🔍 Search input listener
@@ -1776,165 +1943,149 @@ function debounce(fn, delay) {
 
   
 async function loadSubjects(batchId) {
-   pushView(() => showBatchesView()); 
-  show(subjectsDiv);
-  backBtn.style.display = "block";
- 
-  subjectsDiv.innerHTML = "";
-  searchInput.style.display = "none";
-  showLoader(true);
-  try {
-    const res = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
-    const json = await res.json();
-    const subs = (json.data && json.data.subjects) || [];
+    
 
-   // 1. Define appendCard FIRST
-function appendCard(container, sub, onClick) {
-  const subjectName = sub.subject;
-  const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
-  const lectureCount = sub.lectureCount || 0;
-  const chapterCount = sub.tagCount || 0;
+    // 2. Prepare the UI for the subjects view
+    clearAll(); // Hide all other sections
+    const subjectsContainer = document.getElementById("subjects");
+    const todayWrapper = document.getElementById("todayWrapper");
+    
+    subjectsContainer.style.display = "grid"; // Show the subjects grid
+    todayWrapper.style.display = "block";    // Show the "Today's Battles" section
+    backBtn.style.display = "inline-flex";   // Show the back button
+    searchInput.style.display = "none";      // Hide the main search bar
+    
+    // Clear previous content and show loader
+    subjectsContainer.innerHTML = "";
+    document.getElementById("todayScrollContainer").innerHTML = "";
+    showLoader(true);
 
-  const teacher = sub.teacherIds?.[0];
-  const teacherImg = teacher?.imageId
-    ? `${teacher.imageId.baseUrl}${teacher.imageId.key}`
-    : '';
-  const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'TBA';
+    try {
+        // --- FETCH AND RENDER SUBJECTS ---
+        const batchDetailsRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
+        const batchDetailsJson = await batchDetailsRes.json();
+        const subjects = (batchDetailsJson.data && batchDetailsJson.data.subjects) || [];
 
-  const card = document.createElement('div');
-  card.className = 'subject-card';
-  card.onclick = onClick;
+        if (subjects.length > 0) {
+            subjects.forEach(sub => {
+                const card = document.createElement('div');
+                card.className = 'subject-card'; // Use the specific class for subjects
+                card.style.cursor = 'pointer';   // Make it look clickable
 
-  card.innerHTML = `
-    <div class="card-header">
-      <img class="subject-icon" src="${iconUrl}" alt="${subjectName}" />
-      <div class="subject-title">${subjectName}</div>
-    </div>
-    <div class="card-details">
-      <div>🎥 <strong>${lectureCount}</strong> Lectures</div>
-      <div>📚 <strong>${chapterCount}</strong> Chapters</div>
-    </div>
-    <div class="teacher-info">
-      <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" />
-      <div class="teacher-name">${teacherName}</div>
-    </div>
-  `;
+                // Attach click event to load chapters for this subject
+                card.onclick = () => {
+                    pushView(() => loadSubjects(batchId)); // For back navigation
+                    currentSubjectId = sub.subjectId || sub._id;
+                    currentSubjectName = sub.subject;
+                    loadChapters(batchId, sub.slug);
+                };
 
-  container.appendChild(card);
-}
+                // Safely get image URLs and names
+                const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : 'https://placehold.co/100x100/1e1e1e/ffffff?text=Icon';
+                const teacher = sub.teacherIds?.[0];
+                const teacherImg = teacher?.imageId ? `${teacher.imageId.baseUrl}${teacher.imageId.key}` : 'https://placehold.co/50x50/1e1e1e/ffffff?text=T';
+                const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}`.trim() : 'TBA';
 
-// 2. Then call it inside your loop
-subs.forEach(sub => {
-  appendCard(subjectsDiv, sub, () => {
-    pushView(() => loadSubjects(batchId));
-    chapterPage = 1;
-    chapterLoading = false;
-    currentSubjectId = sub.subjectId || sub._id;
-    currentSubjectName = sub.subject;
-    loadChapters(batchId, sub.slug, 1);
-  });
-});
-
-        const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
-const todayJson = await todayRes.json();
-const todayClasses = todayJson.data || [];
-      const todayWrapper = document.getElementById("todayWrapper");
-const todayScrollContainer = document.getElementById("todayScrollContainer");
-
-if (document.getElementById("subjects").style.display !== "none") {
-  todayWrapper.style.display = "block";
-}
-
-
-// If no classes, show message
-if (todayClasses.length === 0) {
-  todayScrollContainer.innerHTML = '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>';
-} else {
-  todayScrollContainer.innerHTML = ""; // Clear previous content
-}
-
-// Loop through today's classes
-todayClasses.forEach(cls => {
-  const title = cls.topic || "Untitled";
-  const subject = cls.subjectId?.name || "Unknown Subject";
-  const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-  const chapter = cls.tags?.[0]?.name || "General";
-  const tagLabel = cls.tag || "Upcoming";
-
-  const statusColor = tagLabel === "Live"
-    ? "var(--squid-green)"
-    : tagLabel === "Ended"
-    ? "var(--squid-red)"
-    : "var(--squid-cyan)";
-
-  const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
-
-  const card = document.createElement("div");
-  card.className = "today-card";
-
-  // Required for horizontal scroll layout
-  card.style.width = "260px";
-  card.style.flex = "0 0 auto";
-
-  card.innerHTML = `
-    <img src="${customImage}" alt="${title}" />
-    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
-    <div class="today-card-title">${title}</div>
-    <div style="font-size: 0.85rem; margin-top: 5px;">🕒 ${time} IST</div>
-    <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
-    <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
-  `;
-
-  card.onclick = async () => {
-  if (tagLabel === "Upcoming") {
-    alert("⚠️ Class not started yet. Please wait.");
-    return;
-  }
-
-  const batchId = cls.batch?._id || cls.batchId?._id || cls.batchId; // support for both structures
-  const scheduleId = cls._id;
-
-  if (!batchId || !scheduleId) {
-    alert("Invalid class identifiers.");
-    return;
-  }
-
-  showLoader(true);
-
-  try {
-    const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
-    const data = await res.json();
-
-      if (data.success && data.signed_url && data.video_id) {
-        const urlParams = new URLSearchParams({
-          encrypted: data.signed_url,
-          iv: data.video_id
-        });
-        if (data.pally_data && data.pally_iv) {
-          urlParams.append('pally_data', data.pally_data);
-          urlParams.append('pally_iv', data.pally_iv);
+                // Populate the card's HTML structure
+                card.innerHTML = `
+                    <div class="card-header">
+                        <img class="subject-icon" src="${iconUrl}" alt="${sub.subject}" onerror="this.src='https://placehold.co/100x100/1e1e1e/ffffff?text=Icon'"/>
+                        <div class="subject-title">${sub.subject}</div>
+                    </div>
+                    <div class="card-details">
+                        <div>🎥 <strong>${sub.lectureCount || 0}</strong> Lectures</div>
+                        <div>📚 <strong>${sub.tagCount || 0}</strong> Chapters</div>
+                    </div>
+                    <div class="teacher-info">
+                        <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" onerror="this.src='https://placehold.co/50x50/1e1e1e/ffffff?text=T'"/>
+                        <div class="teacher-name">${teacherName}</div>
+                    </div>
+                `;
+                subjectsContainer.appendChild(card);
+            });
+        } else {
+            subjectsContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">No subjects found in this arena.</p>';
         }
-        window.location.href = `dipesh.html?${urlParams.toString()}`;
-    } else {
-      alert("⚠️ Failed to get live stream URL.");
-    }
-  } catch (err) {
-    console.error("Live stream fetch error:", err);
-    alert("⚠️ Error getting live stream URL.");
-  } finally {
-    showLoader(false);
-  }
-};
 
+        // --- FETCH AND RENDER TODAY'S BATTLES ---
+        const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
+        const todayJson = await todayRes.json();
+        const todayClasses = todayJson.data || [];
+        const todayScrollContainer = document.getElementById("todayScrollContainer");
 
-todayScrollContainer.appendChild(card);
-});
-      } catch (err) {
-        console.error("Failed to load subjects or todayclass:", err);
-      } finally {
+        if (todayClasses.length === 0) {
+            todayScrollContainer.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center; width: 100%;">No battles scheduled for today.</div>';
+        } else {
+            todayClasses.forEach(cls => {
+                const title = cls.topic || "Untitled";
+                const subject = cls.subjectId?.name || "Unknown Subject";
+                const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+                const chapter = cls.tags?.[0]?.name || "General";
+                const tagLabel = cls.tag || "Upcoming";
+
+                const statusColor = tagLabel === "Live" ? "var(--squid-green)" : tagLabel === "Ended" ? "var(--squid-red)" : "var(--squid-cyan)";
+                const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
+
+                const card = document.createElement("div");
+                card.className = "today-card";
+
+                card.innerHTML = `
+                    <img src="${customImage}" alt="${title}" onerror="this.style.display='none'"/>
+                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
+                    <div class="today-card-title">${title}</div>
+                    <div style="font-size: 0.85rem; margin-top: 5px;">🕒 ${time}</div>
+                    <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
+                    <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
+                `;
+
+                card.onclick = async () => {
+                    if (tagLabel === "Upcoming") {
+                        alert("⚠️ This battle has not started yet. Please wait.");
+                        return;
+                    }
+                    const scheduleId = cls._id;
+                    if (!batchId || !scheduleId) {
+                        alert("Invalid class identifiers.");
+                        return;
+                    }
+                    
+                    showLoader(true);
+                    try {
+                        const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+                        const data = await res.json();
+
+                        if (data.success && data.signed_url && data.video_id) {
+                            const urlParams = new URLSearchParams({
+                                encrypted: data.signed_url,
+                                iv: data.video_id
+                            });
+                            if (data.pally_data && data.pally_iv) {
+                                urlParams.append('pally_data', data.pally_data);
+                                urlParams.append('pally_iv', data.pally_iv);
+                            }
+                            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+                        } else {
+                            alert("⚠️ Failed to get the stream URL for this battle.");
+                        }
+                    } catch (err) {
+                        console.error("Live stream fetch error:", err);
+                        alert("⚠️ An error occurred while trying to enter the battle.");
+                    } finally {
+                        showLoader(false);
+                    }
+                };
+                todayScrollContainer.appendChild(card);
+            });
+        }
+    } catch (err) {
+        console.error("Failed to load subjects or today's schedule:", err);
+        subjects.innerHTML = '<p style="color: var(--squid-red); text-align: center; grid-column: 1 / -1;">Could not load arena data. Please try again.</p>';
+    } finally {
+        // 3. Always hide the loader when done
         showLoader(false);
-      }
     }
+}
+
 
   async function loadChapters(batchId, subjectSlug) {
   const chaptersDiv = document.getElementById("chaptersDiv");
@@ -2118,7 +2269,7 @@ else {
           encrypted: data.signed_url,
           iv: data.video_id
         });
-        window.location.href = `dipesh.html?${urlParams}`;
+        window.location.href = `pwplayer.html?${urlParams}`;
         return;
       }
 
@@ -2126,7 +2277,7 @@ else {
       const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
       const altData = await res.json();
 
-      if (altData.success && altData.signed_url && altData.video_id) {
+           if (altData.success && altData.signed_url && altData.video_id) {
         const urlParams = new URLSearchParams({
           encrypted: altData.signed_url,
           iv: altData.video_id
@@ -2135,7 +2286,7 @@ else {
           urlParams.append('pally_data', altData.pally_data);
           urlParams.append('pally_iv', altData.pally_iv);
         }
-        window.location.href = `dipesh.html?${urlParams.toString()}`;
+        window.location.href = `pwplayer.html?${urlParams.toString()}`;
       } else {
         alert("⚠️ Video not available from either source.");
       }
@@ -2213,16 +2364,6 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
     backBtn.onclick = () => {
   history.back(); // ✅ triggers popstate event
 };
-
-
-    searchInput.addEventListener("input", () => {
-      const keyword = searchInput.value.toLowerCase();
-      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
-      renderBatches(filtered);
-    });
-
-      loadBatches();
-   
 
     // Popup functionality
     fetch('/popup.json')
