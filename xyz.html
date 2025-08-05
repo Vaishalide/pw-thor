@@ -328,17 +328,15 @@
 .batch-card-image-wrapper {
     position: relative;
     width: 100%;
-    /* This 4:3 shape is closer to a standard photo or thumbnail */
-    aspect-ratio: 4 / 3; 
+    /* No more fixed aspect-ratio */
     background-color: #000;
 }
 
 .batch-card-image {
     width: 100%;
-    height: 100%;
+    /* Let the browser figure out the correct height */
+    height: auto; 
     display: block;
-    /* This will fill the frame, removing the blank space */
-    object-fit: cover; 
 }
 
 .heart-icon {
