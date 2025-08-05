@@ -2,569 +2,2300 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRM Video Player</title>
-    <!-- Add Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link href="https://www.pw.live/favicon.ico" rel="icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #111;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-        }
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>PW THOR - Enter the Arena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #2a2a2a;
+      --squid-pink: #DC143C;
+      --squid-dark-pink: #B91C3C;
+      --squid-cyan: #00E5FF;
+      --squid-dark-blue: #1E40AF;
+      --squid-green: #00FF88;
+      --squid-red: #FF0040;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --text-muted: #888888;
+      --border-color: #333333;
+      --glow-pink: rgba(220, 20, 60, 0.9);
+      --glow-dark-pink: rgba(185, 28, 60, 0.8);
+      --glow-cyan: rgba(0, 229, 255, 0.8);
+      --glow-green: rgba(0, 255, 136, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--bg-primary) 0%, #1a0a1a 50%, var(--bg-primary) 100%);
+      color: var(--text-primary);
+      font-family: 'Rajdhani', sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(220, 20, 60, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 229, 255, 0.15) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Disable text selection and drag */
+    ::selection {
+      background: transparent;
+    }
+
+    ::-moz-selection {
+      background: transparent;
+    }
+
+    img {
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+    }
+
+    h1 {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      background: linear-gradient(45deg, #B91C3C, #DC143C, #1E40AF);
+      background-size: 200% 200%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradient-shift 4s ease-in-out infinite;
+      text-align: center;
+      margin: 0;
+      font-size: 3rem;
+      letter-spacing: 2px;
+    }
+
+    @keyframes gradient-shift {
+      0%, 100% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      border-bottom: 2px solid var(--squid-pink);
+      box-shadow: 0 2px 25px var(--glow-dark-pink);
+    }
+
+    .logo-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-shapes {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .shape {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .shape:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .shape:nth-child(2) {
+      animation-delay: 0.7s;
+    }
+
+    .shape:nth-child(3) {
+      animation-delay: 1.4s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-15px) rotate(180deg);
+      }
+    }
+
+    /* Updated header shapes to match loader style */
+    .header-shape {
+      width: 50px;
+      height: 50px;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .header-shape:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .header-shape:nth-child(2) {
+      animation-delay: 0.7s;
+    }
+
+    .header-shape:nth-child(3) {
+      animation-delay: 1.4s;
+    }
+
+    .header-shape:before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      display: block;
+      background: var(--squid-pink);
+      top: 37px;
+      left: 19px;
+      transform: translate(-18px, -18px);
+      z-index: 10;
+    }
+
+    .header-shape.triangle:before {
+      animation: headerDotTriangle 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+      left: 21px;
+      transform: translate(-10px, -18px);
+    }
+
+    .header-shape.circle:before {
+      animation: headerDotCircle 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .header-shape.square:before {
+      animation: headerDotRect 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .header-shape svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .header-shape svg rect,
+    .header-shape svg polygon,
+    .header-shape svg circle {
+      fill: none;
+      stroke: var(--squid-pink);
+      stroke-width: 4px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .header-shape.triangle svg polygon {
+      stroke: var(--squid-pink);
+      stroke-dasharray: 145 76 145 76;
+      stroke-dashoffset: 0;
+      animation: headerPathTriangle 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .header-shape.circle svg circle {
+      stroke: var(--squid-cyan);
+      stroke-dasharray: 150 50 150 50;
+      stroke-dashoffset: 75;
+      animation: headerPathCircle 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .header-shape.square svg rect {
+      stroke: var(--squid-dark-blue);
+      stroke-dasharray: 192 64 192 64;
+      stroke-dashoffset: 0;
+      animation: headerPathRect 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    @keyframes headerPathTriangle {
+      33% { stroke-dashoffset: 74; }
+      66% { stroke-dashoffset: 147; }
+      100% { stroke-dashoffset: 221; }
+    }
+
+    @keyframes headerDotTriangle {
+      33% { transform: translate(0, 0); }
+      66% { transform: translate(10px, -18px); }
+      100% { transform: translate(-10px, -18px); }
+    }
+
+    @keyframes headerPathRect {
+      25% { stroke-dashoffset: 64; }
+      50% { stroke-dashoffset: 128; }
+      75% { stroke-dashoffset: 192; }
+      100% { stroke-dashoffset: 256; }
+    }
+
+    @keyframes headerDotRect {
+      25% { transform: translate(0, 0); }
+      50% { transform: translate(18px, -18px); }
+      75% { transform: translate(0, -36px); }
+      100% { transform: translate(-18px, -18px); }
+    }
+
+    @keyframes headerPathCircle {
+      25% { stroke-dashoffset: 125; }
+      50% { stroke-dashoffset: 175; }
+      75% { stroke-dashoffset: 225; }
+      100% { stroke-dashoffset: 275; }
+    }
+
+    @keyframes headerDotCircle {
+      25% { stroke-dashoffset: 125; }
+      50% { stroke-dashoffset: 175; }
+      75% { stroke-dashoffset: 225; }
+      100% { stroke-dashoffset: 275; }
+    }
+
+    .grid {
+        display: grid;
+        justify-content: center;
+        gap: 1.5rem; /* A bit smaller gap */
+        margin-top: 2rem;
+    }
+
+    /* --- MODIFIED: Specific grid for batches --- */
+    #main.grid {
+        grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+    }
+    
+    /* --- MODIFIED: lecture content grid remains as it was --- */
+    #lectureContent.grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
 
 
-        .player-container {
-            max-width: 900px;
-            width: 100%;
-            background: #000;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+    /* --- NEW CSS FOR BATCH CARD --- */
+    .batch-card {
+        background-color: #1c1c24; /* Dark background */
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        border: 1px solid #333;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+    }
+    .batch-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+    .batch-card-image {
+        flex: 0 0 180px; /* Fixed width for the image part */
+    }
+    .batch-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .batch-card-content {
+        flex-grow: 1;
+        padding: 1rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+    .batch-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    .batch-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .batch-tags .tag {
+        font-size: 0.75rem;
+        font-weight: 500;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .batch-price {
+        font-size: 1rem;
+        font-weight: bold;
+        text-align: right;
+    }
+    .batch-price .original-price {
+        text-decoration: line-through;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+    }
+    .batch-price .discounted-price {
+        color: var(--squid-green);
+    }
 
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            background: #000;
-        }
+    .batch-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0 0 0.25rem 0;
+        line-height: 1.3;
+        color: var(--text-primary);
+    }
+    .batch-byname {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin: 0;
+        flex-grow: 1; /* Pushes footer down */
+    }
+    .batch-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        border-top: 1px solid #333;
+        padding-top: 0.75rem;
+    }
+    .batch-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .study-button {
+        background-color: var(--squid-dark-blue);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.2s ease;
+    }
+    .study-button:hover {
+        background-color: var(--squid-cyan);
+        color: #000;
+    }
+    .batch-card .heart-icon {
+        font-size: 20px;
+        color: white;
+        cursor: pointer;
+        transition: color 0.2s, transform 0.2s;
+        margin-left: 1rem;
+        position: static; /* override absolute positioning */
+    }
+    .batch-card .heart-icon:hover {
+        transform: scale(1.2);
+    }
+    .batch-card .heart-icon.active {
+        color: var(--squid-pink);
+    }
+    /* --- END OF NEW BATCH CARD CSS --- */
 
-        video {
-            width: 100%;
-            display: block;
-        }
+    /* OLD card styles for other sections */
+    .card {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      border: 2px solid var(--squid-pink);
+      border-radius: 16px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 0 30px var(--glow-dark-pink);
+    }
 
-        .controls-overlay {
-            position: absolute;
-            pointer-events: none;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 2;
-        }
+    .card:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.5),
+        0 0 40px var(--glow-dark-pink);
+      border-color: var(--squid-cyan);
+    }
 
-        .video-wrapper:hover .controls-overlay,
-        .controls-overlay.visible {
-            opacity: 1;
-        }
+    .card img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+      border: 1px solid var(--squid-pink);
+      box-shadow: 0 0 15px var(--glow-dark-pink);
+    }
 
-        .top-bar,
-        .bottom-bar {
-            padding: 15px;
-            display: flex;
-            align-items: center;
-        }
+    .card:hover img {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px var(--glow-dark-pink);
+    }
 
-        .top-bar {
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
-            pointer-events: auto;
-            /* ✅ clickable */
-            z-index: 10;
-        }
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 1rem;
+      color: var(--text-primary);
+    }
 
-        .bottom-bar {
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
-            flex-direction: column;
-            padding-bottom: 10px;
-        }
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 10, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+    }
 
-        .control-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px;
-            transition: transform 0.2s ease;
-            pointer-events: auto;
-            z-index: 9999;
+    .loading-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .loading-text {
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .loaders-container {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .loader {
+      --path: white;
+      --dot: #f40af0;
+      --duration: 3s;
+      width: 44px;
+      height: 44px;
+      position: relative;
+    }
+
+    .loader:before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      display: block;
+      background: var(--dot);
+      top: 37px;
+      left: 19px;
+      transform: translate(-18px, -18px);
+      animation: dotRect var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .loader svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .loader svg rect,
+    .loader svg polygon,
+    .loader svg circle {
+      fill: none;
+      stroke: var(--path);
+      stroke-width: 10px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .loader svg polygon {
+      stroke-dasharray: 145 76 145 76;
+      stroke-dashoffset: 0;
+      animation: pathTriangle var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .loader svg rect {
+      stroke-dasharray: 192 64 192 64;
+      stroke-dashoffset: 0;
+      animation: pathRect 3s cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .loader svg circle {
+      stroke-dasharray: 150 50 150 50;
+      stroke-dashoffset: 75;
+      animation: pathCircle var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    .loader.triangle1 {
+      width: 48px;
+    }
+
+    .loader.triangle1:before {
+      left: 21px;
+      transform: translate(-10px, -18px);
+      animation: dotTriangle var(--duration) cubic-bezier(0.785, 0.135, 0.15, 0.86) infinite;
+    }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+    }
+
+    @keyframes pathTriangle {
+      33% { stroke-dashoffset: 74; }
+      66% { stroke-dashoffset: 147; }
+      100% { stroke-dashoffset: 221; }
+    }
+
+    @keyframes dotTriangle {
+      33% { transform: translate(0, 0); }
+      66% { transform: translate(10px, -18px); }
+      100% { transform: translate(-10px, -18px); }
+    }
+
+    @keyframes pathRect {
+      25% { stroke-dashoffset: 64; }
+      50% { stroke-dashoffset: 128; }
+      75% { stroke-dashoffset: 192; }
+      100% { stroke-dashoffset: 256; }
+    }
+
+    @keyframes dotRect {
+      25% { transform: translate(0, 0); }
+      50% { transform: translate(18px, -18px); }
+      75% { transform: translate(0, -36px); }
+      100% { transform: translate(-18px, -18px); }
+    }
+
+    @keyframes pathCircle {
+      25% { stroke-dashoffset: 125; }
+      50% { stroke-dashoffset: 175; }
+      75% { stroke-dashoffset: 225; }
+      100% { stroke-dashoffset: 275; }
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(45deg, var(--squid-pink), var(--squid-cyan));
+      color: var(--text-primary);
+      border: 2px solid var(--squid-pink);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+      text-decoration: none;
+      font-family: inherit;
+      box-shadow: 0 0 25px var(--glow-dark-pink);
+    }
+
+    .back-btn:hover {
+      transform: translateX(-5px) scale(1.05);
+      box-shadow: 0 0 35px var(--glow-dark-pink);
+      border-color: var(--squid-cyan);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 600px;
+      padding: 1rem 1.5rem;
+      background: var(--bg-secondary);
+      border: 3px solid var(--squid-pink);
+      border-radius: 12px;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-family: inherit;
+      transition: all 0.3s ease;
+      margin: 0 auto 2rem;
+      display: block;
+      box-shadow: 0 0 25px var(--glow-dark-pink);
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--squid-cyan);
+      box-shadow: 0 0 35px var(--glow-cyan);
+      background: var(--bg-primary);
+      transform: scale(1.02);
+    }
+
+    input[type="text"]::placeholder {
+      color: var(--text-muted);
+    }
+
+    .today-classes-wrapper {
+      margin: 2rem 0;
+    }
+
+    .chapter-meta i {
+  margin-right: 6px;
+  color: #ffbb33;
+}
+
+    .chapter-meta i {
+  font-size: 1rem;
+}
+
+    .card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 16px;
+}
+
+.chapter-card {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 16px;
+  color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+}
+
+.chapter-card:hover {
+  transform: scale(1.02);
+}
+
+.chapter-title {
+  font-weight: bold;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.chapter-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.chapter-meta div {
+  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#lectureContent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;          /* ↑ slightly increased from 16px */
+  padding: 8px 12px;  /* ↓ reduced from 16px */
+}
 
 
+.lecture-card {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  width: 100%;
+  max-width: 380px; /* ← increased from 320px to 380px */
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
 
-        }
+.lecture-card:hover {
+  transform: translateY(-3px);
+}
 
-        .control-btn:hover {
-            transform: scale(1.1);
-        }
+.lecture-card-inner {
+  display: flex;
+  flex-direction: column;
+}
 
-        .top-bar .spacer {
-            flex-grow: 1;
-        }
+.lecture-thumbnail {
+  position: relative;
+  width: 100%;
+}
+.lecture-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
 
-        .progress-bar-wrapper {
-            width: 100%;
-            padding: 0 5px;
-            margin-bottom: 10px;
-        }
+.status-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-        #progress-bar {
-            width: 100%;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.4);
-            border-radius: 5px;
-            cursor: pointer;
-        }
+.lecture-info {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-        #progress-bar::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 15px;
-            height: 15px;
-            background: #ff0000;
-            border-radius: 50%;
-            cursor: pointer;
-        }
+.lecture-title {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
 
-        #progress-bar::-moz-range-thumb {
-            width: 15px;
-            height: 15px;
-            background: #ff0000;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
+.lecture-meta {
+  font-size: 0.85rem;
+  color: #aaa;
+  display: flex;
+  justify-content: space-between;
+}
+.icon-calendar::before {
+  content: "📅";
+  margin-right: 5px;
+}
+.icon-clock::before {
+  content: "⏱";
+  margin-right: 5px;
+}
 
-        .controls-row {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            align-items: center;
-        }
+@media screen and (max-width: 600px) {
+  .lecture-card {
+    max-width: 100%;
+  }
+}
 
-        .left-controls,
-        .right-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+.card-image-wrapper {
+  position: relative;
+}
 
-        .volume-container {
-            display: flex;
-            align-items: center;
-        }
+    .today-scroll-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;               /* ✅ FORCE NO WRAP */
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 16px;
+  scroll-snap-type: x mandatory;
+  padding: 12px 0;
+}
 
-        #volume-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 0;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.6);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            cursor: pointer;
-        }
+.today-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.today-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--squid-pink);
+  border-radius: 10px;
+}
+
+.today-scroll-container .today-card {
+  flex: 0 0 auto;
+  width: 260px;
+  scroll-snap-align: start;
+}
 
 
-        .volume-container:hover #volume-slider {
-            width: 80px;
-        }
+    .today-classes-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(45deg, var(--squid-pink), var(--squid-cyan));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-        #volume-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            background: #fff;
-            border-radius: 50%;
-            cursor: pointer;
-        }
+.today-classes-container {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  gap: 16px;
+  scroll-snap-type: x mandatory;
+  padding: 12px 0;
+}
 
-        #volume-slider::-moz-range-thumb {
-            width: 12px;
-            height: 12px;
-            background: #fff;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-        }
+.today-classes-container .today-card {
+  flex: 0 0 auto;
+  min-width: 240px;
+  scroll-snap-align: start;
+}
+/* Scrollbar for WebKit browsers */
+.today-classes-container::-webkit-scrollbar {
+  height: 8px;
+}
 
-        .time-display {
-            font-size: 14px;
-        }
+.today-classes-container::-webkit-scrollbar-track {
+  background: transparent;
+}
 
-        /* Status and Error styling */
-        .status-container {
-            padding: 10px 20px;
-            background: #222;
-        }
+.today-classes-container::-webkit-scrollbar-thumb {
+  background-color: var(--squid-pink);
+  border-radius: 10px;
+}
+.today-class-card {
+  flex: 0 0 auto;
+  min-width: 240px;              /* adjust as needed */
+  background: #1e1e1e;
+  padding: 16px;
+  border-radius: 12px;
+  scroll-snap-align: start;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
 
-        .status {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 5px;
-            padding: 10px;
-            color: white;
-            font-size: 12px;
-            line-height: 1.4;
-            max-height: 50px;
-            overflow-y: auto;
-        }
+.schedule-card {
+  min-width: 240px; /* or 300px depending on content */
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  background: #1e1e1e;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
 
-        .error {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid rgba(255, 0, 0, 0.5);
-            color: #ff6b6b;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 20px;
-            display: none;
-        }
+ .today-card {
+  flex: 0 0 auto;
+   width: 260px;
+  scroll-snap-align: start;
+  background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+  border: 2px solid var(--squid-cyan);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 25px var(--glow-cyan);
+}
 
-        .error.show {
-            display: block;
-        }
+    .today-card::after {
+      content: '';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 20px;
+      height: 20px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
 
-        .loading {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 3;
-            display: none;
-            text-align: center;
-            color: white;
-            font-size: 16px;
-        }
+    .today-card:nth-child(3n+1)::after {
+      background: var(--squid-pink);
+      border-radius: 50%;
+    }
 
-        .loading.show {
-            display: block;
-        }
+    .today-card:nth-child(3n+2)::after {
+      background: var(--squid-cyan);
+      border-radius: 3px;
+    }
 
-        .spinner {
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 3px solid #fff;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
+    .today-card:nth-child(3n+3)::after {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 17px solid var(--squid-green);
+      background: transparent;
+    }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+    .today-card:hover {
+      transform: translateY(-5px) scale(1.03);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 35px var(--glow-cyan);
+      border-color: var(--squid-pink);
+    }
 
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+    .today-card:hover::after {
+      opacity: 1;
+      transform: scale(1.1) rotate(3deg);
+    }
 
-        /* Settings Menu Styles */
-        .settings-menu {
-            position: absolute;
-            bottom: 80px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.9);
-            border-radius: 8px;
-            padding: 15px;
-            min-width: 200px;
-            display: none;
-            z-index: 10;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .today-card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--squid-cyan);
+      box-shadow: 0 0 15px var(--glow-cyan);
+    }
 
-        .settings-menu.show {
-            display: block;
-        }
+    .today-card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+    .subject-card {
+  background-color: #1e1e1e;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
 
-        .settings-item {
-            margin-bottom: 15px;
-        }
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
 
-        .settings-item:last-child {
-            margin-bottom: 0;
-        }
+.subject-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: contain;
+}
 
-        .settings-label {
-            display: block;
-            color: #fff;
-            font-size: 12px;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
+.subject-title {
+  font-size: 18px;
+  font-weight: 700;
+}
 
-        .settings-select {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            color: #fff;
-            padding: 8px 10px;
-            font-size: 12px;
-            cursor: pointer;
-        }
+.card-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
 
-        .settings-select:focus {
-            outline: none;
-            border-color: #ff0000;
-        }
+.teacher-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-        .settings-select option {
-            background: #333;
-            color: #fff;
-        }
+.teacher-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
-        .telegram-button-wrapper {
-            text-align: center;
-            margin-top: 15px;
-            margin-bottom: 20px;
-        }
+.teacher-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.subjects-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
 
-        .telegram-btn {
-            display: inline-block;
-            background-color: #0088cc;
-            color: white;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: background-color 0.3s ease;
-        }
+    
+    /* === Load More Button (Squid Game Theme) === */
 
-        .telegram-btn i {
-            margin-right: 8px;
-        }
+#loadMoreBatchesBtn {
+  /* Basic Setup & Font */
+  background: linear-gradient(45deg, var(--squid-pink), var(--squid-dark-blue));
+  border: 2px solid var(--squid-pink);
+  color: var(--text-primary);
+  font-family: 'Orbitron', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  
+  /* Sizing and Shape */
+  padding: 1rem 2.5rem;
+  border-radius: 50px; /* Pill shape */
+  
+  /* Flexbox for Icon Alignment */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
 
-        .telegram-btn:hover {
-            background-color: #006fa7;
-        }
-    </style>
+  /* Effects */
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 20px var(--glow-dark-pink);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Pulsing glow animation to attract attention */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 20px var(--glow-dark-pink);
+  }
+  50% {
+    box-shadow: 0 0 35px var(--glow-pink);
+  }
+  100% {
+    box-shadow: 0 0 20px var(--glow-dark-pink);
+  }
+}
+
+#loadMoreBatchesBtn {
+    animation: pulse-glow 2.5s infinite ease-in-out;
+}
+
+
+/* --- Hover and Active States --- */
+
+#loadMoreBatchesBtn:hover {
+  transform: scale(1.05);
+  border-color: var(--squid-cyan);
+  box-shadow: 0 0 40px var(--glow-cyan);
+  animation: none; /* Pause the pulse on hover for a direct response */
+}
+
+#loadMoreBatchesBtn:active {
+  transform: scale(0.98); /* Press-down effect */
+  filter: brightness(0.9);
+}
+
+
+/* --- Icon Styling --- */
+
+#loadMoreBatchesBtn i {
+  font-size: 1rem;
+  transition: transform 0.3s ease-in-out;
+}
+
+#loadMoreBatchesBtn:hover i {
+  transform: translateY(3px); /* Icon dips down on hover */
+}
+
+
+/* --- Cool sliding gloss effect on hover --- */
+
+#loadMoreBatchesBtn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 75%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: left 0.6s ease;
+}
+
+#loadMoreBatchesBtn:hover::before {
+  left: 120%;
+}
+
+    .lecture-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .lecture-tabs button {
+      background: linear-gradient(45deg, var(--bg-tertiary), var(--bg-secondary));
+      border: 2px solid var(--squid-pink);
+      color: var(--text-primary);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px var(--glow-dark-pink);
+    }
+
+    .lecture-tabs button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, var(--glow-dark-pink), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .lecture-tabs button:hover::before {
+      left: 100%;
+    }
+
+    .lecture-tabs button:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 30px var(--glow-dark-pink);
+      border-color: var(--squid-cyan);
+    }
+
+    .lecture-tabs button.active {
+      background: linear-gradient(45deg, var(--squid-pink), var(--squid-cyan));
+      border-color: var(--squid-pink);
+      box-shadow: 0 0 30px var(--glow-dark-pink);
+    }
+
+    .load-more-btn {
+      background: linear-gradient(45deg, var(--squid-dark-blue), var(--squid-red));
+      border: 2px solid var(--squid-cyan);
+      color: var(--text-primary);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 2rem auto;
+      display: block;
+      font-family: inherit;
+      box-shadow: 0 0 25px var(--glow-cyan);
+    }
+
+    .load-more-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 35px var(--glow-cyan);
+      border-color: var(--squid-pink);
+    }
+
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: linear-gradient(135deg, var(--bg-secondary), var(--bg-tertiary));
+      border: 2px solid var(--squid-pink);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow:
+        0 25px 50px rgba(0, 0, 0, 0.6),
+        0 0 40px var(--glow-dark-pink);
+      z-index: 10000;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .popup img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--squid-pink);
+      box-shadow: 0 0 20px var(--glow-dark-pink);
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .popup-close:hover {
+      color: var(--squid-pink);
+      transform: scale(1.2);
+    }
+
+    .popup-link {
+      display: inline-block;
+      background: linear-gradient(45deg, var(--squid-pink), var(--squid-cyan));
+      color: var(--text-primary);
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+      border: 2px solid var(--squid-pink);
+      box-shadow: 0 0 25px var(--glow-dark-pink);
+    }
+
+    .popup-link:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 35px var(--glow-dark-pink);
+      border-color: var(--squid-cyan);
+    }
+
+    .support-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(45deg, var(--squid-pink), var(--squid-cyan));
+      border: 2px solid var(--squid-pink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 30px var(--glow-dark-pink);
+      transition: all 0.3s ease;
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 30px var(--glow-dark-pink);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 0 40px var(--glow-dark-pink);
+        transform: scale(1.05);
+      }
+    }
+
+    .support-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), 0 0 40px var(--glow-dark-pink);
+      border-color: var(--squid-cyan);
+    }
+
+    .support-btn img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .note-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center; /* ✅ Center horizontally */
+}
+
+
+    .note-buttons button {
+      background: linear-gradient(45deg, var(--squid-cyan), var(--squid-green));
+      border: 2px solid var(--squid-cyan);
+      color: var(--text-primary);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px var(--glow-cyan);
+    }
+
+    .note-buttons button:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 25px var(--glow-cyan);
+      border-color: var(--squid-pink);
+    }
+
+    /* Floating background shapes */
+    .geometric-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: -2;
+      overflow: hidden;
+    }
+
+    .geometric-shape {
+      position: absolute;
+      opacity: 0.1;
+      animation: float-shapes 10s linear infinite;
+    }
+
+    .geometric-shape:nth-child(1) {
+      top: 10%;
+      left: 10%;
+      width: 40px;
+      height: 40px;
+      background: var(--squid-pink);
+      border-radius: 50%;
+      animation-delay: 0s;
+    }
+
+    .geometric-shape:nth-child(2) {
+      top: 20%;
+      right: 20%;
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 35px solid var(--squid-pink);
+      animation-delay: 2s;
+    }
+
+    .geometric-shape:nth-child(3) {
+      bottom: 30%;
+      left: 30%;
+      width: 35px;
+      height: 35px;
+      background: var(--squid-cyan);
+      border-radius: 4px;
+      animation-delay: 4s;
+    }
+
+    .geometric-shape:nth-child(4) {
+      bottom: 10%;
+      right: 10%;
+      width: 30px;
+      height: 30px;
+      background: var(--squid-green);
+      border-radius: 50%;
+      animation-delay: 6s;
+    }
+
+    @keyframes float-shapes {
+      0%, 100% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-20px) rotate(180deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      #main.grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        padding: 1rem;
+      }
+
+      .lecture-tabs {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .today-classes-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+     .today-card {
+      flex: 0 0 auto;
+      width: 260px;
+      scroll-snap-align: start;
+    }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .header-shape {
+        width: 40px;
+        height: 40px;
+      }
+
+      .loaders-container {
+        gap: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .batch-card {
+        flex-direction: column;
+      }
+      .batch-card-image {
+        width: 100%;
+        height: 150px; /* Give it a fixed height in vertical layout */
+      }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="player-container">
-        <div class="video-wrapper">
-            <video id="video" preload="metadata" poster="">
-                Your browser does not support the video tag.
-            </video>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                Loading DRM content...
-            </div>
-
-
-            <div class="controls-overlay">
-                <div class="top-bar">
-                    <button id="back-btn" class="control-btn"><i class="fas fa-arrow-left"></i></button>
-                    <div class="spacer"></div>
-                    <button id="menu-btn" class="control-btn"><i class="fas fa-ellipsis-v"></i></button>
-                </div>
-
-                <div class="bottom-bar">
-                    <div class="progress-bar-wrapper">
-                        <input type="range" id="progress-bar" min="0" max="100" step="0.1" value="0">
-                    </div>
-
-                    <div class="controls-row">
-                        <div class="left-controls">
-                            <button id="play-pause-btn" class="control-btn"><i class="fas fa-play"></i></button>
-                            <button id="rewind-btn" class="control-btn"><i class="fas fa-rotate-left"></i></button>
-                            <button id="forward-btn" class="control-btn"><i class="fas fa-rotate-right"></i></button>
-                            <div class="volume-container">
-                                <button id="volume-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
-                                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-                            </div>
-                        </div>
-                        <div class="right-controls">
-                            <span id="time-display" class="time-display">00:00 / 00:00</span>
-                            <button id="settings-btn" class="control-btn"><i class="fas fa-cog"></i></button>
-                            <button id="pip-btn" class="control-btn"><i class="fas fa-clone"></i></button>
-                            <button id="fullscreen-btn" class="control-btn"><i class="fas fa-expand"></i></button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Menu -->
-            <div class="settings-menu" id="settings-menu">
-                <div class="settings-item">
-                    <label class="settings-label">Playback Speed</label>
-                    <select class="settings-select" id="speed-select">
-                        <option value="0.25">0.25x</option>
-                        <option value="0.5">0.5x</option>
-                        <option value="0.75">0.75x</option>
-                        <option value="1" selected>1x (Normal)</option>
-                        <option value="1.25">1.25x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="1.75">1.75x</option>
-                        <option value="2">2x</option>
-                    </select>
-                </div>
-                <div class="settings-item">
-                    <label class="settings-label">Quality</label>
-                    <select class="settings-select" id="quality-select">
-                        <option value="auto" selected>Auto</option>
-                    </select>
-                </div>
-            </div>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="loading-text">Entering the Arena...</div>
+      <div class="loaders-container">
+        <div class="loader">
+          <svg viewBox="0 0 80 80">
+            <circle id="test" cx="40" cy="40" r="32"></circle>
+          </svg>
         </div>
 
-
-        <div class="status-container">
-            <div class="error" id="error"></div>
-            <div class="status">
-                <div id="statusText">Ready to load DRM content with signed segment requests</div>
-            </div>
+        <div class="loader triangle1">
+          <svg viewBox="0 0 86 80">
+            <polygon points="43 8 79 72 7 72"></polygon>
+          </svg>
         </div>
+
+        <div class="loader">
+          <svg viewBox="0 0 80 80">
+            <rect x="8" y="8" width="64" height="64"></rect>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="geometric-bg">
+    <div class="geometric-shape"></div>
+    <div class="geometric-shape"></div>
+    <div class="geometric-shape"></div>
+    <div class="geometric-shape"></div>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="logo-container">
+        <div class="logo-shapes">
+          <div class="header-shape triangle">
+            <svg viewBox="0 0 86 80">
+              <polygon points="43 8 79 72 7 72"></polygon>
+            </svg>
+          </div>
+          <div class="header-shape circle">
+            <svg viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32"></circle>
+            </svg>
+          </div>
+          <div class="header-shape square">
+            <svg viewBox="0 0 80 80">
+              <rect x="8" y="8" width="64" height="64"></rect>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h1>PW THOR</h1>
+          <p style="text-align: center; margin: 0; color: var(--text-secondary)">Educational Platform</p>
+        </div>
+      </div>
     </div>
 
-    <div class="telegram-button-wrapper">
-        <a href="https://t.me/pwthorxiityatra" target="_blank" class="telegram-btn">
-            <i class="fab fa-telegram-plane"></i> Join our Telegram
-        </a>
+    <input type="text" id="searchInput" placeholder="🔍 Search batch by name... Enter the Arena" />
+
+    <div class="grid" id="main"></div>
+    <div class="back-btn" id="backBtn" style="display:none;">← Back to Arena</div>
+
+   <div class="today-classes-wrapper" id="todayWrapper" style="display: block;">
+  <div class="today-classes-title">🎯 Today's Battles</div>
+  <div class="today-scroll-container" id="todayScrollContainer"></div>
+</div>
+
+
+    <div id="subjects" class="subjects-container" style="display: none;"></div>
+   <div id="chaptersDiv" class="card-grid" style="display: none;"></div>
+
+<div id="chapterLoadMoreWrapper" style="display: none;">
+  <div id="loadMoreChapters" style="width: 100%; height: 1px;"></div>
+</div>
+
+
+    <div style="text-align:center; margin-top: 20px; display:none;" id="chapterLoadMoreWrapper">
+      <button id="chapterLoadMoreBtn" class="load-more-btn">
+        Load More Chapters
+      </button>
     </div>
 
+    <div id="lectureSection" style="display:none;">
+      <div class="lecture-tabs">
+        <button id="tab-lectures" onclick="switchLectureTab('lectures')">⚔️ Lectures</button>
+        <button id="tab-notes" onclick="switchLectureTab('notes')">📚 Notes</button>
+        <button id="tab-dppnotes" onclick="switchLectureTab('dppnotes')">🎯 DPPs</button>
+        <button id="tab-dpplecture" onclick="switchLectureTab('dpplecture')">🔥 DPP Lectures</button>
+      </div>
+      <div class="grid" id="lectureContent"></div>
+    </div>
+<div id="loadMoreBatchesWrapper" style="text-align: center; margin: 2rem 0; display: none;">
+  <button id="loadMoreBatchesBtn">
+    <span>Load More Arenas</span>
+    <i class="fas fa-chevron-down"></i>
+  </button>
+</div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.6/shaka-player.compiled.min.js"></script>
-    <script>
-        // Elements
-        const playerContainer = document.querySelector('.player-container');
-        const videoWrapper = document.querySelector('.video-wrapper');
-        const video = document.getElementById('video');
-        const loading = document.getElementById('loading');
-        const error = document.getElementById('error');
-        const statusText = document.getElementById('statusText');
+    <div id="popup" class="popup" style="display: none;">
+      <button onclick="document.getElementById('popup').style.display='none'" class="popup-close">×</button>
+      <img id="popupImage" src="" alt="Popup Image">
+      <p id="popupText"></p>
+      <a id="popupLink" href="#" target="_blank" class="popup-link">
+        Join the Arena
+      </a>
+    </div>
+  </div>
 
+  <a href="https://t.me/pwthor_support" target="_blank" class="support-btn">
+    <img
+      src="data:image/webp;base64,UklGRpwLAABXRUJQVlA4IJALAADQQgCdASoEAQQBPp1OokwlpKMiI1EaSLATiWlu/HyXoeqEvP01/tvar/nv6rzV/sty+Ho/u1n57DeAF+Pfz7/M7xiAD6t+f5MvyAPLjvMPvn/L9TD/Degl9Fed/6k/ab4C/51/fPTM9hf7Yf//3Rf2F//5CkSL9p9qCRkiRftPtQSMkSL9p9g+JpN//CFROZInqpC/uX3s6po+OhXXhWdCdx29rgIIL6N9POX9PIoKtJEInGImniLTi8S0aU2XLYHs6ZHHT0yZeb9Y0Ef/0XTGZW3rjTaeibdiJ4BZl3IFscCDY6K6YAGs8zFb9pTLOPmp9PG9kZCO7H669CvPAfCFgyM9XsmfNte2+TBqXzSodAOCMfxB2mt4Pj119BT25Y5YOiu/AqNU3KjXWdoFiJqpLtLLrETQcXbIE/2h66jr1yBgnYQZLgmYA+Ax0onMLaFSQ8u0xTGiRW7tJy7HM1JpVWr8SKYdqZf3N6FKIjxmEVnQ9prDLVItVsfiLWs8HiuXSCX92n7bFQwuVFo58/MIcTM3QtHCTyhUAK1qbriB8j7m1W2IWoY38pFkF7vvIZdwTlrCgtrZbnOCE82q7KpQmrjAB8+F/MPSpnhrygDui37TGc2WauFZ0J3MZQJ7xVOaFYQg3V94NeU+EBohLVcKzoTuR4aXl4Ep27/0SkccMavNBItA4uIvWfagkZIkX7T7UEjJEi/afagkZIkX0gAA/v1XQAA3pdc8NbTF3t01RRX9yfbl5tRYeK6cd3upkkemkeHQBmSs6IUpTIPcO/XnpCpvDuOo4R/y8sx36LUAi4ZK7d6pYKIZAIXqyKigPv0ttm8eJnEseGva8/Vuv+EYazTFMQwYKN1xhquuCJqaoupDPd7OG5Mrbp3QKj3qUxygngDBHgc4aQ8GdMAQCu7PLCEd93tpq4yDREjG05OCDgvaZmuH9ZtkTvtJv1MmZH48NDeSlotuOXBQ4wPEqbDGxjRuQU5BOjHphGB3NvjOCq1TavYhBuKZvvxNB2DJyBzxFw5xey0+Iq63WRRdMlGB8R4lcVQbp8OxVUB6hH1zFqFg5RuYnSAjt9N26J+TmSN91jLNXjMeyINP5Yc7aH1r59Ry88iKq2k0vLvP91OaMdoGkahctb1RgIf1vyGx4VRSD0cpIiG8JUGDY0UrczOLpJ6g0Rb3k3zszgOVES3Xu6QSiuSLOL7d21mpipggK51vtznZLWuial0s44SLy/IEeNnZqknJH9jFoOtb2mQjvsE4+AGFIicfuUA3IiM1Uv4YA6+Kk6hM5E8NdkrInKfngivEI/23YiVVm1hfSrQWlEvzOxTR8rlLWA6FSNfbxHkPnQoAwVSiC2RbHs7m6EP6Z8gA2p28V+NyRHtefWSIN7zcI2owj9nsc/3FDhp5S6grAhozeftgNCf7KA9k56wpCcgp1QNg8mNSNUL66Uxea+tv2Tip97wU7ditZdicSy8Q3U8RbTz8+t6PErvEsDRCgQsRCsRuehmxgqgxcPXuo1adHO50Qq2+MgAsJPyUr9LmaXMHzlXG3OO2yEYoRXeGb8m9HF2UW8ral+SQ14T/dmprLcjWjDApC8OCl5wZsmPy9svz7HWXskfebj774YprqFbQdhccEn2P0zfLcrVekVgnRG1M2YFClp9uW2UjvCmwiso3SKfUsk1hhLS3piWBYX5pxO104jigw/qYjGSo8qSv/Tvqfa8Bew/PyVISvfFxrZOA44CPUpblZ31p1IJaN93jAoEmIEoMLJqyOq7T89xgIBJkW7OAH3JkqsiplDxaJdMFgVGt58lCrAwAKmf04KaQHP+1xgLrfktX+ZasnUhlfxCz/nc/54RpEtDFEZrU0JXEhCKMVY7rDmvQHno0u/evkrQFC3ACy2Avp+58YqI44jCqDtOEhekesuEASWIp+cZCPPCqSGr/TD3CxOblqDaL7b51Xi8s5CBkpNRDB6MV89I4eKd9U8Cde7qUE/T09njmdf8jCxdwCWOpHlspJZYY3qNiNxad6kfa7u/VtJ9cU5gQkGPEJnkdn+BxH3uhF7sG+xtaeeilc7REgKyTsS2bl4KOwuiYHOMmY9k4sUGbWYT65DGm0oc/YapsPxNW2JWDqNJpyaLnz1BGpgH3i3L8hIsIiN+taDjeksyd1WAmWTT7l4UfoI+hfVSligswT3qLwSlU3Cuxi2uqP6bOfhIzPyjajyYAv9euin9FZOr34vy6S59Ykz+Jjfz50eDY/6DiO09uk6yVKdDELMC4goCjhWHqufElBUadEcaIzxbnHCs8BBSAoKNklXOX8g+CRLRe66FWCOaU4on2OjcAhAIvtE4SWLx/up63x+2o0yePQJdyeO1ky1SLMfxIu6fZhCWnz/iHA6SzCxMv+X8y/R6xp4gu3N7PU5yEEcsOzh8+svXqvQ14qM1TIpHwxu15AbQ+xO98VFRBG2trO9wDafPQYmwnLavU823cx1TBgsqFRGJk8i04L8hahrMuoNWgooWf5YXPN5k0Gptb888b4btraRbccyg2xBQ3g+JUaL9A9rDnz7CaqxoYgCxQsaFhJ2t6NYpRNXtguHIYpuUs2fs2o4Uhdc4eSW3x+H5ZmgfaW0FVOR/hkBnRGmXCiWC9mtRGI6a0aVX7AQi4b7EwaE97EUefwqHFFFf7YMVAOqHVOXzgKcC6zQCQnmUbTW63WOmjZi42O8u9LEMGDQAiEyV1nsKrTQJZ3dHp3sJL0wky1bedLi6kcJaXnhJN4LjJPH2MAv/1aW2bTsAgC4yirQHQsrMRY72uurX/nJII7aOZ4xWo7PRVkE6/0dF6zsZpPWUZT2Gpluim+E/GQrk7TPKREVIeCd2VUevXtF6rU4NqtzC/4a1jXK6PvUzNnZFoVrzaEZDNR7zgFCpggU0kazD2LtAolposFJGG/0EUu7oWE2Wb5es8U7BLxx+F1rr8H9tbnkEBaCjpwACPo4e7tVRPHd/hXieaVtiC4hy2d9otKj5h/9FWIqlfXPma0gsXVgzEDcM6q+ovLJ14SdOa5jpW/fhJ0DRYrBiAuYmxcVlCz5dvAIchwMC3edIeUn2lqlzHVtsJKqUJmrOiq/3AIJbQEFP1eF4MO4PBWHVdagxFcbeJd+DxkJ9TxOEl5eDpASUzQbSChhFZCsnx96+nca1oyAaDBmeyrKcc4I+zugFtR4xVWBWyCon1V+vqM2+yIexawYaBr7KEVShApf+CWjKzUMyFFyf07VdvetH070NvEzZ1MivqEiovfspMdIaMb+7cek6nJit4b5HkqOd8QCpRsKn4nNomVbo8GS1yRZGTo5nr92iPoSt9nh76dyetAi6CinpD/SCWLvkVJituZmQoGvFb8qF864Lo3GEHq7j1xauMzNqP0yQLfsE8JsZ3FdqwPNKvzCAy9Hxj7AO0p/a8eCE6l0zN/8fCxVzVpDnR8yARyftZ4ZNLHE1VdrS/Vdxvk1uLEdFU2TTFCeISqPBBDm/zmL5vyuqWeOj1QiJpSCr5EBhM7fKjQUh0CG+GwvbzO54ote8F9R0UNsfMPUnwmwfT7XdhUW5W3HAuIr5bhsiQ9LjxnQK49GGCWV8NHEgkTfcZXHbr4R14tOogeFLllkmx+jsNHgXK7QN0OJZqbCOiLQKLmQa/Y4CvhXg9gc16W3wzcqMxliNhxs7dFNKnhz22d08L/bmN/810XEVYfRNCOMIUDNO3zcDfCCBwMItplwi2oT9Y9CZdQzork3XQxd6qQ4e/8iNZ/f6TzgOHTKnfZ3Ixcyf1z+q1ofhQytKlfy6iFbIxyKRvwLYNAEgCZOvalTaRxCL3Yn2e3gUOYIs7eXqQ+q5r6NyCc100ewTUoKl3Rjrvnyg8rjvz0OFce5bwPxZfZdKzjQIAHlYppY1/lKUNjxEutLIezLGf091vvvAgFkuGqPT2GMQ3p7zpztYzsHanABNwAAAAAA=="
+      alt="Support">
+  </a>
 
-        // New Controls
-        const controlsOverlay = document.querySelector('.controls-overlay');
-        const playPauseBtn = document.getElementById('play-pause-btn');
-        const rewindBtn = document.getElementById('rewind-btn');
-        const forwardBtn = document.getElementById('forward-btn');
-        const volumeBtn = document.getElementById('volume-btn');
-        const volumeSlider = document.getElementById('volume-slider');
-        const progressBar = document.getElementById('progress-bar');
-        const timeDisplay = document.getElementById('time-display');
-        const pipBtn = document.getElementById('pip-btn');
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        const settingsBtn = document.getElementById('settings-btn');
-        const settingsMenu = document.getElementById('settings-menu');
-        const speedSelect = document.getElementById('speed-select');
-        const qualitySelect = document.getElementById('quality-select');
+  <script>
+    const API_BASE = "https://pw-api1-ab3091004643.herokuapp.com";
+    const loadingOverlay = document.getElementById("loadingOverlay");
+    const main = document.getElementById("main");
+    const subjectsDiv = document.getElementById("subjects");
+    const chaptersDiv = document.getElementById("chapters");
+    const backBtn = document.getElementById("backBtn");
+    const searchInput = document.getElementById("searchInput");
+    const todayClassesDiv = document.getElementById("todayClasses");
 
-        let player = null;
-        let videoData = null;
-        let signedParams = null;
-        let streamType = 'drm'; // Default stream type
-        let controlsTimeout;
+    let viewStack = [];
+    let allBatches = [];
+    let chapterPage = 1;
+    let chapterTotal = Infinity;
+    let chapterLoading = false;
+    let currentBatchId = "";
+    let currentSubjectSlug = "";
+    let lecturePage = 1;
+    let lectureTotal = Infinity;
+    let lectureLoading = false;
+    let currentTopicId = "";
+    let currentContentType = "vidoes";
+    let currentSubjectId = "";
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = true;
+    let currentQuery = "";
+    
+  const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
+  const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
 
-        // Function to get URL parameters
-      const _0x5067e5=_0x58ff;(function(_0x179088,_0x13e92a){const _0x2b56b8=_0x58ff,_0x5f0b05=_0x179088();while(!![]){try{const _0x46767f=-parseInt(_0x2b56b8(0x191))/0x1*(-parseInt(_0x2b56b8(0x183))/0x2)+-parseInt(_0x2b56b8(0x1e2))/0x3+-parseInt(_0x2b56b8(0x181))/0x4*(parseInt(_0x2b56b8(0x1b9))/0x5)+-parseInt(_0x2b56b8(0x1f5))/0x6+parseInt(_0x2b56b8(0x1d6))/0x7*(-parseInt(_0x2b56b8(0x1ee))/0x8)+parseInt(_0x2b56b8(0x1e7))/0x9*(-parseInt(_0x2b56b8(0x1df))/0xa)+parseInt(_0x2b56b8(0x1d4))/0xb;if(_0x46767f===_0x13e92a)break;else _0x5f0b05['push'](_0x5f0b05['shift']());}catch(_0x2703d0){_0x5f0b05['push'](_0x5f0b05['shift']());}}}(_0x185f,0x6b978));function getUrlParameter(_0x1ee05a){const _0x301448=_0x58ff,_0x4b261f=new URLSearchParams(window[_0x301448(0x1b5)][_0x301448(0x1c5)]);return _0x4b261f['get'](_0x1ee05a);}function getConfigFromUrl(){const _0x125149=_0x58ff,_0x462850=getUrlParameter(_0x125149(0x19e)),_0x50b43b=getUrlParameter(_0x125149(0x1a1)),_0x53b6c0=getUrlParameter('keyid'),_0x49ec2f=getUrlParameter(_0x125149(0x1f3)),_0x2c9bb1=getUrlParameter(_0x125149(0x18f));console[_0x125149(0x1eb)](_0x125149(0x1ce),{'type':_0x462850,'url':_0x50b43b,'keyid':_0x53b6c0,'key':_0x49ec2f,'pssh':_0x2c9bb1});if(!_0x50b43b)throw new Error(_0x125149(0x1b8));const _0x5ac8fc=[_0x125149(0x1e1),_0x125149(0x1c7),_0x125149(0x180),_0x125149(0x1ac),_0x125149(0x1b1),_0x125149(0x1bf)];if(_0x462850===_0x125149(0x182)){const _0x1adde8=new URL(_0x50b43b),_0xe9ae73={};_0x5ac8fc[_0x125149(0x203)](_0x4ae2e2=>{const _0x5f3389=_0x125149;_0x1adde8[_0x5f3389(0x19d)][_0x5f3389(0x1c0)](_0x4ae2e2)&&(_0xe9ae73[_0x4ae2e2]=_0x1adde8[_0x5f3389(0x19d)][_0x5f3389(0x186)](_0x4ae2e2));});const _0x4931eb=new URL(_0x1adde8[_0x125149(0x185)]+_0x1adde8[_0x125149(0x1b0)]);return{'streamType':_0x125149(0x182),'videoData':{'url':_0x4931eb['toString']()},'signedParams':_0xe9ae73};}if(!_0x53b6c0||!_0x49ec2f)throw new Error(_0x125149(0x1dc));const _0x360c9b=new URL(_0x50b43b),_0x484b63={};_0x5ac8fc[_0x125149(0x203)](_0x3fe299=>{const _0x378385=_0x125149;_0x360c9b[_0x378385(0x19d)][_0x378385(0x1c0)](_0x3fe299)&&(_0x484b63[_0x3fe299]=_0x360c9b[_0x378385(0x19d)][_0x378385(0x186)](_0x3fe299));});const _0x28f8a2=new URL(_0x360c9b['origin']+_0x360c9b['pathname']);return{'streamType':_0x125149(0x1a6),'videoData':{'drmType':_0x125149(0x178),'key_strings':_0x125149(0x1a0)+_0x53b6c0+':'+_0x49ec2f,'keys':[_0x53b6c0+':'+_0x49ec2f],'pssh':_0x2c9bb1||'','url':_0x28f8a2[_0x125149(0x18b)]()},'signedParams':_0x484b63};}function initializeConfig(){const _0x2f729e=_0x58ff;try{const _0x51fe30=getConfigFromUrl();videoData=_0x51fe30[_0x2f729e(0x197)],signedParams=_0x51fe30[_0x2f729e(0x1a5)],streamType=_0x51fe30[_0x2f729e(0x1ff)],streamType===_0x2f729e(0x182)?updateStatus(_0x2f729e(0x1ad)+videoData[_0x2f729e(0x1a1)]['substring'](0x0,0x32)+_0x2f729e(0x1cd)):updateStatus(_0x2f729e(0x1f1)+videoData[_0x2f729e(0x1a1)][_0x2f729e(0x1f2)](0x0,0x32)+'...'),setTimeout(()=>loadContent(),0x3e8);}catch(_0xca3acf){showError(_0xca3acf['message']),updateStatus(_0x2f729e(0x204));}}function _0x185f(){const _0x2aeef3=['split','Error\x20entering\x20fullscreen:','Player','getUTCHours','click','KeyName','900WxpoUt','live','243062FwphJk','getNetworkingEngine','origin','get','paused','keys','pop','fa-expand','toString','auto','fa-pause','play','pssh','ended','1SOxdYN','fa-volume-mute','message','duration','target','find','videoData','Loading\x20HLS\x20live\x20stream...','volume','unlock','Entered\x20fullscreen','SEGMENT','searchParams','type','add','--key\x20','url','style','addEventListener','getUTCSeconds','signedParams','drm','timeout','pause','net','RequestType','Content\x20loaded\x20successfully!','Signature','Live\x20HLS\x20configuration\x20loaded.\x20URL:\x20','show','fa-volume-up','pathname','Key-Pair-Id','linear-gradient(to\x20right,\x20#ff0000\x20','appendChild','00:00','location','orientation','%,\x20rgba(255,\x20255,\x20255,\x200.4)\x20','Missing\x20required\x20parameter:\x20url\x20is\x20required!','45NvVVsP','installAll','requestFullscreen','length','playbackRate','requestPictureInPicture','Policy','has','detail','querySelector','apply','innerHTML','search','MANIFEST','Expires','fa-compress','textContent','NetworkingEngine','muted','exitFullscreen','...','URL\x20Parameters:','No\x20configuration\x20found.\x20Please\x20provide\x20required\x20URL\x20parameters.','Loading\x20DRM\x20content\x20with\x20signed\x20segment\x20requests...','\x20/\x20','Fullscreen\x20exit\x20error:\x20','classList','28919055pDMMoT','uris','49pVbAyj','error','catch','Configuration\x20required','Orientation\x20lock\x20failed:','polyfill','Missing\x20parameters.\x20For\x20DRM,\x20`keyid`\x20and\x20`key`\x20are\x20required.\x20For\x20live\x20streams,\x20add\x20`?type=live`\x20to\x20the\x20URL.','padStart','selectVariantTrack','114290ZGBrml','getVariantTracks','URLPrefix','2445348Qnccur','Playback\x20speed\x20changed\x20to\x20','value','registerRequestFilter','pictureInPictureEnabled','441xRZvcG','Quality\x20set\x20to\x20Auto','lock','Player\x20error\x20occurred','log','set','fullscreenElement','618392rIsbAM','fa-volume-down','toggle','DRM\x20configuration\x20loaded.\x20MPD:\x20','substring','key','Error\x20exiting\x20fullscreen:','2349510lrfcUg','warn','fa-play','Fullscreen\x20error:\x20','getUTCMinutes','load','remove','currentTime','<option\x20value=\x22auto\x22\x20selected>Auto</option>','height','streamType','sort','fullscreenchange','setSeconds','forEach','Waiting\x20for\x20URL\x20parameters...','isBrowserSupported','then','ClearKey','Player\x20error:\x20','visible'];_0x185f=function(){return _0x2aeef3;};return _0x185f();}class SignedSegmentFilter{constructor(_0x5acd4f){const _0x373d09=_0x58ff;this[_0x373d09(0x1a5)]=_0x5acd4f;}[_0x5067e5(0x1c3)](_0x2ac2bb,_0x1ab9a4){const _0x18949a=_0x5067e5;if(_0x2ac2bb===shaka[_0x18949a(0x1a9)][_0x18949a(0x1ca)][_0x18949a(0x1aa)][_0x18949a(0x1c6)]||_0x2ac2bb===shaka[_0x18949a(0x1a9)]['NetworkingEngine'][_0x18949a(0x1aa)][_0x18949a(0x19c)]){const _0x2403cd=new URL(_0x1ab9a4[_0x18949a(0x1d5)][0x0]);Object[_0x18949a(0x188)](this[_0x18949a(0x1a5)])[_0x18949a(0x203)](_0x5d9407=>{const _0x47a5ce=_0x18949a;_0x2403cd['searchParams'][_0x47a5ce(0x1ec)](_0x5d9407,this[_0x47a5ce(0x1a5)][_0x5d9407]);}),_0x1ab9a4[_0x18949a(0x1d5)][0x0]=_0x2403cd['toString'](),updateStatus(_0x2ac2bb+'\x20request\x20with\x20signed\x20params:\x20'+_0x2403cd[_0x18949a(0x1b0)][_0x18949a(0x17b)]('/')[_0x18949a(0x189)]());}return _0x1ab9a4;}}function initializePlayer(){const _0x451ad7=_0x5067e5;shaka[_0x451ad7(0x1db)][_0x451ad7(0x1ba)]();if(!shaka[_0x451ad7(0x17d)][_0x451ad7(0x176)]())return showError('Browser\x20not\x20supported\x20for\x20playback!'),![];player=new shaka[(_0x451ad7(0x17d))](video),player[_0x451ad7(0x1a3)](_0x451ad7(0x1d7),onPlayerError);streamType===_0x451ad7(0x1a6)&&videoData['keys']&&player['configure']({'drm':{'clearKeys':parseClearKeys(videoData['keys'])}});const _0x16a57d=player[_0x451ad7(0x184)]();if(signedParams&&Object[_0x451ad7(0x188)](signedParams)[_0x451ad7(0x1bc)]>0x0){const _0x4f218d=new SignedSegmentFilter(signedParams);_0x16a57d[_0x451ad7(0x1e5)]((_0x161513,_0x563c63)=>_0x4f218d[_0x451ad7(0x1c3)](_0x161513,_0x563c63));}return!![];}function parseClearKeys(_0x140d13){const _0x4a9b38=_0x5067e5,_0x212994={};return _0x140d13[_0x4a9b38(0x203)](_0xc3c4c5=>{const _0x3da71d=_0x4a9b38,[_0x2dc4eb,_0x4efeda]=_0xc3c4c5[_0x3da71d(0x17b)](':');_0x212994[_0x2dc4eb]=_0x4efeda;}),_0x212994;}async function loadContent(){const _0x184826=_0x5067e5;if(!videoData){showError(_0x184826(0x1cf)),updateStatus(_0x184826(0x1d9));return;}if(!player){if(!initializePlayer())return;}try{showLoading(!![]),streamType===_0x184826(0x182)?updateStatus(_0x184826(0x198)):updateStatus(_0x184826(0x1d0)),await player[_0x184826(0x1fa)](videoData['url']),showLoading(![]),updateStatus(_0x184826(0x1ab)),populateQualityOptions();}catch(_0x48c589){showLoading(![]),showError('Failed\x20to\x20load\x20content:\x20'+_0x48c589['message']),updateStatus('Failed\x20to\x20load\x20content');}}function onPlayerError(_0x616dd1){const _0x3c4dcd=_0x5067e5;showError(_0x3c4dcd(0x179)+_0x616dd1[_0x3c4dcd(0x1c1)][_0x3c4dcd(0x193)]),updateStatus(_0x3c4dcd(0x1ea));}function showLoading(_0x4a49d8){const _0x327710=_0x5067e5;loading[_0x327710(0x1d3)][_0x327710(0x1f0)](_0x327710(0x1ae),_0x4a49d8);}function showError(_0x4f875b){const _0x2fe116=_0x5067e5;error[_0x2fe116(0x1c9)]=_0x4f875b,error[_0x2fe116(0x1d3)]['add'](_0x2fe116(0x1ae)),clearTimeout(error[_0x2fe116(0x1a7)]),error[_0x2fe116(0x1a7)]=setTimeout(()=>{const _0xe1a2a1=_0x2fe116;error[_0xe1a2a1(0x1d3)][_0xe1a2a1(0x1fb)](_0xe1a2a1(0x1ae));},0x1388);}function updateStatus(_0x3c523a){statusText['textContent']=_0x3c523a;}function togglePlayPause(){const _0x12fda7=_0x5067e5;video[_0x12fda7(0x187)]||video[_0x12fda7(0x190)]?video[_0x12fda7(0x18e)]():video[_0x12fda7(0x1a8)]();}function updatePlayPauseIcon(){const _0x3b692a=_0x5067e5,_0x474e88=playPauseBtn[_0x3b692a(0x1c2)]('i');video[_0x3b692a(0x187)]||video[_0x3b692a(0x190)]?(_0x474e88[_0x3b692a(0x1d3)][_0x3b692a(0x1fb)](_0x3b692a(0x18d)),_0x474e88[_0x3b692a(0x1d3)]['add'](_0x3b692a(0x1f7))):(_0x474e88[_0x3b692a(0x1d3)][_0x3b692a(0x1fb)]('fa-play'),_0x474e88[_0x3b692a(0x1d3)]['add']('fa-pause'));}function seek(_0x2fd3ff){const _0x55fa54=_0x5067e5;video[_0x55fa54(0x1fc)]+=_0x2fd3ff;}function handleVolumeChange(){const _0x1b4845=_0x5067e5;video[_0x1b4845(0x199)]=volumeSlider['value'],video['volume']===0x0?video['muted']=!![]:video[_0x1b4845(0x1cb)]=![];}function updateVolumeIcon(){const _0x3dfa18=_0x5067e5,_0x33f228=volumeBtn[_0x3dfa18(0x1c2)]('i');_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x1fb)](_0x3dfa18(0x1af),_0x3dfa18(0x1ef),_0x3dfa18(0x192));if(video[_0x3dfa18(0x1cb)]||video[_0x3dfa18(0x199)]===0x0)_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x19f)]('fa-volume-mute');else video['volume']<0.5?_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x19f)]('fa-volume-down'):_0x33f228[_0x3dfa18(0x1d3)][_0x3dfa18(0x19f)](_0x3dfa18(0x1af));}function toggleMute(){const _0x405d5d=_0x5067e5;video['muted']=!video[_0x405d5d(0x1cb)],video[_0x405d5d(0x1cb)]?volumeSlider['value']=0x0:volumeSlider[_0x405d5d(0x1e4)]=video['volume']>0x0?video[_0x405d5d(0x199)]:0x1,updateVolumeIcon();}function updateProgress(){const _0x4d184b=_0x5067e5,_0x26e364=video['currentTime']/video[_0x4d184b(0x194)]*0x64;progressBar[_0x4d184b(0x1e4)]=_0x26e364||0x0;const _0x4ab3f5=_0x26e364/0x64;progressBar[_0x4d184b(0x1a2)]['background']=_0x4d184b(0x1b2)+_0x4ab3f5*0x64+_0x4d184b(0x1b7)+_0x4ab3f5*0x64+'%)';const _0x385e22=formatTime(video['currentTime']),_0x4501ba=formatTime(video[_0x4d184b(0x194)]);timeDisplay[_0x4d184b(0x1c9)]=_0x385e22+_0x4d184b(0x1d1)+_0x4501ba;}function setProgress(_0x1d28db){const _0x599a3a=_0x5067e5,_0x3d3ef0=_0x1d28db[_0x599a3a(0x195)][_0x599a3a(0x1e4)]/0x64*video[_0x599a3a(0x194)];video[_0x599a3a(0x1fc)]=_0x3d3ef0;}function _0x58ff(_0xbbba9f,_0x5842aa){const _0x185f3f=_0x185f();return _0x58ff=function(_0x58fffd,_0x5d7a2e){_0x58fffd=_0x58fffd-0x176;let _0x139aef=_0x185f3f[_0x58fffd];return _0x139aef;},_0x58ff(_0xbbba9f,_0x5842aa);}function formatTime(_0x129683){const _0x1f5727=_0x5067e5;if(isNaN(_0x129683))return _0x1f5727(0x1b4);const _0x284028=new Date(null);_0x284028[_0x1f5727(0x202)](_0x129683);const _0x355f0b=_0x284028[_0x1f5727(0x17e)](),_0x21c006=_0x284028[_0x1f5727(0x1f9)](),_0x2f7e61=_0x284028[_0x1f5727(0x1a4)]();if(_0x355f0b>0x0)return String(_0x355f0b)[_0x1f5727(0x1dd)](0x2,'0')+':'+String(_0x21c006)[_0x1f5727(0x1dd)](0x2,'0')+':'+String(_0x2f7e61)['padStart'](0x2,'0');return String(_0x21c006)['padStart'](0x2,'0')+':'+String(_0x2f7e61)[_0x1f5727(0x1dd)](0x2,'0');}function togglePictureInPicture(){const _0x277e24=_0x5067e5;if(document['pictureInPictureElement'])document['exitPictureInPicture']();else document[_0x277e24(0x1e6)]&&video[_0x277e24(0x1be)]();}function toggleFullscreen(){const _0x531874=_0x5067e5,_0x2f77da=videoWrapper;!document[_0x531874(0x1ed)]?_0x2f77da[_0x531874(0x1bb)]()[_0x531874(0x177)](()=>{const _0xa1779a=_0x531874;console[_0xa1779a(0x1eb)](_0xa1779a(0x19b)),screen[_0xa1779a(0x1b6)]&&screen[_0xa1779a(0x1b6)][_0xa1779a(0x1e9)]&&screen['orientation'][_0xa1779a(0x1e9)]('landscape')['catch'](_0x53b632=>{const _0x153cb2=_0xa1779a;console[_0x153cb2(0x1f6)](_0x153cb2(0x1da),_0x53b632[_0x153cb2(0x193)]);});})[_0x531874(0x1d8)](_0x19820e=>{const _0x4bd4d3=_0x531874;console[_0x4bd4d3(0x1d7)](_0x4bd4d3(0x17c),_0x19820e),showError(_0x4bd4d3(0x1f8)+_0x19820e['message']);}):document[_0x531874(0x1cc)]()[_0x531874(0x177)](()=>{const _0x5dd84b=_0x531874;console[_0x5dd84b(0x1eb)]('Exited\x20fullscreen'),screen[_0x5dd84b(0x1b6)]&&screen['orientation'][_0x5dd84b(0x19a)]&&screen[_0x5dd84b(0x1b6)][_0x5dd84b(0x19a)]();})[_0x531874(0x1d8)](_0x5cddc5=>{const _0x2d47c5=_0x531874;console[_0x2d47c5(0x1d7)](_0x2d47c5(0x1f4),_0x5cddc5),showError(_0x2d47c5(0x1d2)+_0x5cddc5[_0x2d47c5(0x193)]);});}function updateFullscreenIcon(){const _0x92cd0d=_0x5067e5,_0x4391e7=fullscreenBtn[_0x92cd0d(0x1c2)]('i');document[_0x92cd0d(0x1ed)]?(_0x4391e7[_0x92cd0d(0x1d3)][_0x92cd0d(0x1fb)](_0x92cd0d(0x18a)),_0x4391e7[_0x92cd0d(0x1d3)]['add'](_0x92cd0d(0x1c8))):(_0x4391e7[_0x92cd0d(0x1d3)][_0x92cd0d(0x1fb)](_0x92cd0d(0x1c8)),_0x4391e7[_0x92cd0d(0x1d3)][_0x92cd0d(0x19f)](_0x92cd0d(0x18a)));}fullscreenBtn[_0x5067e5(0x1a3)](_0x5067e5(0x17f),toggleFullscreen),document[_0x5067e5(0x1a3)](_0x5067e5(0x201),updateFullscreenIcon);function hideControls(){const _0x468a9b=_0x5067e5;if(video[_0x468a9b(0x187)])return;controlsOverlay[_0x468a9b(0x1d3)][_0x468a9b(0x1fb)](_0x468a9b(0x17a));}function showControls(){const _0x17caed=_0x5067e5;controlsOverlay[_0x17caed(0x1d3)][_0x17caed(0x19f)](_0x17caed(0x17a)),clearTimeout(controlsTimeout),controlsTimeout=setTimeout(hideControls,0xbb8);}function toggleSettingsMenu(){const _0x527638=_0x5067e5;settingsMenu[_0x527638(0x1d3)][_0x527638(0x1f0)](_0x527638(0x1ae));}function handleSpeedChange(){const _0x1b2696=_0x5067e5,_0x342be5=parseFloat(speedSelect['value']);video[_0x1b2696(0x1bd)]=_0x342be5,updateStatus(_0x1b2696(0x1e3)+_0x342be5+'x');}function handleQualityChange(){const _0x3a79e9=_0x5067e5,_0x30c725=qualitySelect[_0x3a79e9(0x1e4)];if(player&&_0x30c725!==_0x3a79e9(0x18c)){const _0x4b59ab=player[_0x3a79e9(0x1e0)](),_0x2550e8=_0x4b59ab[_0x3a79e9(0x196)](_0x46fc6d=>_0x46fc6d[_0x3a79e9(0x1fe)]===parseInt(_0x30c725));_0x2550e8&&(player[_0x3a79e9(0x1de)](_0x2550e8),updateStatus('Quality\x20changed\x20to\x20'+_0x30c725+'p'));}else player&&_0x30c725===_0x3a79e9(0x18c)&&(player['selectVariantTrack'](null),updateStatus(_0x3a79e9(0x1e8)));}function populateQualityOptions(){const _0x59e786=_0x5067e5;if(!player)return;const _0x2045f0=player['getVariantTracks'](),_0x446282=qualitySelect[_0x59e786(0x1e4)];qualitySelect[_0x59e786(0x1c4)]=_0x59e786(0x1fd);const _0x4f590f=[...new Set(_0x2045f0['map'](_0x352cb4=>_0x352cb4['height']))][_0x59e786(0x200)]((_0x52187e,_0x59d2fd)=>_0x59d2fd-_0x52187e);_0x4f590f[_0x59e786(0x203)](_0x1ee968=>{const _0x14b021=_0x59e786,_0xf48dda=document['createElement']('option');_0xf48dda['value']=_0x1ee968,_0xf48dda[_0x14b021(0x1c9)]=_0x1ee968+'p',qualitySelect[_0x14b021(0x1b3)](_0xf48dda);}),_0x446282&&_0x4f590f['includes'](parseInt(_0x446282))&&(qualitySelect[_0x59e786(0x1e4)]=_0x446282);}
+ function showBatchesView() {
+  clearAll(); 
+  main.style.display = "grid";
+  searchInput.style.display = "block"; // ✅ Show search bar again
+  searchInput.value = "";              // ✅ Clear previous search
+  currentQuery = "";
+  currentPage = 1;
+  hasMore = true;
+  allBatches = [];
+  loadBatches({ reset: true });
+}
 
+    function showLoader(show) {
+      loadingOverlay.style.display = show ? "flex" : "none";
+    }
 
-        // Event Listeners for new controls
-        playPauseBtn.addEventListener('click', togglePlayPause);
-        video.addEventListener('click', togglePlayPause);
-        video.addEventListener('play', updatePlayPauseIcon);
-        video.addEventListener('pause', updatePlayPauseIcon);
-        video.addEventListener('ended', updatePlayPauseIcon);
+    function clearAll() {
+      const ids = ["main", "subjects", "chaptersDiv", "lectureSection", "todayWrapper"];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
 
-        rewindBtn.addEventListener('click', () => seek(-10));
-        forwardBtn.addEventListener('click', () => seek(10));
+      const backBtn = document.getElementById("backBtn");
+      if (backBtn) backBtn.style.display = viewStack.length ? "block" : "none";
 
-        volumeBtn.addEventListener('click', toggleMute);
-        volumeSlider.addEventListener('input', handleVolumeChange);
-        video.addEventListener('volumechange', updateVolumeIcon);
+      const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
+      if (loadMoreBtnWrapper) loadMoreBtnWrapper.style.display = "none";
+    }
 
-        video.addEventListener('timeupdate', updateProgress);
-        video.addEventListener('loadedmetadata', updateProgress);
-        progressBar.addEventListener('input', setProgress);
+    function pushView(fn, state = {}) {
+      viewStack.push(fn);
+      history.pushState(state, '', location.href);
+    }
 
-        pipBtn.addEventListener('click', togglePictureInPicture);
-        fullscreenBtn.addEventListener('click', toggleFullscreen);
-        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+    function show(div) {
+      clearAll();
+      div.style.display = div.id === "lectureSection" ? "block" : (div.id === "chaptersDiv" ? "grid" : "block");
+      if(div.id === "main") div.style.display = "grid";
+    }
+    
+    // --- MODIFIED: This function now creates the new batch card design ---
+    function appendCard(container, batch, onClick) {
+        const isFav = isFavoriteBatch(batch._id);
 
-        // Settings event listeners
-        settingsBtn.addEventListener('click', toggleSettingsMenu);
-        speedSelect.addEventListener('change', handleSpeedChange);
-        qualitySelect.addEventListener('change', handleQualityChange);
+        const div = document.createElement("div");
+        div.className = "batch-card";
 
-        // Close settings menu when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
-                settingsMenu.classList.remove('show');
+        const startDate = new Date(batch.start_date).toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        // Placeholder for price as it's not in the API. You can add logic here if it becomes available.
+        const priceHTML = `
+            <div class="batch-price">
+            <span class="original-price">₹4,000</span>
+            <span class="discounted-price">₹1,999/-</span>
+            </div>
+        `;
+        
+        div.innerHTML = `
+            <div class="batch-card-image">
+            <img src="${batch.previewImage || 'https://via.placeholder.com/200x250.png?text=No+Image'}" alt="${batch.name}" />
+            </div>
+            <div class="batch-card-content">
+            <div class="batch-card-header">
+                <div class="batch-tags">
+                ${batch.class ? `<span class="tag">${batch.class}</span>` : ''}
+                </div>
+                <span class="heart-icon ${isFav ? "active" : ""}" data-batchid="${batch._id}">❤</span>
+            </div>
+            <h3 class="batch-title">${batch.name}</h3>
+            <p class="batch-byname">${batch.byName}</p>
+            <div class="batch-card-footer">
+                <div class="batch-meta">
+                <span>${batch.language}</span>
+                <span>•</span>
+                <span>${batch.exam}</span>
+                <span>•</span>
+                <span>${startDate}</span>
+                </div>
+                <button class="study-button">Let's Study</button>
+            </div>
+            </div>
+        `;
+        
+        const studyButton = div.querySelector('.study-button');
+        studyButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            onClick();
+        });
+
+        div.addEventListener("click", (e) => {
+            if (!e.target.classList.contains("heart-icon") && !e.target.classList.contains("study-button")) {
+                onClick();
             }
         });
 
-        videoWrapper.addEventListener('mousemove', () => {
-            if (!video.paused) {
-                showControls();
-            }
-        });
+        const heart = div.querySelector(".heart-icon");
+        heart.onclick = (e) => {
+            e.stopPropagation();
+            toggleFavoriteBatch(batch._id);
+            heart.classList.toggle("active");
+        };
 
-        video.addEventListener('play', () => {
-            showControls(); // Start hiding logic when video starts
-        });
+        container.appendChild(div);
+    }
 
-        video.addEventListener('pause', () => {
-            showControls(); // Keep controls visible when paused
-            clearTimeout(controlsTimeout); // Don’t auto-hide
-        });
 
-        function showControls() {
-            controlsOverlay.classList.add('visible');
-            clearTimeout(controlsTimeout);
-            if (!video.paused) {
-                controlsTimeout = setTimeout(() => {
-                    controlsOverlay.classList.remove('visible');
-                }, 3000); // 3 seconds
-            }
+    // --- MODIFIED: Now handles full batch objects and uses _id ---
+    async function loadBatches({ reset = false } = {}) {
+      if (isLoading || (!hasMore && !reset)) return;
+
+      isLoading = true;
+      showLoader(true);
+
+      if (reset) {
+        currentPage = 1;
+        allBatches = [];
+        main.innerHTML = "";
+        hasMore = true;
+      }
+
+      try {
+        const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
+        const favorites = getFavoriteBatches();
+        let favBatches = [];
+
+        if (favorites.length > 0 && !currentQuery && currentPage === 1) {
+          const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
+          const favData = await favRes.json();
+          favBatches = favData.batches; // Get full batch objects
         }
 
+        const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
+        const data = await res.json();
+        const newBatches = data.batches; // Get full batch objects
 
-        const backBtn = document.getElementById('back-btn');
+        const seen = new Set();
+        const merged = [...favBatches, ...(reset ? newBatches : allBatches.concat(newBatches))].filter(b => {
+          if (seen.has(b._id)) return false; // Use _id
+          seen.add(b._id); // Use _id
+          return true;
+        });
 
-        backBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
+        allBatches = merged;
 
-            if (document.fullscreenElement) {
-                // First exit fullscreen
-                try {
-                    await document.exitFullscreen();
-                    console.log("Exited fullscreen via back button");
-                } catch (err) {
-                    console.error("Error exiting fullscreen:", err);
-                }
-            } else {
-                // Not in fullscreen, go back
-                history.back();
+        if (reset && allBatches.length === 0) {
+          renderNoResults();
+          hasMore = false;
+          loadMoreBtnWrapper.style.display = "none";
+        } else {
+          renderBatches(allBatches, { append: false });
+
+          if (data.batches.length < 12) {
+            hasMore = false;
+            loadMoreBtnWrapper.style.display = "none";
+          } else {
+            currentPage++;
+            loadMoreBtnWrapper.style.display = "block";
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load batches:", err);
+      } finally {
+        isLoading = false;
+        showLoader(false);
+      }
+    }
+
+   loadMoreBtn.addEventListener("click", () => {
+    loadBatches();
+   });
+ 
+    // --- MODIFIED: Passes full batch object to appendCard and uses _id ---
+    function renderBatches(batches, { append = false } = {}) {
+        if (!append) main.innerHTML = "";
+
+        const favorites = getFavoriteBatches();
+
+        const sorted = [...batches].sort((a, b) => {
+            const aFav = favorites.includes(a._id); // Use _id
+            const bFav = favorites.includes(b._id); // Use _id
+            return aFav === bFav ? 0 : aFav ? -1 : 1;
+        });
+
+        sorted.forEach(batch => {
+            // Passes the entire batch object to the updated appendCard function
+            appendCard(main, batch, () => {
+                currentBatchName = batch.name;
+                loadSubjects(batch._id); // Use _id
+            });
+        });
+    }
+    
+    function getFavoriteBatches() {
+      const stored = localStorage.getItem("favoriteBatches");
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function isFavoriteBatch(batchId) {
+      return getFavoriteBatches().includes(batchId);
+    }
+
+    function toggleFavoriteBatch(batchId) {
+      const favs = getFavoriteBatches();
+      const index = favs.indexOf(batchId);
+      if (index > -1) {
+        favs.splice(index, 1);
+      } else {
+        favs.push(batchId);
+      }
+      localStorage.setItem("favoriteBatches", JSON.stringify(favs));
+    }
+
+    function renderNoResults() {
+      main.innerHTML = `
+        <div style="text-align:center; color:#666; padding:2rem;">
+          <p>🔍 No batches found.</p>
+        </div>
+      `;
+    }
+
+    // --- REMOVED window.onscroll infinite loader to prevent conflicts with the button ---
+
+    searchInput.addEventListener("input", debounce(() => {
+      currentQuery = searchInput.value.trim();
+      loadBatches({ reset: true });
+    }, 300));
+
+    function debounce(fn, delay) {
+      let timeout;
+      return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => fn(...args), delay);
+      };
+    }
+  
+    async function loadSubjects(batchId) {
+        pushView(() => showBatchesView()); 
+        show(subjectsDiv);
+        backBtn.style.display = "block";
+    
+        subjectsDiv.innerHTML = "";
+        searchInput.style.display = "none";
+        showLoader(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
+            const json = await res.json();
+            const subs = (json.data && json.data.subjects) || [];
+
+            function appendSubjectCard(container, sub, onClick) {
+                const subjectName = sub.subject;
+                const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
+                const lectureCount = sub.lectureCount || 0;
+                const chapterCount = sub.tagCount || 0;
+                const teacher = sub.teacherIds?.[0];
+                const teacherImg = teacher?.imageId ? `${teacher.imageId.baseUrl}${teacher.imageId.key}` : '';
+                const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'TBA';
+
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.onclick = onClick;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                    <img class="subject-icon" src="${iconUrl}" alt="${subjectName}" />
+                    <div class="subject-title">${subjectName}</div>
+                    </div>
+                    <div class="card-details">
+                    <div>🎥 <strong>${lectureCount}</strong> Lectures</div>
+                    <div>📚 <strong>${chapterCount}</strong> Chapters</div>
+                    </div>
+                    <div class="teacher-info">
+                    <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" />
+                    <div class="teacher-name">${teacherName}</div>
+                    </div>
+                `;
+                container.appendChild(card);
             }
+
+            subs.forEach(sub => {
+                appendSubjectCard(subjectsDiv, sub, () => {
+                    pushView(() => loadSubjects(batchId));
+                    chapterPage = 1;
+                    chapterLoading = false;
+                    currentSubjectId = sub.subjectId || sub._id;
+                    currentSubjectName = sub.subject;
+                    loadChapters(batchId, sub.slug, 1);
+                });
+            });
+
+            const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
+            const todayJson = await todayRes.json();
+            const todayClasses = todayJson.data || [];
+            const todayWrapper = document.getElementById("todayWrapper");
+            const todayScrollContainer = document.getElementById("todayScrollContainer");
+
+            if (document.getElementById("subjects").style.display !== "none") {
+                todayWrapper.style.display = "block";
+            }
+
+            if (todayClasses.length === 0) {
+                todayScrollContainer.innerHTML = '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>';
+            } else {
+                todayScrollContainer.innerHTML = "";
+            }
+
+            todayClasses.forEach(cls => {
+                const title = cls.topic || "Untitled";
+                const subject = cls.subjectId?.name || "Unknown Subject";
+                const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const chapter = cls.tags?.[0]?.name || "General";
+                const tagLabel = cls.tag || "Upcoming";
+                const statusColor = tagLabel === "Live" ? "var(--squid-green)" : tagLabel === "Ended" ? "var(--squid-red)" : "var(--squid-cyan)";
+                const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
+
+                const card = document.createElement("div");
+                card.className = "today-card";
+                card.style.width = "260px";
+                card.style.flex = "0 0 auto";
+                card.innerHTML = `
+                    <img src="${customImage}" alt="${title}" />
+                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
+                    <div class="today-card-title">${title}</div>
+                    <div style="font-size: 0.85rem; margin-top: 5px;">🕒 ${time} IST</div>
+                    <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
+                    <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
+                `;
+                card.onclick = async () => {
+                    if (tagLabel === "Upcoming") {
+                        alert("⚠️ Class not started yet. Please wait.");
+                        return;
+                    }
+                    const batchId = cls.batch?._id || cls.batchId?._id || cls.batchId;
+                    const scheduleId = cls._id;
+                    if (!batchId || !scheduleId) {
+                        alert("Invalid class identifiers.");
+                        return;
+                    }
+                    showLoader(true);
+                    try {
+                        const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+                        const data = await res.json();
+                        if (data.success && data.signed_url && data.video_id) {
+                            const urlParams = new URLSearchParams({ encrypted: data.signed_url, iv: data.video_id });
+                            if (data.pally_data && data.pally_iv) {
+                                urlParams.append('pally_data', data.pally_data);
+                                urlParams.append('pally_iv', data.pally_iv);
+                            }
+                            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+                        } else {
+                            alert("⚠️ Failed to get live stream URL.");
+                        }
+                    } catch (err) {
+                        console.error("Live stream fetch error:", err);
+                        alert("⚠️ Error getting live stream URL.");
+                    } finally {
+                        showLoader(false);
+                    }
+                };
+                todayScrollContainer.appendChild(card);
+            });
+      } catch (err) {
+        console.error("Failed to load subjects or todayclass:", err);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+  async function loadChapters(batchId, subjectSlug) {
+  const chaptersDiv = document.getElementById("chaptersDiv");
+ const oldWrapper = document.getElementById("chapterLoadMoreWrapper");
+  if (oldWrapper) oldWrapper.remove();
+
+  if (chapterLoading) return;
+
+ history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}`);
+  chaptersDiv.innerHTML = "";
+  clearAll();
+  document.getElementById("subjects").style.display = "none";
+
+  chapterLoading = true;
+  showLoader(true);
+
+  currentBatchId = batchId;
+  currentSubjectSlug = subjectSlug;
+
+  try {
+  const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics`);
+    const result = await res.json();
+
+    const chapters = result.data || [];
+
+    if (chapters.length === 0) {
+      const emptyMsg = document.createElement("div");
+      emptyMsg.className = "empty-state";
+      emptyMsg.innerText = "No chapters found.";
+      chaptersDiv.appendChild(emptyMsg);
+    } else {
+      chapters.forEach(ch => {
+        const card = document.createElement("div");
+        card.className = "chapter-card";
+        card.innerHTML = `
+          <div class="chapter-title">${ch.name}</div>
+          <div class="chapter-meta">
+            <div><i class="fas fa-video"></i> ${ch.lectureVideos || 0} Lectures</div>
+            <div><i class="fas fa-file-alt"></i> ${ch.notes || 0} Notes</div>
+            <div><i class="fas fa-book"></i> ${ch.exercises || 0} DPPs</div>
+          </div>
+        `;
+     card.addEventListener("click", () => {
+          if (!ch._id) {
+            alert("Chapter ID missing. Cannot load lectures.");
+            return;
+          }
+          pushView(() => loadChapters(batchId, subjectSlug));
+          currentTopicName = ch.name;
+          loadLecturesContent(batchId, subjectSlug, ch._id);
         });
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeConfig();
-            updateVolumeIcon();
+        chaptersDiv.appendChild(card);
+      });
+    }
+
+  } catch (err) {
+    console.error("Failed to load chapters:", err);
+    const errorMsg = document.createElement("div");
+    errorMsg.className = "error-state";
+    errorMsg.innerText = "Failed to load chapters. Please try again.";
+    chaptersDiv.appendChild(errorMsg);
+  } finally {
+    showLoader(false);
+    show(chaptersDiv);
+    chapterLoading = false;
+  }
+}
+
+    async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes") {
+     if (lectureLoading) return;
+      lectureLoading = true;
+
+      history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}&topic=${topicId}&type=${contentType}`);
+  document.getElementById("lectureContent").innerHTML = "";
+
+      show(document.getElementById("lectureSection"));
+      showLoader(true);
+
+      currentBatchId = batchId;
+      currentSubjectSlug = subjectSlug;
+      currentTopicId = topicId;
+      currentContentType = contentType;
+
+      const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}`;
+
+      try {
+        const res = await fetch(url);
+    const data = await res.json();
+    const items = data.data || [];
+
+    const lectureContent = document.getElementById("lectureContent");
+        if (items.length === 0) {
+          lectureContent.innerHTML = `<div style="color: var(--text-muted); text-align: center; margin-top: 20px;">No content found in this arena.</div>`;
+          return;
+        }
+
+        items.forEach(item => {
+          const div = document.createElement("div");
+        
+        if (contentType === "notes" || contentType === "DppNotes") {
+            div.className = "card";
+            let topicTitle = "Untitled Note";
+            if (item.topic) {
+                topicTitle = item.topic;
+            } else if (item.homeworkIds?.[0]?.topic) {
+                topicTitle = item.homeworkIds[0].topic;
+            }
+            const scheduleId = item._id;
+
+            div.innerHTML = `
+                <div class="card-title">${topicTitle}</div>
+                <div class="note-buttons">
+                <button onclick="fetchAndOpenAttachments('${currentBatchId}', '${currentSubjectSlug}', '${scheduleId}')">
+                    📂 Open Attachments
+                </button>
+                </div>
+            `;
+        }
+        else {
+            div.className = "lecture-card";
+            const vid = item.videoDetails || item;
+            const title = item.topic || vid.name || "Untitled Video";
+            const image = vid.image || vid.thumbnail || "";
+            const mediaUrl = vid.hls_url || item.url || "";
+            const duration = vid.duration || "00:00:00";
+
+            const startTime = new Date(item.startTime);
+            const formattedDate = startTime.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            div.innerHTML = `
+                <div class="lecture-card-inner">
+                <div class="lecture-thumbnail">
+                    <img src="${image}" alt="${title}" class="lecture-image" />
+                    ${item.status === "COMPLETED" ? `
+                    <div class="status-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#00cc66" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="8" fill="white"/>
+                        <path fill="#00cc66" d="M13.485 4.485a1 1 0 0 0-1.414-1.414L6.5 8.643 4.929 7.071a1 1 0 0 0-1.414 1.415l2.586 2.586a1 1 0 0 0 1.415 0l6.97-6.97z"/>
+                        </svg>
+                    </div>` : ""}
+                </div>
+                <div class="lecture-info">
+                    <h3 class="lecture-title">${title}</h3>
+                    <div class="lecture-meta">
+                    <span class="lecture-date"><i class="icon-calendar"></i> ${formattedDate}</span>
+                    <span class="lecture-duration"><i class="icon-clock"></i> ${duration}</span>
+                    </div>
+                </div>
+                </div>
+            `;
+            div.onclick = async () => {
+                showLoader(true);
+                try {
+                let finalUrl = mediaUrl;
+                const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
+                if (isYouTube) {
+                    window.open(finalUrl, '_blank');
+                    showLoader(false);
+                    return;
+                }
+                const scheduleId = item._id;
+                const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+                const altData = await res.json();
+
+                    if (altData.success && altData.signed_url && altData.video_id) {
+                        const urlParams = new URLSearchParams({ encrypted: altData.signed_url, iv: altData.video_id });
+                        if (altData.pally_data && altData.pally_iv) {
+                            urlParams.append('pally_data', altData.pally_data);
+                            urlParams.append('pally_iv', altData.pally_iv);
+                        }
+                        window.location.href = `pwplayer.html?${urlParams.toString()}`;
+                    } else {
+                        alert("⚠️ Video not available from this source.");
+                    }
+                } catch (err) {
+                console.error("Video load failed:", err);
+                alert("⚠️ Failed to load video.");
+                } finally {
+                showLoader(false);
+                }
+            };
+        }
+       lectureContent.appendChild(div);
         });
+      } catch (err) {
+        console.error("Failed to load content:", err);
+      } finally {
+        lectureLoading = false;
+        showLoader(false);
+      }
+    }
+async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
+  try {
+    showLoader(true);
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
+    const data = await res.json();
 
+    if (!data.data || !data.data.length) {
+      alert("No content found.");
+      return;
+    }
 
+    const attachments = data.data.flatMap(item =>
+      (item.homeworkIds || []).flatMap(hw =>
+        (hw.attachmentIds || [])
+      )
+    );
 
-    </script>
+    if (!attachments.length) {
+      alert("No attachments found.");
+      return;
+    }
+
+    attachments.forEach(att => {
+      const fileUrl = `${att.baseUrl}${att.key}`;
+      window.open(fileUrl, '_blank');
+    });
+
+  } catch (err) {
+    console.error("Failed to fetch schedule content:", err);
+    alert("Error loading attachments.");
+  } finally {
+    showLoader(false);
+  }
+}
+
+    function switchLectureTab(tab) {
+      const typeMap = {
+        lectures: "vidoes",
+        notes: "notes",
+        dppnotes: "DppNotes",
+        dpplecture: "DppVideos"
+      };
+
+      currentContentType = typeMap[tab] || "vidoes";
+    
+
+      ["lectures", "notes", "dppnotes", "dpplecture"].forEach(t => {
+        document.getElementById("tab-" + t).classList.remove("active");
+      });
+      document.getElementById("tab-" + tab).classList.add("active");
+
+      loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType);
+}
+
+    backBtn.onclick = () => {
+      history.back();
+    };
+
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
+      renderBatches(filtered);
+    });
+
+      loadBatches({ reset: true });
+   
+    fetch('/popup.json')
+      .then(res => res.json())
+      .then(popup => {
+        if (popup.show) {
+          document.getElementById('popupImage').src = popup.image;
+          document.getElementById('popupText').textContent = popup.text;
+          document.getElementById('popupLink').href = popup.link;
+          document.getElementById('popup').style.display = 'block';
+        }
+      })
+      .catch(err => console.error('Error loading popup data:', err));
+
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function (event) {
+      if (
+        event.key === "F12" ||
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
+        (event.ctrlKey && event.key === 'U') ||
+        (event.ctrlKey && event.shiftKey && event.key === 'C') ||
+        (event.ctrlKey && event.key === 'A') ||
+        (event.ctrlKey && event.key === 'S') ||
+        (event.ctrlKey && event.key === 'P')
+      ) {
+        event.preventDefault();
+      }
+    });
+window.addEventListener("popstate", () => {
+  if (viewStack.length > 0) {
+    const restoreView = viewStack.pop();
+    if (typeof restoreView === 'function') {
+      restoreView();
+    }
+  } else {
+    // If stack is empty, it means we are at the initial batch view.
+    // Ensure everything is set correctly for this state.
+    showBatchesView();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  showBatchesView();
+});
+  </script>
 </body>
 
 </html>
