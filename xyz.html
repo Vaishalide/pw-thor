@@ -1530,41 +1530,266 @@
 }
 
     async function loadLecturesContent(batchId, subjectSlug, topicId, contentType = "vidoes") {
-        if (isLoading) return;
-        isLoading = true;
-        show(document.getElementById("lectureSection"));
-        const lectureContent = document.getElementById("lectureContent");
-        lectureContent.innerHTML = "";
-        showLoader(true);
+     if (lectureLoading) return;
+      lectureLoading = true;
 
-        // Logic for loading lectures, notes, etc.
-        // ... (this part of your code seems fine)
+      history.pushState({}, '', `?batch=${batchId}&subject=${subjectSlug}&topic=${topicId}&type=${contentType}`);
+  document.getElementById("lectureContent").innerHTML = "";
 
-        showLoader(false);
-        isLoading = false;
+      show(document.getElementById("lectureSection"));
+      showLoader(true);
+
+      currentBatchId = batchId;
+      currentSubjectSlug = subjectSlug;
+      currentTopicId = topicId;
+      currentContentType = contentType;
+
+      const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}`;
+
+      try {
+        const res = await fetch(url);
+    const data = await res.json();
+    const items = data.data || [];
+
+    const lectureContent = document.getElementById("lectureContent");
+        if (items.length === 0) {
+          lectureContent.innerHTML = `<div style="color: var(--text-muted); text-align: center; margin-top: 20px;">No content found in this arena.</div>`;
+          return;
+        }
+
+        items.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "card";
+
+        if (contentType === "notes" || contentType === "DppNotes") {
+  let topicTitle = "Untitled Note";
+if (item.topic) {
+  topicTitle = item.topic;
+} else if (item.homeworkIds?.[0]?.topic) {
+  topicTitle = item.homeworkIds[0].topic;
+}
+  const scheduleId = item._id;
+
+  div.innerHTML = `
+    <div class="card-title">${topicTitle}</div>
+    <div class="note-buttons">
+      <button onclick="fetchAndOpenAttachments('${currentBatchId}', '${currentSubjectSlug}', '${scheduleId}')">
+        📂 Open Attachments
+      </button>
+    </div>
+  `;
+}
+else {
+  const vid = item.videoDetails || item;
+  const title = item.topic || vid.name || "Untitled Video";
+  const image = vid.image || vid.thumbnail || "";
+  const mediaUrl = vid.hls_url || item.url || "";
+  const duration = vid.duration || "00:00:00";
+
+  const startTime = new Date(item.startTime);
+  const formattedDate = startTime.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+
+  div.className = "lecture-card";
+  div.innerHTML = `
+    <div class="lecture-card-inner">
+      <div class="lecture-thumbnail">
+        <img src="${image}" alt="${title}" class="lecture-image" />
+        ${item.status === "COMPLETED" ? `
+          <div class="status-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#00cc66" viewBox="0 0 16 16">
+              <circle cx="8" cy="8" r="8" fill="white"/>
+              <path fill="#00cc66" d="M13.485 4.485a1 1 0 0 0-1.414-1.414L6.5 8.643 4.929 7.071a1 1 0 0 0-1.414 1.415l2.586 2.586a1 1 0 0 0 1.415 0l6.97-6.97z"/>
+            </svg>
+          </div>` : ""}
+      </div>
+      <div class="lecture-info">
+        <h3 class="lecture-title">${title}</h3>
+        <div class="lecture-meta">
+          <span class="lecture-date"><i class="icon-calendar"></i> ${formattedDate}</span>
+          <span class="lecture-duration"><i class="icon-clock"></i> ${duration}</span>
+        </div>
+      </div>
+    </div>
+  `;
+  div.onclick = async () => {
+    showLoader(true);
+    try {
+      let finalUrl = mediaUrl;
+      const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
+      if (isYouTube) return window.open(finalUrl, '_blank');
+
+      const realVid = item.videoDetails || item;
+      const params = new URLSearchParams({
+        batch: currentBatchName || 'Unknown Batch',
+        subject: currentSubjectName || 'Unknown Subject',
+        topic: currentTopicName || 'General',
+        title: item.topic || realVid.name || ''
+      });
+
+      const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+      const data = await resp.json();
+
+      if (data.youtube && data.videoUrl) {
+        window.open(data.videoUrl, '_blank');
+        return;
+      }
+
+      if (data.success && data.signed_url && data.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: data.signed_url,
+          iv: data.video_id
+        });
+        window.location.href = `pwplayer.html?${urlParams}`;
+        return;
+      }
+
+      const scheduleId = item._id;
+      const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+      const altData = await res.json();
+
+           if (altData.success && altData.signed_url && altData.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: altData.signed_url,
+          iv: altData.video_id
+        });
+        if (altData.pally_data && altData.pally_iv) {
+          urlParams.append('pally_data', altData.pally_data);
+          urlParams.append('pally_iv', altData.pally_iv);
+        }
+        window.location.href = `pwplayer.html?${urlParams.toString()}`;
+      } else {
+        alert("⚠️ Video not available from either source.");
+      }
+    } catch (err) {
+      console.error("Video load failed:", err);
+      alert("⚠️ Failed to load video.");
+    } finally {
+      showLoader(false);
     }
+  };
+}
+       lectureContent.appendChild(div);
+        });
+      } catch (err) {
+        console.error("Failed to load content:", err);
+      } finally {
+        lectureLoading = false;
+        showLoader(false);
+      }
+    }
+async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
+  try {
+    showLoader(true);
+    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
+    const data = await res.json();
+
+    if (!data.data || !data.data.length) {
+      alert("No content found.");
+      return;
+    }
+
+    const attachments = data.data.flatMap(item =>
+      (item.homeworkIds || []).flatMap(hw =>
+        (hw.attachmentIds || [])
+      )
+    );
+
+    if (!attachments.length) {
+      alert("No attachments found.");
+      return;
+    }
+
+    attachments.forEach(att => {
+      const fileUrl = `${att.baseUrl}${att.key}`;
+      window.open(fileUrl, '_blank');
+    });
+
+  } catch (err) {
+    console.error("Failed to fetch schedule content:", err);
+    alert("Error loading attachments.");
+  } finally {
+    showLoader(false);
+  }
+}
 
     function switchLectureTab(tab) {
-        document.querySelectorAll('.lecture-tabs button').forEach(b => b.classList.remove('active'));
-        document.getElementById(`tab-${tab}`).classList.add('active');
-        const typeMap = { lectures: "vidoes", notes: "notes", dppnotes: "DppNotes", dpplecture: "DppVideos" };
-        loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, typeMap[tab]);
-    }
+      const typeMap = {
+        lectures: "vidoes",
+        notes: "notes",
+        dppnotes: "DppNotes",
+        dpplecture: "DppVideos"
+      };
 
-    backBtn.onclick = () => history.back();
+      currentContentType = typeMap[tab] || "vidoes";
+    
 
-    window.addEventListener("popstate", () => {
-      if (viewStack.length > 0) {
-        const restoreView = viewStack.pop();
-        if (typeof restoreView === 'function') restoreView();
-      } else {
-        showBatchesView();
+      ["lectures", "notes", "dppnotes", "dpplecture"].forEach(t => {
+        document.getElementById("tab-" + t).classList.remove("active");
+      });
+      document.getElementById("tab-" + tab).classList.add("active");
+
+      loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType);
+}
+
+    backBtn.onclick = () => {
+  history.back(); // ✅ triggers popstate event
+};
+
+
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
+      renderBatches(filtered);
+    });
+
+      loadBatches();
+   
+
+    // Popup functionality
+    fetch('/popup.json')
+      .then(res => res.json())
+      .then(popup => {
+        if (popup.show) {
+          document.getElementById('popupImage').src = popup.image;
+          document.getElementById('popupText').textContent = popup.text;
+          document.getElementById('popupLink').href = popup.link;
+          document.getElementById('popup').style.display = 'block';
+        }
+      })
+      .catch(err => console.error('Error loading popup data:', err));
+
+    // Disable right-click and DevTools
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', function (event) {
+      if (
+        event.key === "F12" ||
+        (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'J')) ||
+        (event.ctrlKey && event.key === 'U') ||
+        (event.ctrlKey && event.shiftKey && event.key === 'C') ||
+        (event.ctrlKey && event.key === 'A') ||
+        (event.ctrlKey && event.key === 'S') ||
+        (event.ctrlKey && event.key === 'P')
+      ) {
+        event.preventDefault();
       }
     });
+window.addEventListener("popstate", () => {
+  if (viewStack.length > 0) {
+    const restoreView = viewStack.pop(); // ✅ Pop the function for the view we are returning TO.
+    if (typeof restoreView === 'function') {
+      restoreView(); // ✅ Execute it.
+    }
+  }
+});
+document.addEventListener("DOMContentLoaded", () => {
+  showBatchesView();
+});
 
-    document.addEventListener("DOMContentLoaded", () => {
-        showBatchesView();
-    });
+
   </script>
 </body>
 
