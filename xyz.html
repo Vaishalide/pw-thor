@@ -1170,6 +1170,22 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
       loadLecturesContent(currentBatchId, currentSubjectSlug, currentTopicId, currentContentType);
 }
 
+    // Your existing listener
+document.addEventListener("DOMContentLoaded", () => {
+    // --- INITIALIZE DOM ELEMENTS ---
+    // This is the critical part you were missing.
+    loadingOverlay = document.getElementById('loadingOverlay');
+    main = document.getElementById('main');
+    subjectsDiv = document.getElementById('subjects');
+    chaptersDiv = document.getElementById('chaptersDiv');
+    backBtn = document.getElementById('backBtn'); // <-- Now backBtn will be the HTML element
+    searchInput = document.getElementById('searchInput');
+    loadMoreBtnWrapper = document.getElementById('loadMoreBatchesWrapper');
+    loadMoreBtn = document.getElementById('loadMoreBatchesBtn');
+    lectureSection = document.getElementById('lectureSection');
+    lectureContent = document.getElementById('lectureContent');
+
+
     backBtn.onclick = () => {
   history.back(); // ✅ triggers popstate event
 };
