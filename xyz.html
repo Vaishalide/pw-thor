@@ -340,14 +340,31 @@
 }
 
 .heart-icon {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  font-size: 18px;
-  color: white;
-  cursor: pointer;
-  z-index: 1;
-  transition: transform 0.2s, color 0.3s;
+    /* Positioning */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+
+    /* Create the black circle */
+    width: 36px;
+    height: 36px;
+    background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black */
+    border-radius: 50%; /* This makes it a circle */
+    
+    /* Center the heart character inside the circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Style the heart character itself */
+    color: white;
+    font-size: 18px; /* Adjusted size for the circle */
+    text-shadow: none; /* Remove the old shadow */
+    
+    /* Effects */
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .heart-icon.active {
