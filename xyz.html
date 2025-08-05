@@ -2361,16 +2361,6 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
   history.back(); // ✅ triggers popstate event
 };
 
-
-    searchInput.addEventListener("input", () => {
-      const keyword = searchInput.value.toLowerCase();
-      const filtered = allBatches.filter(b => b.name.toLowerCase().includes(keyword));
-      renderBatches(filtered);
-    });
-
-      loadBatches();
-   
-
     // Popup functionality
     fetch('/popup.json')
       .then(res => res.json())
