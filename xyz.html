@@ -1840,24 +1840,6 @@ function renderNoResults() {
   `;
 }
 
-window.addEventListener("scroll", () => {
-  const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-
-  const isBatchesView =
-    main.style.display !== "none" &&
-    subjectsDiv.style.display === "none" &&
-    chaptersDiv.style.display === "none" &&
-    document.getElementById("lectureSection").style.display === "none" &&
-    document.getElementById("todayWrapper").style.display === "none";
-
-  if (nearBottom && isBatchesView && !isLoading) {
-    loadBatches();
-  }
-});
-;
-
-
-
 
 // 🔍 Search input listener
 searchInput.addEventListener("input", debounce(() => {
@@ -1876,43 +1858,54 @@ function debounce(fn, delay) {
 
   
 async function loadSubjects(batchId) {
-    pushView(() => showBatchesView()); 
+    // 1. Set up the view state for navigation
+    pushView(() => showBatchesView());
 
-    // Use your existing clearAll/show logic correctly
-    clearAll();
+    // 2. Prepare the UI for the subjects view
+    clearAll(); // Hide all other sections
     const subjectsContainer = document.getElementById("subjects");
-    subjectsContainer.style.display = "grid";
-    backBtn.style.display = "inline-flex";
-    searchInput.style.display = "none";
-
+    const todayWrapper = document.getElementById("todayWrapper");
+    
+    subjectsContainer.style.display = "grid"; // Show the subjects grid
+    todayWrapper.style.display = "block";    // Show the "Today's Battles" section
+    backBtn.style.display = "inline-flex";   // Show the back button
+    searchInput.style.display = "none";      // Hide the main search bar
+    
+    // Clear previous content and show loader
     subjectsContainer.innerHTML = "";
+    document.getElementById("todayScrollContainer").innerHTML = "";
     showLoader(true);
 
     try {
-        const res = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
-        const json = await res.json();
-        const subs = (json.data && json.data.subjects) || [];
+        // --- FETCH AND RENDER SUBJECTS ---
+        const batchDetailsRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
+        const batchDetailsJson = await batchDetailsRes.json();
+        const subjects = (batchDetailsJson.data && batchDetailsJson.data.subjects) || [];
 
-        if (subs.length > 0) {
-            subs.forEach(sub => {
-                // Create the subject card
+        if (subjects.length > 0) {
+            subjects.forEach(sub => {
                 const card = document.createElement('div');
                 card.className = 'subject-card'; // Use the specific class for subjects
+                card.style.cursor = 'pointer';   // Make it look clickable
+
+                // Attach click event to load chapters for this subject
                 card.onclick = () => {
-                    pushView(() => loadSubjects(batchId));
+                    pushView(() => loadSubjects(batchId)); // For back navigation
                     currentSubjectId = sub.subjectId || sub._id;
                     currentSubjectName = sub.subject;
                     loadChapters(batchId, sub.slug);
                 };
 
-                const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : '';
+                // Safely get image URLs and names
+                const iconUrl = sub.imageId ? `${sub.imageId.baseUrl}${sub.imageId.key}` : 'https://placehold.co/100x100/1e1e1e/ffffff?text=Icon';
                 const teacher = sub.teacherIds?.[0];
-                const teacherImg = teacher?.imageId ? `${teacher.imageId.baseUrl}${teacher.imageId.key}` : '';
-                const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}` : 'TBA';
+                const teacherImg = teacher?.imageId ? `${teacher.imageId.baseUrl}${teacher.imageId.key}` : 'https://placehold.co/50x50/1e1e1e/ffffff?text=T';
+                const teacherName = teacher ? `${teacher.firstName} ${teacher.lastName}`.trim() : 'TBA';
 
+                // Populate the card's HTML structure
                 card.innerHTML = `
                     <div class="card-header">
-                        <img class="subject-icon" src="${iconUrl}" alt="${sub.subject}" />
+                        <img class="subject-icon" src="${iconUrl}" alt="${sub.subject}" onerror="this.src='https://placehold.co/100x100/1e1e1e/ffffff?text=Icon'"/>
                         <div class="subject-title">${sub.subject}</div>
                     </div>
                     <div class="card-details">
@@ -1920,7 +1913,7 @@ async function loadSubjects(batchId) {
                         <div>📚 <strong>${sub.tagCount || 0}</strong> Chapters</div>
                     </div>
                     <div class="teacher-info">
-                        <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" />
+                        <img class="teacher-img" src="${teacherImg}" alt="${teacherName}" onerror="this.src='https://placehold.co/50x50/1e1e1e/ffffff?text=T'"/>
                         <div class="teacher-name">${teacherName}</div>
                     </div>
                 `;
@@ -1930,118 +1923,85 @@ async function loadSubjects(batchId) {
             subjectsContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">No subjects found in this arena.</p>';
         }
 
-// 2. Then call it inside your loop
-subs.forEach(sub => {
-  appendCard(subjectsDiv, sub, () => {
-    pushView(() => loadSubjects(batchId));
-    chapterPage = 1;
-    chapterLoading = false;
-    currentSubjectId = sub.subjectId || sub._id;
-    currentSubjectName = sub.subject;
-    loadChapters(batchId, sub.slug, 1);
-  });
-});
-
+        // --- FETCH AND RENDER TODAY'S BATTLES ---
         const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
-const todayJson = await todayRes.json();
-const todayClasses = todayJson.data || [];
-      const todayWrapper = document.getElementById("todayWrapper");
-const todayScrollContainer = document.getElementById("todayScrollContainer");
+        const todayJson = await todayRes.json();
+        const todayClasses = todayJson.data || [];
+        const todayScrollContainer = document.getElementById("todayScrollContainer");
 
-if (document.getElementById("subjects").style.display !== "none") {
-  todayWrapper.style.display = "block";
-}
+        if (todayClasses.length === 0) {
+            todayScrollContainer.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center; width: 100%;">No battles scheduled for today.</div>';
+        } else {
+            todayClasses.forEach(cls => {
+                const title = cls.topic || "Untitled";
+                const subject = cls.subjectId?.name || "Unknown Subject";
+                const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+                const chapter = cls.tags?.[0]?.name || "General";
+                const tagLabel = cls.tag || "Upcoming";
 
+                const statusColor = tagLabel === "Live" ? "var(--squid-green)" : tagLabel === "Ended" ? "var(--squid-red)" : "var(--squid-cyan)";
+                const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
 
-// If no classes, show message
-if (todayClasses.length === 0) {
-  todayScrollContainer.innerHTML = '<div style="color: var(--text-muted); padding: 10px;">No battles scheduled for today.</div>';
-} else {
-  todayScrollContainer.innerHTML = ""; // Clear previous content
-}
+                const card = document.createElement("div");
+                card.className = "today-card";
 
-// Loop through today's classes
-todayClasses.forEach(cls => {
-  const title = cls.topic || "Untitled";
-  const subject = cls.subjectId?.name || "Unknown Subject";
-  const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-  const chapter = cls.tags?.[0]?.name || "General";
-  const tagLabel = cls.tag || "Upcoming";
+                card.innerHTML = `
+                    <img src="${customImage}" alt="${title}" onerror="this.style.display='none'"/>
+                    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
+                    <div class="today-card-title">${title}</div>
+                    <div style="font-size: 0.85rem; margin-top: 5px;">🕒 ${time}</div>
+                    <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
+                    <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
+                `;
 
-  const statusColor = tagLabel === "Live"
-    ? "var(--squid-green)"
-    : tagLabel === "Ended"
-    ? "var(--squid-red)"
-    : "var(--squid-cyan)";
+                card.onclick = async () => {
+                    if (tagLabel === "Upcoming") {
+                        alert("⚠️ This battle has not started yet. Please wait.");
+                        return;
+                    }
+                    const scheduleId = cls._id;
+                    if (!batchId || !scheduleId) {
+                        alert("Invalid class identifiers.");
+                        return;
+                    }
+                    
+                    showLoader(true);
+                    try {
+                        const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+                        const data = await res.json();
 
-  const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
-
-  const card = document.createElement("div");
-  card.className = "today-card";
-
-  // Required for horizontal scroll layout
-  card.style.width = "260px";
-  card.style.flex = "0 0 auto";
-
-  card.innerHTML = `
-    <img src="${customImage}" alt="${title}" />
-    <div style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 5px;">${subject}</div>
-    <div class="today-card-title">${title}</div>
-    <div style="font-size: 0.85rem; margin-top: 5px;">🕒 ${time} IST</div>
-    <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
-    <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
-  `;
-
-  card.onclick = async () => {
-  if (tagLabel === "Upcoming") {
-    alert("⚠️ Class not started yet. Please wait.");
-    return;
-  }
-
-  const batchId = cls.batch?._id || cls.batchId?._id || cls.batchId; // support for both structures
-  const scheduleId = cls._id;
-
-  if (!batchId || !scheduleId) {
-    alert("Invalid class identifiers.");
-    return;
-  }
-
-  showLoader(true);
-
-  try {
-    const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
-    const data = await res.json();
-
- if (data.success && data.signed_url && data.video_id) {
-        const urlParams = new URLSearchParams({
-          encrypted: data.signed_url,
-          iv: data.video_id
-        });
-        if (data.pally_data && data.pally_iv) {
-          urlParams.append('pally_data', data.pally_data);
-          urlParams.append('pally_iv', data.pally_iv);
+                        if (data.success && data.signed_url && data.video_id) {
+                            const urlParams = new URLSearchParams({
+                                encrypted: data.signed_url,
+                                iv: data.video_id
+                            });
+                            if (data.pally_data && data.pally_iv) {
+                                urlParams.append('pally_data', data.pally_data);
+                                urlParams.append('pally_iv', data.pally_iv);
+                            }
+                            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+                        } else {
+                            alert("⚠️ Failed to get the stream URL for this battle.");
+                        }
+                    } catch (err) {
+                        console.error("Live stream fetch error:", err);
+                        alert("⚠️ An error occurred while trying to enter the battle.");
+                    } finally {
+                        showLoader(false);
+                    }
+                };
+                todayScrollContainer.appendChild(card);
+            });
         }
-        window.location.href = `pwplayer.html?${urlParams.toString()}`;
-    } else {
-      alert("⚠️ Failed to get live stream URL.");
-    }
-  } catch (err) {
-    console.error("Live stream fetch error:", err);
-    alert("⚠️ Error getting live stream URL.");
-  } finally {
-    showLoader(false);
-  }
-};
-
-
-todayScrollContainer.appendChild(card);
-});
-      } catch (err) {
-        console.error("Failed to load subjects or todayclass:", err);
-      } finally {
+    } catch (err) {
+        console.error("Failed to load subjects or today's schedule:", err);
+        subjects.innerHTML = '<p style="color: var(--squid-red); text-align: center; grid-column: 1 / -1;">Could not load arena data. Please try again.</p>';
+    } finally {
+        // 3. Always hide the loader when done
         showLoader(false);
-      }
     }
+}
+
 
   async function loadChapters(batchId, subjectSlug) {
   const chaptersDiv = document.getElementById("chaptersDiv");
