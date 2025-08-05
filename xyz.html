@@ -340,21 +340,20 @@
 }
 
 .heart-icon {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    font-size: 24px;
-    color: white;
-    cursor: pointer;
-    z-index: 10;
-    transition: transform 0.2s, color 0.3s;
-    text-shadow: 0 0 8px rgba(0,0,0,0.9);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s, color 0.3s;
 }
 
 .heart-icon.active {
-    color: #ff4757;
-    transform: scale(1.1);
+  color: red;
 }
+
     
 .batch-card-content {
     padding: 16px;
@@ -1319,6 +1318,22 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 25px var(--glow-cyan);
       border-color: var(--squid-pink);
     }
+
+    .heart-icon {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: 18px;
+  color: white;
+  cursor: pointer;
+  z-index: 1;
+  transition: transform 0.2s, color 0.3s;
+}
+
+.heart-icon.active {
+  color: red;
+}
+
 
     /* Floating background shapes */
     .geometric-bg {
