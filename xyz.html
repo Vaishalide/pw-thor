@@ -1780,7 +1780,7 @@ function clearAll() {
       div.style.display = div.id === "lectureSection" ? "block" : "grid";
     }
 
-function appendBatchCard(container, batch) {
+function appendCard(container, title, image, onClick, batchId) {
     const isFav = isFavoriteBatch(batch.batchId);
     const card = document.createElement("div");
     card.className = "batch-card";
