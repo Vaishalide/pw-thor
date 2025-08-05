@@ -1660,6 +1660,9 @@
 let isLoading = false;
 let hasMore = true;
 let currentQuery = "";
+  let currentBatchName = "";
+  let currentSubjectName = "";
+  let currentTopicName = "";
     
   const loadMoreBtnWrapper = document.getElementById("loadMoreBatchesWrapper");
 const loadMoreBtn = document.getElementById("loadMoreBatchesBtn");
@@ -1754,6 +1757,7 @@ function appendBatchCard(container, batch) {
             return;
         }
         pushView(showBatchesView);
+        currentBatchName = batch.name;
         loadSubjects(batch.batchId);
     });
 
@@ -1761,6 +1765,7 @@ function appendBatchCard(container, batch) {
     card.querySelector(".study-button").addEventListener("click", (e) => {
         e.stopPropagation();
         pushView(showBatchesView);
+        currentBatchName = batch.name;
         loadSubjects(batch.batchId);
     });
 
