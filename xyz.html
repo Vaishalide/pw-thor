@@ -1853,6 +1853,9 @@ function renderBatches(batches) {
     sorted.forEach(batch => appendBatchCard(main, batch));
 }
     
+     loadMoreBtn.addEventListener("click", () => {
+  loadBatches();
+});
     
 function getFavoriteBatches() {
   const stored = localStorage.getItem("favoriteBatches");
