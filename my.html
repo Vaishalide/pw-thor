@@ -2332,6 +2332,7 @@ div.onclick = async () => {
             showLoader(false); // Hide loader since we are not leaving the page
         } else if (result.type === 'redirect') {
             window.location.href = result.url;
+          showLoader(false);
             // No need to hide loader here, as the page is navigating away
         }
 
