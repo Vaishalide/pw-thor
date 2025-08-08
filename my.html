@@ -2243,80 +2243,103 @@ else {
   `;
 div.onclick = async () => {
     showLoader(true);
+
     try {
         // --- Preliminary Checks ---
         let finalUrl = mediaUrl;
         const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
+        
         if (isYouTube) {
             showLoader(false);
             return window.open(finalUrl, '_blank');
         }
 
         const realVid = item.videoDetails || item;
-        const params = new URLSearchParams({
-            batch: currentBatchName || 'Unknown Batch',
-            subject: currentSubjectName || 'Unknown Subject',
-            topic: currentTopicName || 'General',
-            title: item.topic || realVid.name || ''
-        });
+        const scheduleId = item._id; // Ensure 'item' has '_id'
 
-        // --- 1. First API Attempt ---
-        const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-        const data = await resp.json();
+        // --- Define API Call Functions ---
+        // Each function returns a promise that resolves with the final URL or rejects on failure.
 
-        if (data.youtube && data.videoUrl) {
-            window.open(data.videoUrl, '_blank');
-            return;
-        }
-
-        if (data.success && data.signed_url && data.video_id) {
-            const urlParams = new URLSearchParams({
-                encrypted: data.signed_url,
-                iv: data.video_id
+        const fetchApi1 = async () => {
+            const params = new URLSearchParams({
+                batch: currentBatchName || 'Unknown Batch',
+                subject: currentSubjectName || 'Unknown Subject',
+                topic: currentTopicName || 'General',
+                title: item.topic || realVid.name || ''
             });
-            window.location.href = `pwplayer.html?${urlParams}`;
-            return;
-        }
+            const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+            if (!resp.ok) throw new Error('API 1 failed');
+            const data = await resp.json();
 
-        // --- 2. Second API Attempt ---
-        const scheduleId = item._id; // Ensure 'item' and 'currentBatchId' are available here
-        const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
-        const altData = await res.json();
-
-        if (altData.success && altData.signed_url && altData.video_id) {
-            const urlParams = new URLSearchParams({
-                encrypted: altData.signed_url,
-                iv: altData.video_id
-            });
-            if (altData.pally_data && altData.pally_iv) {
-                urlParams.append('pally_data', altData.pally_data);
-                urlParams.append('pally_iv', altData.pally_iv);
+            if (data.youtube && data.videoUrl) {
+                // For YouTube links, we need to open a new tab
+                return { type: 'open', url: data.videoUrl };
             }
-            window.location.href = `pwplayer.html?${urlParams.toString()}`;
-        } else {
-            // --- 3. Third API Attempt (NEW FALLBACK) ---
-            // This block runs only if the first two attempts fail.
-            console.log("Second API failed, trying the new fallback API...");
-            const fallbackRes = await fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
-            const fallbackData = await fallbackRes.json();
-
-            if (fallbackData.success && fallbackData.signed_url && fallbackData.video_id) {
+            if (data.success && data.signed_url && data.video_id) {
                 const urlParams = new URLSearchParams({
-                    encrypted: fallbackData.signed_url,
-                    iv: fallbackData.video_id
+                    encrypted: data.signed_url,
+                    iv: data.video_id
                 });
-                window.location.href = `pwplayer.html?${urlParams.toString()}`;
-            } else {
-                // --- All Attempts Failed ---
-                alert("⚠️ Video not available from any source.");
+                return { type: 'redirect', url: `pwplayer.html?${urlParams}` };
             }
+            throw new Error('API 1 did not provide a valid video URL.');
+        };
+
+        const fetchApi2 = async () => {
+            const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+            if (!res.ok) throw new Error('API 2 failed');
+            const data = await res.json();
+
+            if (data.success && data.signed_url && data.video_id) {
+                const urlParams = new URLSearchParams({
+                    encrypted: data.signed_url,
+                    iv: data.video_id
+                });
+                if (data.pally_data && data.pally_iv) {
+                    urlParams.append('pally_data', data.pally_data);
+                    urlParams.append('pally_iv', data.pally_iv);
+                }
+                return { type: 'redirect', url: `pwplayer.html?${urlParams}` };
+            }
+            throw new Error('API 2 did not provide a valid video URL.');
+        };
+
+        const fetchApi3 = async () => {
+            const res = await fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
+            if (!res.ok) throw new Error('API 3 failed');
+            const data = await res.json();
+            
+            if (data.success && data.signed_url && data.video_id) {
+                const urlParams = new URLSearchParams({
+                    encrypted: data.signed_url,
+                    iv: data.video_id
+                });
+                return { type: 'redirect', url: `pwplayer.html?${urlParams}` };
+            }
+            throw new Error('API 3 did not provide a valid video URL.');
+        };
+
+        // --- Run all API calls in parallel and get the first success ---
+        const result = await Promise.any([
+            fetchApi1(),
+            fetchApi2(),
+            fetchApi3()
+        ]);
+
+        // --- Act on the first successful result ---
+        if (result.type === 'open') {
+            window.open(result.url, '_blank');
+            showLoader(false); // Hide loader since we are not leaving the page
+        } else if (result.type === 'redirect') {
+            window.location.href = result.url;
+            // No need to hide loader here, as the page is navigating away
         }
-    } catch (err) {
-        console.error("Video load failed:", err);
-        alert("⚠️ Failed to load video due to an error.");
-    } finally {
-        // This will only be reached if a redirect doesn't happen
-        showLoader(false);
+
+    } catch (error) {
+        // This block executes only if ALL promises fail
+        console.error("All video sources failed to load:", error);
+        alert("⚠️ Video not available from any source.");
+        showLoader(false); // Hide loader on total failure
     }
 };
 }
