@@ -2241,91 +2241,63 @@ else {
       </div>
     </div>
   `;
- // A helper function to create URL parameters for the player.
-// (Define this once, outside the click handler).
-const createPlayerUrl = (data) => {
-    const urlParams = new URLSearchParams({
-        encrypted: data.signed_url,
-        iv: data.video_id,
-    });
-
-    if (data.pally_data && data.pally_iv) {
-        urlParams.append('pally_data', data.pally_data);
-        urlParams.append('pally_iv', data.pally_iv);
-    }
-
-    return `pwplayer.html?${urlParams.toString()}`;
-};
-
-// This is the main function that handles the logic.
-// It takes the 'item' object as an argument.
-const handlePlayClick = async (item) => {
+div.onclick = async () => {
     showLoader(true);
     try {
-        // First, handle the simple case of a direct YouTube link.
-        const mediaUrl = item.videoDetails?.videoUrl || item.videoUrl;
-        const isYouTube = mediaUrl && (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be'));
-        if (isYouTube) {
-            window.open(mediaUrl, '_blank');
-            return; // Exit the function early
+      let finalUrl = mediaUrl;
+      const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
+      if (isYouTube) return window.open(finalUrl, '_blank');
+
+      const realVid = item.videoDetails || item;
+      const params = new URLSearchParams({
+        batch: currentBatchName || 'Unknown Batch',
+        subject: currentSubjectName || 'Unknown Subject',
+        topic: currentTopicName || 'General',
+        title: item.topic || realVid.name || ''
+      });
+
+      const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+      const data = await resp.json();
+
+      if (data.youtube && data.videoUrl) {
+        window.open(data.videoUrl, '_blank');
+        return;
+      }
+
+      if (data.success && data.signed_url && data.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: data.signed_url,
+          iv: data.video_id
+        });
+        window.location.href = `pwplayer.html?${urlParams}`;
+        return;
+      }
+
+      const scheduleId = item._id;
+      const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+      const altData = await res.json();
+
+           if (altData.success && altData.signed_url && altData.video_id) {
+        const urlParams = new URLSearchParams({
+          encrypted: altData.signed_url,
+          iv: altData.video_id
+        });
+        if (altData.pally_data && altData.pally_iv) {
+          urlParams.append('pally_data', altData.pally_data);
+          urlParams.append('pally_iv', altData.pally_iv);
         }
-
-        const scheduleId = item._id;
-        const batchId = currentBatchId;
-
-        // --- Define the three API requests as promises ---
-
-        // API 1: /api/video/stream-info
-        const promise1 = fetch(`${API_BASE}/api/video/stream-info?batch_id=${batchId}&schedule_id=${scheduleId}`)
-            .then(res => res.ok ? res.json() : Promise.reject('API 1 failed'))
-            .then(data => {
-                if (data.success && data.signed_url && data.video_id) {
-                    return { type: 'player', url: createPlayerUrl(data) };
-                }
-                return Promise.reject('API 1: No valid data');
-            });
-
-        // API 2: /api/url (Original fallback)
-        const promise2 = fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`)
-            .then(res => res.ok ? res.json() : Promise.reject('API 2 failed'))
-            .then(data => {
-                if (data.success && data.signed_url && data.video_id) {
-                    return { type: 'player', url: createPlayerUrl(data) };
-                }
-                return Promise.reject('API 2: No valid data');
-            });
-
-        // API 3: The new Heroku API
-        const promise3 = fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`)
-            .then(res => res.ok ? res.json() : Promise.reject('API 3 failed'))
-            .then(data => {
-                if (data.success && data.signed_url && data.video_id) {
-                    return { type: 'player', url: createPlayerUrl(data) };
-                }
-                return Promise.reject('API 3: No valid data');
-            });
-
-        // --- Race all three promises ---
-        const winner = await Promise.race([promise1, promise2, promise3]);
-
-        // --- Handle the successful result from the fastest API ---
-        if (winner.type === 'player') {
-            window.location.href = winner.url;
-        }
-
+        window.location.href = `pwplayer.html?${urlParams.toString()}`;
+      } else {
+        alert("⚠️ Video not available from either source.");
+      }
     } catch (err) {
-        // This block now runs only if ALL three promises reject
-        console.error("Video load failed from all sources:", err);
-        alert("⚠️ Video not available from any source.");
+      console.error("Video load failed:", err);
+      alert("⚠️ Failed to load video.");
     } finally {
-        showLoader(false);
+      showLoader(false);
     }
-};
-
-// --- Assign the click handler ---
-// Now, when the div is clicked, it simply calls your main function.
-// Make sure 'item' is available in this scope.
-div.onclick = () => handlePlayClick(item);
+  };
+}
        lectureContent.appendChild(div);
         });
       } catch (err) {
