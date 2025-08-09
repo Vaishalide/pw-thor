@@ -2353,7 +2353,7 @@ div.onclick = async () => {
         showLoader(false);
       }
     }
-async function fetchAndOpenAllAttachments(batchId, subjectSlug, scheduleId) {
+async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
   try {
     showLoader(true);
     const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
