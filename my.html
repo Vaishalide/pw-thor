@@ -2280,7 +2280,7 @@ div.onclick = async () => {
                     encrypted: data.signed_url,
                     iv: data.video_id
                 });
-                return { type: 'redirect', url: `pwplayer.html?${urlParams}` };
+                return { type: 'redirect', url: `dipesh.html?${urlParams}` };
             }
             throw new Error('API 1 did not provide a valid video URL.');
         };
@@ -2299,7 +2299,7 @@ div.onclick = async () => {
                     urlParams.append('pally_data', data.pally_data);
                     urlParams.append('pally_iv', data.pally_iv);
                 }
-                return { type: 'redirect', url: `pwplayer.html?${urlParams}` };
+                return { type: 'redirect', url: `dipesh.html?${urlParams}` };
             }
             throw new Error('API 2 did not provide a valid video URL.');
         };
@@ -2314,7 +2314,7 @@ div.onclick = async () => {
                     encrypted: data.signed_url,
                     iv: data.video_id
                 });
-                return { type: 'redirect', url: `pwplayer.html?${urlParams}` };
+                return { type: 'redirect', url: `dipesh.html?${urlParams}` };
             }
             throw new Error('API 3 did not provide a valid video URL.');
         };
