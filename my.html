@@ -2353,36 +2353,50 @@ div.onclick = async () => {
         showLoader(false);
       }
     }
-async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
+async function fetchAndOpenAllAttachments(batchId, subjectSlug, scheduleId) {
   try {
     showLoader(true);
     const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
     const data = await res.json();
 
-    // Check if the main data object or its homeworkIds property exists
-    if (!data.data || !data.data.homeworkIds) {
-      alert("No content found.");
+    if (!data || !data.data) {
+      alert("Error: Could not retrieve schedule data.");
       return;
     }
 
-    // Updated logic: Directly access homeworkIds from the data.data object
-    const attachments = (data.data.homeworkIds || []).flatMap(hw => 
-      hw.attachmentIds || []
-    );
+    const scheduleContent = data.data;
+    let allAttachments = []; // An empty list to hold all found attachments
 
-    if (!attachments.length) {
-      alert("No attachments found.");
+    // 1. Check for and collect attachments from Homework
+    if (scheduleContent.homeworkIds && scheduleContent.homeworkIds.length > 0) {
+      const homeworkAttachments = scheduleContent.homeworkIds.flatMap(hw => hw.attachmentIds || []);
+      allAttachments.push(...homeworkAttachments);
+    }
+
+    // 2. Check for and collect attachments from DPP
+    // This assumes the 'dpp' object, when not empty, contains an 'attachmentIds' array
+    if (scheduleContent.dpp && scheduleContent.dpp.attachmentIds && scheduleContent.dpp.attachmentIds.length > 0) {
+      const dppAttachments = scheduleContent.dpp.attachmentIds;
+      allAttachments.push(...dppAttachments);
+    }
+
+    // 3. Check if we found any attachments at all
+    if (allAttachments.length === 0) {
+      alert("No attachments found in Homework or DPP for this lecture.");
       return;
     }
 
-    attachments.forEach(att => {
-      const fileUrl = `${att.baseUrl}${att.key}`;
-      window.open(fileUrl, '_blank');
+    // 4. Open every attachment we found
+    allAttachments.forEach(att => {
+      if (att && att.baseUrl && att.key) {
+        const fileUrl = `${att.baseUrl}${att.key}`;
+        window.open(fileUrl, '_blank');
+      }
     });
 
   } catch (err) {
     console.error("Failed to fetch schedule content:", err);
-    alert("Error loading attachments.");
+    alert("An error occurred while loading attachments.");
   } finally {
     showLoader(false);
   }
