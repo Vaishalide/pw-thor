@@ -2359,15 +2359,15 @@ async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
     const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
     const data = await res.json();
 
-    if (!data.data || !data.data.length) {
+    // Check if the main data object or its homeworkIds property exists
+    if (!data.data || !data.data.homeworkIds) {
       alert("No content found.");
       return;
     }
 
-    const attachments = data.data.flatMap(item =>
-      (item.homeworkIds || []).flatMap(hw =>
-        (hw.attachmentIds || [])
-      )
+    // Updated logic: Directly access homeworkIds from the data.data object
+    const attachments = (data.data.homeworkIds || []).flatMap(hw => 
+      hw.attachmentIds || []
     );
 
     if (!attachments.length) {
