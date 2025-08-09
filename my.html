@@ -2305,19 +2305,27 @@ div.onclick = async () => {
         };
 
         const fetchApi3 = async () => {
-            const res = await fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
-            if (!res.ok) throw new Error('API 3 failed');
-            const data = await res.json();
-            
-            if (data.success && data.signed_url && data.video_id) {
-                const urlParams = new URLSearchParams({
-                    encrypted: data.signed_url,
-                    iv: data.video_id
-                });
-                return { type: 'redirect', url: `dipesh.html?${urlParams}` };
-            }
-            throw new Error('API 3 did not provide a valid video URL.');
-        };
+    // Fetches data from your API
+    const res = await fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
+    if (!res.ok) throw new Error('API 3 failed');
+
+    // Parses the JSON response. Renamed to 'responseJson' to avoid confusion.
+    const responseJson = await res.json();
+
+    // Checks for the new keys: 'success', 'data', and 'iv'
+    if (responseJson.success && responseJson.data && responseJson.iv) {
+        // Creates URL parameters using the new keys
+        const urlParams = new URLSearchParams({
+            data: responseJson.data, // Map 'data' to the 'encrypted' parameter
+            iv: responseJson.iv           // Map 'iv' to the 'iv' parameter
+        });
+        // Returns the object for redirection
+        return { type: 'redirect', url: `dipesh.html?${urlParams}` };
+    }
+
+    // Throws an error if the expected data is not found
+    throw new Error('API 3 did not provide valid video data.');
+};
 
         // --- Run all API calls in parallel and get the first success ---
         const result = await Promise.any([
