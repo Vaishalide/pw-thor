@@ -2038,42 +2038,88 @@ async function loadSubjects(batchId) {
                     <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
                 `;
 
-                card.onclick = async () => {
-                    if (tagLabel === "Upcoming") {
-                        alert("⚠️ This battle has not started yet. Please wait.");
-                        return;
-                    }
-                    const scheduleId = cls._id;
-                    if (!batchId || !scheduleId) {
-                        alert("Invalid class identifiers.");
-                        return;
-                    }
-                    
-                    showLoader(true);
-                    try {
-                        const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
-                        const data = await res.json();
+              card.onclick = async () => {
+    if (tagLabel === "Upcoming") {
+        alert("⚠️ This battle has not started yet. Please wait.");
+        return;
+    }
 
-                        if (data.success && data.signed_url && data.video_id) {
-                            const urlParams = new URLSearchParams({
-                                encrypted: data.signed_url,
-                                iv: data.video_id
-                            });
-                            if (data.pally_data && data.pally_iv) {
-                                urlParams.append('pally_data', data.pally_data);
-                                urlParams.append('pally_iv', data.pally_iv);
-                            }
-                            window.location.href = `pwplayer.html?${urlParams.toString()}`;
-                        } else {
-                            alert("⚠️ Failed to get the stream URL for this battle.");
-                        }
-                    } catch (err) {
-                        console.error("Live stream fetch error:", err);
-                        alert("⚠️ An error occurred while trying to enter the battle.");
-                    } finally {
-                        showLoader(false);
-                    }
-                };
+    const scheduleId = cls._id;
+    if (!batchId || !scheduleId) {
+        alert("Invalid class identifiers.");
+        return;
+    }
+
+    showLoader(true);
+
+    // --- Handler for the original API ---
+    const fetchOriginalAPI = async () => {
+        const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+        const data = await res.json();
+
+        if (data.success && data.signed_url && data.video_id) {
+            const urlParams = new URLSearchParams({
+                encrypted: data.signed_url,
+                iv: data.video_id
+            });
+            if (data.pally_data && data.pally_iv) {
+                urlParams.append('pally_data', data.pally_data);
+                urlParams.append('pally_iv', data.pally_iv);
+            }
+            // Return a standardized object for redirection
+            return {
+                type: 'redirect',
+                url: `pwplayer.html?${urlParams.toString()}`
+            };
+        } else {
+            // Throw an error to make this promise fail in the race
+            throw new Error('Original API failed to return a valid URL.');
+        }
+    };
+
+    // --- Handler for the new API ---
+    const fetchNewAPI = async () => {
+        const res = await fetch(`https://urlive-a666cc7ba45f.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
+        const data = await res.json();
+
+        if (data.success && data.data && data.iv) {
+            const urlParams = new URLSearchParams({
+                data: data.data, // Map 'data' from response to 'data' parameter
+                iv: data.iv     // Map 'iv' from response to 'iv' parameter
+            });
+            // Return a standardized object for redirection
+            return {
+                type: 'redirect',
+                url: `pwplayer.html.html?${urlParams.toString()}`
+            };
+        } else {
+            // Throw an error to make this promise fail in the race
+            throw new Error('New API failed to return valid data.');
+        }
+    };
+
+    try {
+        // Race both API calls. The first one to resolve or reject wins.
+        const winner = await Promise.race([
+            fetchOriginalAPI(),
+            fetchNewAPI()
+        ]);
+
+        // If a promise resolved, it returned our standardized object.
+        if (winner && winner.type === 'redirect') {
+            window.location.href = winner.url;
+        } else {
+             // This case is unlikely if handlers throw errors, but it's good for safety.
+            alert("⚠️ Failed to get the stream URL for this battle.");
+        }
+
+    } catch (err) {
+        console.error("Live stream fetch error:", err);
+        alert("⚠️ An error occurred while trying to enter the battle. Both sources may have failed.");
+    } finally {
+        showLoader(false);
+    }
+};
                 todayScrollContainer.appendChild(card);
             });
         }
