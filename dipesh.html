@@ -812,23 +812,30 @@ initializeState() {
 
 
    if (newDataEnc && newDataIv) {
-          console.log("✅ Found new 'data' and 'iv' parameters. Using them as highest priority.");
-          try {
-            const decryptedJson = this.decryptAESCBC(newDataEnc, newDataIv, key);
-            const drmData = JSON.parse(decryptedJson);
-      
-            // This parameter contains everything, so we set the URL and keys from it
-            this.videoURL = drmData.url;
+        console.log("✅ Found 'data' and 'iv' parameters. Decrypting...");
+        try {
+          const decryptedJson = this.decryptAESCBC(newDataEnc, newDataIv, key);
+          const parsedObject = JSON.parse(decryptedJson);
+
+          // CHANGE HERE: Check for success and access the nested 'data' object
+          if (parsedObject.success && parsedObject.data) {
+            const drmData = parsedObject.data; // This is the nested object
+
+            this.videoURL = drmData.url; // Access url from the nested object
+            
+            // Access keys from the nested object
             if (drmData.keys && drmData.keys.length > 0) {
               const [kid, key] = drmData.keys[0].split(":");
-              this.decryptedDrmInfo = { [kid]: key }; // Store the parsed keys
-              console.log("Successfully decrypted DRM info from 'data' param:", this.decryptedDrmInfo);
+              this.decryptedDrmInfo = { [kid]: key };
+              console.log("Successfully extracted URL and Keys:", { url: this.videoURL, keys: this.decryptedDrmInfo });
             }
-          } catch (err) {
-            console.error("Failed to decrypt or parse the new 'data' parameter:", err);
-            alert("Invalid 'data' parameter provided.");
+          } else {
+             console.error("Decryption successful, but the JSON format is not correct.", parsedObject);
           }
-        } else {
+        } catch (err) {
+          console.error("Failed to decrypt or parse the 'data' parameter:", err);
+        }
+      } else {
   // Decrypt video URL
   if (encrypted && iv) {
     try {
