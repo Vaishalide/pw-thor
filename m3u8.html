@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure HLS Player</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HLS.js library for playback -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        /* Simple style for the video player */
+        video {
+            width: 100%;
+            background-color: #000;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen font-sans">
+
+    <div class="w-full max-w-4xl p-6 md:p-8 bg-gray-800 rounded-xl shadow-2xl space-y-6">
+        <header>
+            <h1 class="text-3xl font-bold text-center text-cyan-400">Secure HLS Video Player</h1>
+            <p class="text-center text-gray-400 mt-2">Handles signed URLs and custom key authorization.</p>
+        </header>
+
+        <!-- Input Form -->
+        <div class="space-y-4">
+            <div>
+                <label for="m3u8_url" class="block text-sm font-medium text-gray-300 mb-1">Signed M3U8 URL</label>
+                <input type="text" id="m3u8_url" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition" placeholder="Enter the full .m3u8 URL with signature">
+            </div>
+            <div>
+                <label for="bearer_token" class="block text-sm font-medium text-gray-300 mb-1">Bearer Token</label>
+                <input type="text" id="bearer_token" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition" placeholder="Enter your API bearer token">
+            </div>
+            <button id="load_video_btn" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-cyan-500">
+                Load Video
+            </button>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status_message" class="text-center p-3 rounded-md text-sm"></div>
+
+        <!-- Video Player -->
+        <div class="w-full aspect-video">
+            <video id="videoPlayer" controls></video>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const video = document.getElementById('videoPlayer');
+            const loadBtn = document.getElementById('load_video_btn');
+            const m3u8UrlInput = document.getElementById('m3u8_url');
+            const bearerTokenInput = document.getElementById('bearer_token');
+            const statusMessage = document.getElementById('status_message');
+
+            let hls = null; // To hold the HLS instance
+
+            // --- MODIFIED: A new unified loader that handles both signed URLs and custom key requests ---
+            class UnifiedLoader extends Hls.DefaultConfig.loader {
+                constructor(config) {
+                    super(config);
+                    this.bearerToken = null;
+                    this.videoKey = null;
+                    this.signedParams = null; // To store signature params like ?Expires=...&Signature=...
+                }
+
+                // This method is called by HLS.js for every network request
+                load(context, config, callbacks) {
+                    const url = context.url;
+                    
+                    // --- Logic 1: Intercept requests for the decryption key ---
+                    if (context.type === 'key' || url.endsWith('enc.key')) {
+                        if (!this.bearerToken || !this.videoKey) {
+                            console.error("Bearer Token or Video Key is missing for key request.");
+                            callbacks.onError({ code: 0, text: 'Missing auth credentials' }, context, null);
+                            return;
+                        }
+
+                        const keyApiUrl = `https://api.penpencil.co/v1/videos/get-hls-key?videoKey=${this.videoKey}&key=enc.key`;
+                        console.log(`[Unified Loader] Intercepted key request. Fetching from: ${keyApiUrl}`);
+                        updateStatus('Fetching decryption key...', 'text-yellow-400');
+
+                        fetch(keyApiUrl, {
+                            headers: { 'Authorization': `Bearer ${this.bearerToken}` }
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                            return response.arrayBuffer();
+                        })
+                        .then(keyData => {
+                            callbacks.onSuccess({ url: keyApiUrl, data: keyData }, { tload: performance.now(), loaded: keyData.byteLength }, context);
+                            updateStatus('Key successfully fetched. Playing...', 'text-green-400');
+                        })
+                        .catch(error => {
+                            console.error('Error fetching decryption key:', error);
+                            callbacks.onError(error, context, null);
+                            updateStatus(`Error fetching key: ${error.message}`, 'text-red-500');
+                        });
+
+                    } else {
+                        // --- Logic 2: Append signature to all other requests (playlists, segments) ---
+                        try {
+                            const urlObject = new URL(context.url);
+                            // Attach the saved signature parameters to the request URL
+                            Object.keys(this.signedParams).forEach(key => {
+                                urlObject.searchParams.set(key, this.signedParams[key]);
+                            });
+                            context.url = urlObject.toString();
+                            console.log(`[Unified Loader] Appending signature to: ${context.url}`);
+                        } catch (e) {
+                            console.error("Error modifying URL with signature:", e);
+                        }
+                        // Use the default loader to handle the request with the modified URL
+                        super.load(context, config, callbacks);
+                    }
+                }
+            }
+
+            function updateStatus(message, colorClass) {
+                statusMessage.textContent = message;
+                statusMessage.className = `text-center p-3 rounded-md text-sm ${colorClass}`;
+            }
+
+            loadBtn.addEventListener('click', () => {
+                const m3u8Url = m3u8UrlInput.value.trim();
+                const bearerToken = bearerTokenInput.value.trim();
+
+                if (!m3u8Url || !bearerToken) {
+                    updateStatus('Please provide both the M3U8 URL and the Bearer Token.', 'text-red-500');
+                    return;
+                }
+                
+                let urlObj;
+                try {
+                    urlObj = new URL(m3u8Url);
+                } catch (e) {
+                    updateStatus('Invalid M3U8 URL provided.', 'text-red-500');
+                    return;
+                }
+
+                const videoKeyMatch = urlObj.pathname.match(/\/([0-9a-fA-F-]{36})\//);
+                if (!videoKeyMatch) {
+                    updateStatus('Could not find a valid videoKey (UUID) in the M3U8 URL.', 'text-red-500');
+                    return;
+                }
+                const videoKey = videoKeyMatch[1];
+                const signedParams = Object.fromEntries(urlObj.searchParams.entries());
+
+                if (hls) {
+                    hls.destroy();
+                }
+
+                if (Hls.isSupported()) {
+                    updateStatus('Loading video...', 'text-blue-400');
+                    
+                    const unifiedLoader = new UnifiedLoader();
+                    unifiedLoader.bearerToken = bearerToken;
+                    unifiedLoader.videoKey = videoKey;
+                    unifiedLoader.signedParams = signedParams;
+
+                    hls = new Hls({
+                        loader: unifiedLoader // Use our new unified loader
+                    });
+
+                    hls.loadSource(m3u8Url);
+                    hls.attachMedia(video);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        video.play();
+                    });
+                    hls.on(Hls.Events.ERROR, (event, data) => {
+                        if (data.fatal) {
+                            console.error('Fatal HLS Error:', data);
+                            updateStatus(`Error: ${data.details}`, 'text-red-500');
+                        }
+                    });
+                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                    video.src = m3u8Url;
+                    video.addEventListener('loadedmetadata', () => video.play());
+                    updateStatus('Using native HLS support. Custom key/signature loading may not work.', 'text-yellow-400');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
