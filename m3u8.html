@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure HLS Player</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MODIFIED: Switched to a different CDN for Tailwind CSS to resolve connection issues -->
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.js"></script>
     <!-- HLS.js library for playback -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
@@ -59,7 +59,7 @@
 
             let hls = null; // To hold the HLS instance
 
-            // --- MODIFIED: A new unified loader that handles both signed URLs and custom key requests ---
+            // --- A new unified loader that handles both signed URLs and custom key requests ---
             class UnifiedLoader extends Hls.DefaultConfig.loader {
                 constructor(config) {
                     super(config);
