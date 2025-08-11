@@ -1634,7 +1634,7 @@
   </a>
 
   <script>
-    const API_BASE = "https://pw-api1-ab3091004643.herokuapp.com";
+    const API_BASE = "https://pw-api2-9bac5f87cf60.herokuapp.com";
     const loadingOverlay = document.getElementById("loadingOverlay");
     const main = document.getElementById("main");
     const subjectsDiv = document.getElementById("subjects");
@@ -2079,7 +2079,7 @@ async function loadSubjects(batchId) {
 
     // --- Handler for the new API ---
     const fetchNewAPI = async () => {
-        const res = await fetch(`https://urlive-a666cc7ba45f.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
+        const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
         const data = await res.json();
 
         if (data.success && data.data && data.iv) {
@@ -2352,7 +2352,7 @@ div.onclick = async () => {
 
         const fetchApi3 = async () => {
     // Fetches data from your API
-    const res = await fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
+    const res = await fetch(`https://url-rec-4f0a3764bc8d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
     if (!res.ok) throw new Error('API 3 failed');
 
     // Parses the JSON response. Renamed to 'responseJson' to avoid confusion.
@@ -2375,7 +2375,7 @@ div.onclick = async () => {
 
           const fetchApi4 = async () => {
     // Fetches data from your API
-    const res = await fetch(`https://urlrec-072ca98cd12d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
+    const res = await fetch(`https://url-rec-4f0a3764bc8d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
     if (!res.ok) throw new Error('API 4 failed');
 
     // Parses the JSON response. Renamed to 'responseJson' to avoid confusion.
