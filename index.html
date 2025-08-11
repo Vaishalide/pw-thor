@@ -100,28 +100,21 @@
         }
 
         .shape {
-            width: 80px;
             height: 80px;
+            width: 100%;
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        /* Squid Game Shapes */
-        .shape-circle {
-            width: 70px;
-            height: 70px;
-            border: 5px solid var(--squid-light);
-            border-radius: 50%;
-        }
-
-        .shape-triangle {
-            width: 0;
-            height: 0;
-            border-left: 40px solid transparent;
-            border-right: 40px solid transparent;
-            border-bottom: 70px solid var(--squid-light);
+        /* UPDATED: Styling for the logos inside the cards */
+        .shape img {
+            max-width: 90%;
+            max-height: 80px;
+            object-fit: contain;
+            /* Invert color for white logos to make them visible if needed, but these are fine */
+            /* filter: invert(1); */
         }
 
         .card span {
@@ -186,13 +179,13 @@
         <div class="apps">
             <div class="card" onclick="redirectWithLoader('pw.html')">
                 <div class="shape">
-                    <div class="shape-circle"></div>
+                    <img src="https://www.pw.live/version14/assets/img/logo.png" alt="Physics Wallah Logo">
                 </div>
                 <span>Physics Wallah</span>
             </div>
             <div class="card" onclick="redirectWithLoader('kgs.html')">
                 <div class="shape">
-                    <div class="shape-triangle"></div>
+                    <img src="https://khanglobalstudies.com/images/logos/kgs-logo.png" alt="Khan Global Studies Logo">
                 </div>
                 <span>Khan Global Studies</span>
             </div>
@@ -206,6 +199,14 @@
                 window.location.href = url;
             }, 1500); // Increased delay for dramatic effect
         }
+
+        // NEW: This script fixes the loader getting stuck when you navigate back
+        window.addEventListener('pageshow', function(event) {
+            var loadingOverlay = document.getElementById('loadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
