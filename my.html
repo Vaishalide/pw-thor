@@ -2022,7 +2022,7 @@ async function loadSubjects(batchId) {
                 const time = new Date(cls.startTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
                 const chapter = cls.tags?.[0]?.name || "General";
                 const tagLabel = cls.tag || "Upcoming";
-                const scheduleType = cls.scheduleType; // Get the schedule type for later use
+                const urlType = cls.urlType; // Get the url type for later use
 
                 const statusColor = tagLabel === "Live" ? "var(--squid-green)" : tagLabel === "Ended" ? "var(--squid-red)" : "var(--squid-cyan)";
                 const customImage = "https://res.cloudinary.com/dfpbytn7c/image/upload/v1749008680/IMG_20250604_091231_088_th95bg.jpg";
@@ -2056,7 +2056,7 @@ async function loadSubjects(batchId) {
                     // A single try/catch/finally block wraps all logic to ensure the loader is always hidden
                     try {
                         // Check for Vimeo or YouTube types first
-                        if (scheduleType === 'vimeo' || scheduleType === 'youtube') {
+                        if (urlType === 'vimeo' || urlType === 'youtube') {
                             const contentRes = await fetch(`${API_BASE}/api/batch/${batchId}/subject/0/schedule/${scheduleId}/content`);
                             if (!contentRes.ok) throw new Error(`Content API failed with status: ${contentRes.status}`);
 
@@ -2067,7 +2067,7 @@ async function loadSubjects(batchId) {
                             
                             const data = contentJson.data;
 
-                            if (scheduleType === 'vimeo') {
+                            if (urlType === 'vimeo') {
                                 // Logic for Vimeo: Open the attachment PDF
                                 const attachment = data.homeworkIds?.[0]?.attachmentIds?.[0];
                                 if (attachment?.baseUrl && attachment?.key) {
@@ -2326,11 +2326,11 @@ else {
                 div.onclick = async () => {
                     showLoader(true);
                     const scheduleId = item._id;
-                    const scheduleType = item.scheduleType; // Get the type from the item
+                    const urlType = item.urlType; // Get the type from the item
 
                     try {
                         // Check for Vimeo or YouTube types first
-                        if (scheduleType === 'vimeo' || scheduleType === 'youtube') {
+                        if (urlType === 'vimeo' || urlType === 'youtube') {
                             const contentRes = await fetch(`${API_BASE}/api/batch/${currentBatchId}/subject/0/schedule/${scheduleId}/content`);
                             if (!contentRes.ok) throw new Error(`Content API failed with status: ${contentRes.status}`);
 
@@ -2341,7 +2341,7 @@ else {
                             
                             const data = contentJson.data;
 
-                            if (scheduleType === 'vimeo') {
+                            if (urlType === 'vimeo') {
                                 const attachment = data.homeworkIds?.[0]?.attachmentIds?.[0];
                                 if (attachment?.baseUrl && attachment?.key) {
                                     const pdfUrl = `${attachment.baseUrl}${attachment.key}`;
