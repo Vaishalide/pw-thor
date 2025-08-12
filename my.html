@@ -2037,8 +2037,7 @@ async function loadSubjects(batchId) {
                     <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
                     <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
                 `;
-
-   card.onclick = async () => {
+              card.onclick = async () => {
     if (tagLabel === "Upcoming") {
         alert("⚠️ This battle has not started yet. Please wait.");
         return;
@@ -2055,9 +2054,6 @@ async function loadSubjects(batchId) {
     // --- Handler for the original API ---
     const fetchOriginalAPI = async () => {
         const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
-        if (!res.ok) {
-            throw new Error(`Original API request failed with status ${res.status}`);
-        }
         const data = await res.json();
 
         if (data.success && data.signed_url && data.video_id) {
@@ -2069,53 +2065,81 @@ async function loadSubjects(batchId) {
                 urlParams.append('pally_data', data.pally_data);
                 urlParams.append('pally_iv', data.pally_iv);
             }
-            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+            // Return a standardized object for redirection
+            return {
+                type: 'redirect',
+                url: `pwplayer.html?${urlParams.toString()}`
+            };
         } else {
-            throw new Error('Original API did not return a valid success response.');
+            // Throw an error to make this promise fail in the race
+            throw new Error('Original API failed to return a valid URL.');
         }
     };
 
     // --- Handler for the new API ---
     const fetchNewAPI = async () => {
         const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
-        if (!res.ok) {
-            throw new Error(`New API request failed with status ${res.status}`);
-        }
         const data = await res.json();
 
         if (data.success && data.data && data.iv) {
             const urlParams = new URLSearchParams({
-                data: data.data,
-                iv: data.iv
+                data: data.data, // Map 'data' from response to 'data' parameter
+                iv: data.iv     // Map 'iv' from response to 'iv' parameter
             });
-            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+            // Return a standardized object for redirection
+            return {
+                type: 'redirect',
+                url: `pwplayer.html.html?${urlParams.toString()}`
+            };
         } else {
-            throw new Error('New API did not return a valid success response.');
+            // Throw an error to make this promise fail in the race
+            throw new Error('New API failed to return valid data.');
         }
     };
+              // --- Handler for the 2 new API ---
+    const fetchNew1API = async () => {
+        const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
+        const data = await res.json();
+
+        if (data.success && data.data && data.iv) {
+            const urlParams = new URLSearchParams({
+                data: data.data, // Map 'data' from response to 'data' parameter
+                iv: data.iv     // Map 'iv' from response to 'iv' parameter
+            });
+            // Return a standardized object for redirection
+            return {
+                type: 'redirect',
+                url: `pwplayer.html.html?${urlParams.toString()}`
+            };
+        } else {
+            // Throw an error to make this promise fail in the race
+            throw new Error('New API failed to return valid data.');
+        }
+    };  
 
     try {
-        // --- Sequential Fallback Logic ---
-        // First, try the original API.
-        await fetchOriginalAPI();
-    } catch (originalApiError) {
-        // If the original API fails for any reason (like a 502 error), log it and try the new one.
-        console.error("Original API failed, attempting fallback:", originalApiError.message);
-        
-        try {
-            // Second, try the new API.
-            await fetchNewAPI();
-        } catch (newApiError) {
-            // If the new API also fails, show the final error message.
-            console.error("Fallback API also failed:", newApiError.message);
-            alert("⚠️ An error occurred while trying to enter the battle. Both sources failed.");
+        // Race both API calls. The first one to resolve or reject wins.
+        const winner = await Promise.race([
+            fetchOriginalAPI(),
+            fetchNewAPI(),
+           fetchNew1API()
+        ]);
+
+        // If a promise resolved, it returned our standardized object.
+        if (winner && winner.type === 'redirect') {
+            window.location.href = winner.url;
+        } else {
+             // This case is unlikely if handlers throw errors, but it's good for safety.
+            alert("⚠️ Failed to get the stream URL for this battle.");
         }
+
+    } catch (err) {
+        console.error("Live stream fetch error:", err);
+        alert("⚠️ An error occurred while trying to enter the battle. Both sources may have failed.");
     } finally {
-        // This will always run, regardless of success or failure.
         showLoader(false);
     }
 };
-
 
                 todayScrollContainer.appendChild(card);
             });
