@@ -2322,150 +2322,126 @@ else {
       </div>
     </div>
   `;
-div.onclick = async () => {
-    showLoader(true);
+// --- MODIFIED ONCLICK HANDLER ---
+                div.onclick = async () => {
+                    showLoader(true);
+                    const scheduleId = item._id;
+                    const scheduleType = item.scheduleType; // Get the type from the item
 
-    try {
-        // --- Preliminary Checks ---
-        let finalUrl = mediaUrl;
-        const isYouTube = finalUrl && (finalUrl.includes('youtube.com') || finalUrl.includes('youtu.be'));
-        
-        if (isYouTube) {
-            showLoader(false);
-            return window.open(finalUrl, '_blank');
-        }
+                    try {
+                        // Check for Vimeo or YouTube types first
+                        if (scheduleType === 'vimeo' || scheduleType === 'youtube') {
+                            const contentRes = await fetch(`${API_BASE}/api/batch/${currentBatchId}/subject/0/schedule/${scheduleId}/content`);
+                            if (!contentRes.ok) throw new Error(`Content API failed with status: ${contentRes.status}`);
 
-        const realVid = item.videoDetails || item;
-        const scheduleId = item._id; // Ensure 'item' has '_id'
+                            const contentJson = await contentRes.json();
+                            if (!contentJson.success || !contentJson.data) {
+                                throw new Error('Content API did not return successful data.');
+                            }
+                            
+                            const data = contentJson.data;
 
-        // --- Define API Call Functions ---
-        // Each function returns a promise that resolves with the final URL or rejects on failure.
+                            if (scheduleType === 'vimeo') {
+                                const attachment = data.homeworkIds?.[0]?.attachmentIds?.[0];
+                                if (attachment?.baseUrl && attachment?.key) {
+                                    const pdfUrl = `${attachment.baseUrl}${attachment.key}`;
+                                    window.open(pdfUrl, '_blank');
+                                } else {
+                                    throw new Error('Vimeo schedule is missing a valid attachment URL.');
+                                }
+                            } else { // 'youtube'
+                                const embedUrl = data.videoDetails?.embedCode;
+                                if (embedUrl) {
+                                    window.open(embedUrl, '_blank');
+                                } else {
+                                    throw new Error('YouTube schedule is missing an embed URL.');
+                                }
+                            }
+                        } else {
+                            // --- Fallback to original logic for other video types ---
+                            const fetchApi1 = async () => {
+                                const params = new URLSearchParams({
+                                    batch: currentBatchName || 'Unknown Batch',
+                                    subject: currentSubjectName || 'Unknown Subject',
+                                    topic: currentTopicName || 'General',
+                                    title: item.topic || (item.videoDetails || item).name || ''
+                                });
+                                const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+                                if (!resp.ok) throw new Error('API 1 failed');
+                                const data = await resp.json();
+                                if (data.youtube && data.videoUrl) return { type: 'open', url: data.videoUrl };
+                                if (data.success && data.signed_url && data.video_id) {
+                                    const urlParams = new URLSearchParams({ encrypted: data.signed_url, iv: data.video_id });
+                                    return { type: 'redirect', url: `dipesh.html?${urlParams}` };
+                                }
+                                throw new Error('API 1 did not provide a valid video URL.');
+                            };
 
-        const fetchApi1 = async () => {
-            const params = new URLSearchParams({
-                batch: currentBatchName || 'Unknown Batch',
-                subject: currentSubjectName || 'Unknown Subject',
-                topic: currentTopicName || 'General',
-                title: item.topic || realVid.name || ''
-            });
-            const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
-            if (!resp.ok) throw new Error('API 1 failed');
-            const data = await resp.json();
+                            const fetchApi2 = async () => {
+                                const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+                                if (!res.ok) throw new Error('API 2 failed');
+                                const data = await res.json();
+                                if (data.success && data.signed_url && data.video_id) {
+                                    const urlParams = new URLSearchParams({ encrypted: data.signed_url, iv: data.video_id });
+                                    if (data.pally_data && data.pally_iv) {
+                                        urlParams.append('pally_data', data.pally_data);
+                                        urlParams.append('pally_iv', data.pally_iv);
+                                    }
+                                    return { type: 'redirect', url: `dipesh.html?${urlParams}` };
+                                }
+                                throw new Error('API 2 did not provide a valid video URL.');
+                            };
 
-            if (data.youtube && data.videoUrl) {
-                // For YouTube links, we need to open a new tab
-                return { type: 'open', url: data.videoUrl };
+                            const fetchApi3 = async () => {
+                                const res = await fetch(`https://url-rec-4f0a3764bc8d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
+                                if (!res.ok) throw new Error('API 3 failed');
+                                const responseJson = await res.json();
+                                if (responseJson.success && responseJson.data && responseJson.iv) {
+                                    const urlParams = new URLSearchParams({ data: responseJson.data, iv: responseJson.iv });
+                                    return { type: 'redirect', url: `dipesh.html?${urlParams}` };
+                                }
+                                throw new Error('API 3 did not provide valid video data.');
+                            };
+
+                            const fetchApi4 = async () => {
+                                const res = await fetch(`https://url-rec-4f0a3764bc8d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
+                                if (!res.ok) throw new Error('API 4 failed');
+                                const responseJson = await res.json();
+                                if (responseJson.success && responseJson.data && responseJson.iv) {
+                                    const urlParams = new URLSearchParams({ data: responseJson.data, iv: responseJson.iv });
+                                    return { type: 'redirect', url: `dipesh.html?${urlParams}` };
+                                }
+                                throw new Error('API 4 did not provide valid video data.');
+                            };
+
+                            const result = await Promise.any([fetchApi1(), fetchApi2(), fetchApi3(), fetchApi4()]);
+
+                            if (result.type === 'open') {
+                                window.open(result.url, '_blank');
+                            } else if (result.type === 'redirect') {
+                                window.location.href = result.url;
+                            }
+                        }
+                    } catch (error) {
+                        console.error("All video sources failed to load:", error);
+                        // Using a custom modal or a less intrusive notification is better than alert()
+                        // For now, we'll just log it. You can add a UI notification here.
+                    } finally {
+                        showLoader(false);
+                    }
+                };
             }
-            if (data.success && data.signed_url && data.video_id) {
-                const urlParams = new URLSearchParams({
-                    encrypted: data.signed_url,
-                    iv: data.video_id
-                });
-                return { type: 'redirect', url: `dipesh.html?${urlParams}` };
-            }
-            throw new Error('API 1 did not provide a valid video URL.');
-        };
-
-        const fetchApi2 = async () => {
-            const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
-            if (!res.ok) throw new Error('API 2 failed');
-            const data = await res.json();
-
-            if (data.success && data.signed_url && data.video_id) {
-                const urlParams = new URLSearchParams({
-                    encrypted: data.signed_url,
-                    iv: data.video_id
-                });
-                if (data.pally_data && data.pally_iv) {
-                    urlParams.append('pally_data', data.pally_data);
-                    urlParams.append('pally_iv', data.pally_iv);
-                }
-                return { type: 'redirect', url: `dipesh.html?${urlParams}` };
-            }
-            throw new Error('API 2 did not provide a valid video URL.');
-        };
-
-        const fetchApi3 = async () => {
-    // Fetches data from your API
-    const res = await fetch(`https://url-rec-4f0a3764bc8d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
-    if (!res.ok) throw new Error('API 3 failed');
-
-    // Parses the JSON response. Renamed to 'responseJson' to avoid confusion.
-    const responseJson = await res.json();
-
-    // Checks for the new keys: 'success', 'data', and 'iv'
-    if (responseJson.success && responseJson.data && responseJson.iv) {
-        // Creates URL parameters using the new keys
-        const urlParams = new URLSearchParams({
-            data: responseJson.data, // Map 'data' to the 'encrypted' parameter
-            iv: responseJson.iv           // Map 'iv' to the 'iv' parameter
+            lectureContent.appendChild(div);
         });
-        // Returns the object for redirection
-        return { type: 'redirect', url: `dipesh.html?${urlParams}` };
-    }
-
-    // Throws an error if the expected data is not found
-    throw new Error('API 3 did not provide valid video data.');
-};
-
-          const fetchApi4 = async () => {
-    // Fetches data from your API
-    const res = await fetch(`https://url-rec-4f0a3764bc8d.herokuapp.com/get-video-data?batchId=${currentBatchId}&scheduleId=${scheduleId}`);
-    if (!res.ok) throw new Error('API 4 failed');
-
-    // Parses the JSON response. Renamed to 'responseJson' to avoid confusion.
-    const responseJson = await res.json();
-
-    // Checks for the new keys: 'success', 'data', and 'iv'
-    if (responseJson.success && responseJson.data && responseJson.iv) {
-        // Creates URL parameters using the new keys
-        const urlParams = new URLSearchParams({
-            data: responseJson.data, // Map 'data' to the 'encrypted' parameter
-            iv: responseJson.iv           // Map 'iv' to the 'iv' parameter
-        });
-        // Returns the object for redirection
-        return { type: 'redirect', url: `dipesh.html?${urlParams}` };
-    }
-
-    // Throws an error if the expected data is not found
-    throw new Error('API 4 did not provide valid video data.');
-};
-
-        // --- Run all API calls in parallel and get the first success ---
-        const result = await Promise.any([
-            fetchApi1(),
-            fetchApi2(),
-            fetchApi3(),
-            fetchApi4()
-        ]);
-
-        // --- Act on the first successful result ---
-        if (result.type === 'open') {
-            window.open(result.url, '_blank');
-            showLoader(false); // Hide loader since we are not leaving the page
-        } else if (result.type === 'redirect') {
-            window.location.href = result.url;
-          showLoader(false);
-            // No need to hide loader here, as the page is navigating away
-        }
-
-    } catch (error) {
-        // This block executes only if ALL promises fail
-        console.error("All video sources failed to load:", error);
-        alert("⚠️ Video not available from any source.");
-        showLoader(false); // Hide loader on total failure
-    }
-};
-}
-       lectureContent.appendChild(div);
-        });
-      } catch (err) {
+    } catch (err) {
         console.error("Failed to load content:", err);
-      } finally {
+        document.getElementById("lectureContent").innerHTML = `<div style="color: var(--squid-red); text-align: center; margin-top: 20px;">Could not load content.</div>`;
+    } finally {
         lectureLoading = false;
         showLoader(false);
-      }
     }
+}
+
 async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
   try {
     showLoader(true);
