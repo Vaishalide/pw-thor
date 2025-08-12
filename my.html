@@ -2038,10 +2038,8 @@ async function loadSubjects(batchId) {
                     <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
                 `;
 
-    card.onclick = async () => {
+   card.onclick = async () => {
     if (tagLabel === "Upcoming") {
-        // Using a custom modal/alert is better than the browser's default alert.
-        // For this example, we'll stick to alert.
         alert("⚠️ This battle has not started yet. Please wait.");
         return;
     }
@@ -2056,92 +2054,68 @@ async function loadSubjects(batchId) {
 
     // --- Handler for the original API ---
     const fetchOriginalAPI = async () => {
-        try {
-            const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
-            if (!res.ok) {
-                throw new Error(`Original API request failed with status ${res.status}`);
-            }
-            const data = await res.json();
+        const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+        if (!res.ok) {
+            throw new Error(`Original API request failed with status ${res.status}`);
+        }
+        const data = await res.json();
 
-            if (data.success && data.signed_url && data.video_id) {
-                const urlParams = new URLSearchParams({
-                    encrypted: data.signed_url,
-                    iv: data.video_id
-                });
-                if (data.pally_data && data.pally_iv) {
-                    urlParams.append('pally_data', data.pally_data);
-                    urlParams.append('pally_iv', data.pally_iv);
-                }
-                // Return a standardized object for redirection
-                return {
-                    type: 'redirect',
-                    url: `pwplayer.html?${urlParams.toString()}`
-                };
-            } else {
-                // Throw an error to make this promise fail.
-                throw new Error('Original API failed to return a valid URL.');
+        if (data.success && data.signed_url && data.video_id) {
+            const urlParams = new URLSearchParams({
+                encrypted: data.signed_url,
+                iv: data.video_id
+            });
+            if (data.pally_data && data.pally_iv) {
+                urlParams.append('pally_data', data.pally_data);
+                urlParams.append('pally_iv', data.pally_iv);
             }
-        } catch (error) {
-            console.error("Original API Error:", error.message);
-            // Re-throw the error to ensure Promise.any knows it failed.
-            throw error;
+            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+        } else {
+            throw new Error('Original API did not return a valid success response.');
         }
     };
 
     // --- Handler for the new API ---
     const fetchNewAPI = async () => {
-        try {
-            const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
-             if (!res.ok) {
-                throw new Error(`New API request failed with status ${res.status}`);
-            }
-            const data = await res.json();
+        const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
+        if (!res.ok) {
+            throw new Error(`New API request failed with status ${res.status}`);
+        }
+        const data = await res.json();
 
-            if (data.success && data.data && data.iv) {
-                const urlParams = new URLSearchParams({
-                    data: data.data, // Map 'data' from response to 'data' parameter
-                    iv: data.iv      // Map 'iv' from response to 'iv' parameter
-                });
-                // Return a standardized object for redirection
-                return {
-                    type: 'redirect',
-                    url: `pwplayer.html?${urlParams.toString()}` // Corrected the duplicated .html
-                };
-            } else {
-                // Throw an error to make this promise fail.
-                throw new Error('New API failed to return valid data.');
-            }
-        } catch (error) {
-            console.error("New API Error:", error.message);
-            // Re-throw the error to ensure Promise.any knows it failed.
-            throw error;
+        if (data.success && data.data && data.iv) {
+            const urlParams = new URLSearchParams({
+                data: data.data,
+                iv: data.iv
+            });
+            window.location.href = `pwplayer.html?${urlParams.toString()}`;
+        } else {
+            throw new Error('New API did not return a valid success response.');
         }
     };
 
     try {
-        // Use Promise.any to wait for the first successful promise.
-        // It will only reject if ALL promises in the array reject.
-        const winner = await Promise.any([
-            fetchOriginalAPI(),
-            fetchNewAPI()
-        ]);
-
-        // If a promise resolved, it returned our standardized object.
-        if (winner && winner.type === 'redirect') {
-            window.location.href = winner.url;
-        } else {
-            // This case is very unlikely with Promise.any but is good for safety.
-            alert("⚠️ Failed to get the stream URL for this battle.");
+        // --- Sequential Fallback Logic ---
+        // First, try the original API.
+        await fetchOriginalAPI();
+    } catch (originalApiError) {
+        // If the original API fails for any reason (like a 502 error), log it and try the new one.
+        console.error("Original API failed, attempting fallback:", originalApiError.message);
+        
+        try {
+            // Second, try the new API.
+            await fetchNewAPI();
+        } catch (newApiError) {
+            // If the new API also fails, show the final error message.
+            console.error("Fallback API also failed:", newApiError.message);
+            alert("⚠️ An error occurred while trying to enter the battle. Both sources failed.");
         }
-
-    } catch (err) {
-        // This block now only runs if *both* API calls fail.
-        console.error("All stream fetch attempts failed:", err);
-        alert("⚠️ An error occurred while trying to enter the battle. Both sources failed.");
     } finally {
+        // This will always run, regardless of success or failure.
         showLoader(false);
     }
 };
+
 
                 todayScrollContainer.appendChild(card);
             });
