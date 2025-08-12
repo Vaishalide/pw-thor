@@ -2038,7 +2038,8 @@ async function loadSubjects(batchId) {
                     <div style="margin-top: 5px; font-size: 0.8rem; background: var(--bg-tertiary); padding: 4px 8px; border-radius: 6px; display: inline-block;">${chapter}</div>
                     <div style="position: absolute; top: 10px; right: 10px; background: ${statusColor}; color: black; font-weight: bold; font-size: 0.75rem; padding: 2px 6px; border-radius: 6px;">${tagLabel}</div>
                 `;
-          card.onclick = async () => {
+          // --- ONCLICK HANDLER WITH ALL LOGIC ---
+                card.onclick = async () => {
                     if (tagLabel === "Upcoming") {
                         console.warn("This battle has not started yet. Please wait.");
                         return;
@@ -2052,8 +2053,9 @@ async function loadSubjects(batchId) {
 
                     showLoader(true);
 
+                    // A single try/catch/finally block wraps all logic to ensure the loader is always hidden
                     try {
-                        // **NEW: Check scheduleType and apply different logic**
+                        // Check for Vimeo or YouTube types first
                         if (scheduleType === 'vimeo' || scheduleType === 'youtube') {
                             const contentRes = await fetch(`${API_BASE}/api/batch/${batchId}/subject/0/schedule/${scheduleId}/content`);
                             if (!contentRes.ok) throw new Error(`Content API failed with status: ${contentRes.status}`);
@@ -2075,7 +2077,7 @@ async function loadSubjects(batchId) {
                                 } else {
                                     throw new Error('Vimeo schedule is missing a valid attachment URL.');
                                 }
-                            } else if (scheduleType === 'youtube') {
+                            } else { // This handles the 'youtube' case
                                 // Logic for YouTube: Open the embed link
                                 const embedUrl = data.videoDetails?.embedCode;
                                 if (embedUrl) {
@@ -2086,134 +2088,81 @@ async function loadSubjects(batchId) {
                                 }
                             }
                         } else {
-    const fetchOriginalAPI = async () => {
-        try {
-            const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const data = await res.json();
+                            // --- Fallback to original logic for other video types ---
 
-            if (data.success && data.signed_url && data.video_id) {
-                const urlParams = new URLSearchParams({
-                    encrypted: data.signed_url,
-                    iv: data.video_id
-                });
-                if (data.pally_data && data.pally_iv) {
-                    urlParams.append('pally_data', data.pally_data);
-                    urlParams.append('pally_iv', data.pally_iv);
-                }
-                // Return a standardized object for redirection
-                return {
-                    type: 'redirect',
-                    url: `pwplayer.html?${urlParams.toString()}`
+                            // Handler for the original API
+                            const fetchOriginalAPI = async () => {
+                                const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+                                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                                const data = await res.json();
+                                if (data.success && data.signed_url && data.video_id) {
+                                    const urlParams = new URLSearchParams({ encrypted: data.signed_url, iv: data.video_id });
+                                    if (data.pally_data && data.pally_iv) {
+                                        urlParams.append('pally_data', data.pally_data);
+                                        urlParams.append('pally_iv', data.pally_iv);
+                                    }
+                                    return { type: 'redirect', url: `pwplayer.html?${urlParams.toString()}` };
+                                } else {
+                                    throw new Error('Original API did not return a valid URL.');
+                                }
+                            };
+
+                            // Handler for the new API
+                            const fetchNewAPI = async () => {
+                                const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
+                                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                                const data = await res.json();
+                                if (data.success && data.data && data.iv) {
+                                    const urlParams = new URLSearchParams({ data: data.data, iv: data.iv });
+                                    return { type: 'redirect', url: `pwplayer.html?${urlParams.toString()}` };
+                                } else {
+                                    throw new Error('New API did not return valid data.');
+                                }
+                            };
+
+                            // Handler for the third API
+                            const fetchNew1API = async () => {
+                                const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
+                                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                                const data = await res.json();
+                                if (data.success && data.data && data.iv) {
+                                    const urlParams = new URLSearchParams({ data: data.data, iv: data.iv });
+                                    return { type: 'redirect', url: `pwplayer.html?${urlParams.toString()}` };
+                                } else {
+                                    throw new Error('New API 1 did not return valid data.');
+                                }
+                            };
+
+                            // Promise.any() waits for the first promise to fulfill
+                            const winner = await Promise.any([
+                                fetchOriginalAPI(),
+                                fetchNewAPI(),
+                                fetchNew1API()
+                            ]);
+
+                            if (winner && winner.type === 'redirect') {
+                                window.location.href = winner.url;
+                            } else {
+                                throw new Error("Failed to get the stream URL from any source.");
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`Failed to process schedule click. Type: '${scheduleType}'. Error:`, error);
+                        // Optional: You could display an error message to the user here
+                    } finally {
+                        // This will always run, ensuring the loader is hidden correctly
+                        showLoader(false);
+                    }
                 };
-            } else {
-                // Throw an error to make this promise fail for Promise.any
-                throw new Error('Original API did not return a valid URL.');
-            }
-        } catch (error) {
-            console.error('Original API request failed:', error);
-            // Re-throw the error to ensure the promise is rejected
-            throw error;
-        }
-    };
-
-    // --- Handler for the new API ---
-    const fetchNewAPI = async () => {
-        try {
-            const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const data = await res.json();
-
-            if (data.success && data.data && data.iv) {
-                const urlParams = new URLSearchParams({
-                    data: data.data, // Map 'data' from response to 'data' parameter
-                    iv: data.iv      // Map 'iv' from response to 'iv' parameter
-                });
-                // Return a standardized object for redirection
-                return {
-                    type: 'redirect',
-                    url: `pwplayer.html?${urlParams.toString()}` // Corrected filename
-                };
-            } else {
-                // Throw an error to make this promise fail for Promise.any
-                throw new Error('New API did not return valid data.');
-            }
-        } catch (error) {
-            console.error('New API request failed:', error);
-            // Re-throw the error to ensure the promise is rejected
-            throw error;
-        }
-    };
-
-    // --- Handler for the third API (assuming a different URL or logic) ---
-    // NOTE: This is identical to fetchNewAPI in your example. 
-    // You should change the URL to a third source.
-    const fetchNew1API = async () => {
-         try {
-            // Using a placeholder URL for the third option
-            const res = await fetch(`https://url-live-b68920287dd4.herokuapp.com/get-video-data?batchId=${batchId}&scheduleId=${scheduleId}`);
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const data = await res.json();
-
-            if (data.success && data.data && data.iv) {
-                const urlParams = new URLSearchParams({
-                    data: data.data,
-                    iv: data.iv
-                });
-                return {
-                    type: 'redirect',
-                    url: `pwplayer.html?${urlParams.toString()}`
-                };
-            } else {
-                throw new Error('New API 1 did not return valid data.');
-            }
-        } catch (error) {
-            console.error('New API 1 request failed:', error);
-            throw error;
-        }
-    };
-
-    try {
-        // Promise.any() waits for the first promise to FULFILL.
-        // It will only reject if ALL promises reject.
-        const winner = await Promise.any([
-            fetchOriginalAPI(),
-            fetchNewAPI(),
-            fetchNew1API()
-        ]);
-
-        // If a promise resolved, it returned our standardized redirect object.
-        if (winner && winner.type === 'redirect') {
-            window.location.href = winner.url;
-        } else {
-             // This case is very unlikely with Promise.any if handlers are correct.
-            console.error("Failed to get the stream URL for this battle:");
-        }
-
-    } catch (err) {
-        // This block now only runs if ALL API calls fail.
-        // The 'err' object is an AggregateError containing all individual errors.
-        console.error("All live stream fetch attempts failed:", err);
-        // You can inspect individual errors like this:
-        // if (err instanceof AggregateError) {
-        //     for (const individualError of err.errors) {
-        //         console.error(individualError);
-        //     }
-        // }
-    } finally {
-        showLoader(false);
-    }
-};
-
-
+                
                 todayScrollContainer.appendChild(card);
             });
         }
     } catch (err) {
         console.error("Failed to load subjects or today's schedule:", err);
-        subjects.innerHTML = '<p style="color: var(--squid-red); text-align: center; grid-column: 1 / -1;">Could not load arena data. Please try again.</p>';
+        subjectsContainer.innerHTML = '<p style="color: var(--squid-red); text-align: center; grid-column: 1 / -1;">Could not load arena data. Please try again.</p>';
     } finally {
-        // 3. Always hide the loader when done
+        // Always hide the loader when the main function is done
         showLoader(false);
     }
 }
