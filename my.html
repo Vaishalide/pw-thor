@@ -2426,9 +2426,7 @@ else {
                         }
                     } catch (error) {
                         console.error("All video sources failed to load:", error);
-                      alert("⚠️ all video sources failed. Please wait.");
-                        // Using a custom modal or a less intrusive notification is better than alert()
-                        // For now, we'll just log it. You can add a UI notification here.
+                      alert("⚠️ Video not available from any source.");
                     } finally {
                         showLoader(false);
                     }
