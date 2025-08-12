@@ -2041,7 +2041,7 @@ async function loadSubjects(batchId) {
           // --- ONCLICK HANDLER WITH ALL LOGIC ---
                 card.onclick = async () => {
                     if (tagLabel === "Upcoming") {
-                        console.warn("This battle has not started yet. Please wait.");
+                       alert("⚠️ This battle has not started yet. Please wait.");
                         return;
                     }
 
@@ -2143,7 +2143,7 @@ async function loadSubjects(batchId) {
                             if (winner && winner.type === 'redirect') {
                                 window.location.href = winner.url;
                             } else {
-                                throw new Error("Failed to get the stream URL from any source.");
+                                alert("⚠️ This battle link no found maybe batch token missing");
                             }
                         }
                     } catch (error) {
@@ -2424,6 +2424,7 @@ else {
                         }
                     } catch (error) {
                         console.error("All video sources failed to load:", error);
+                      alert("⚠️ all video sources failed. Please wait.");
                         // Using a custom modal or a less intrusive notification is better than alert()
                         // For now, we'll just log it. You can add a UI notification here.
                     } finally {
