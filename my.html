@@ -2143,12 +2143,14 @@ async function loadSubjects(batchId) {
                             if (winner && winner.type === 'redirect') {
                                 window.location.href = winner.url;
                             } else {
-                                alert("⚠️ This battle link no found maybe batch token missing");
+                                  // This case is unlikely if handlers throw errors, but it's good for safety.
+            alert("⚠️ Failed to get the stream URL for this battle.");
                             }
                         }
                     } catch (error) {
                         console.error(`Failed to process schedule click. Type: '${scheduleType}'. Error:`, error);
                         // Optional: You could display an error message to the user here
+                      alert("⚠️ An error occurred while trying to enter the battle. Both sources may have failed.");
                     } finally {
                         // This will always run, ensuring the loader is hidden correctly
                         showLoader(false);
