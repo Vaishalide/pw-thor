@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My App</title>
+</head>
+<body>
+    <h1>Welcome to My Website</h1>
+    <button id="loadDataBtn">Load Data from API</button>
+    <pre id="api-response"></pre>
+
+    <script>
+        document.getElementById('loadDataBtn').addEventListener('click', () => {
+            const responseContainer = document.getElementById('api-response');
+            responseContainer.textContent = 'Loading...';
+
+            // The browser will AUTOMATICALLY include the cf_clearance cookie
+            // with this request because it's going to a subdomain.
+            fetch('https://api.pwthor.site/api/batches')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Display the successful API response
+                    responseContainer.textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => {
+                    // This will catch network errors or if the API returns an error
+                    console.error('Error fetching from API:', error);
+                    responseContainer.textContent = `Error: Could not fetch data. ${error.message}`;
+                });
+        });
+    </script>
+</body>
+</html>
