@@ -1806,7 +1806,15 @@ async function loadBatches({ reset = false } = {}) {
         // fetch all favorited batches first.
         if (reset && favorites.length > 0 && !currentQuery) {
             try {
-                const favRes = await fetch(`${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`);
+                const favRes = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batches/by-ids?ids=${favorites.join(',')}`, 
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
                 const favData = await favRes.json();
                 if (favData.success && favData.batches) {
                     // Map the favorite batches to our standard card format
@@ -1828,7 +1836,15 @@ async function loadBatches({ reset = false } = {}) {
         // --- NEW LOGIC: End ---
 
         const query = currentQuery ? `&q=${encodeURIComponent(currentQuery)}` : "";
-        const res = await fetch(`${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`);
+        const res = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batches?page=${currentPage}&limit=12${query}`, 
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies (like cf_clearance)
+    }
+);
         const data = await res.json();
 
         let newBatches = [];
@@ -1962,7 +1978,15 @@ async function loadSubjects(batchId) {
 
     try {
         // --- FETCH AND RENDER SUBJECTS ---
-        const batchDetailsRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}`);
+        const batchDetailsRes = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batch/${encodeURIComponent(batchId)}`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
         const batchDetailsJson = await batchDetailsRes.json();
         const subjects = (batchDetailsJson.data && batchDetailsJson.data.subjects) || [];
 
@@ -2008,7 +2032,15 @@ async function loadSubjects(batchId) {
         }
 
         // --- FETCH AND RENDER TODAY'S BATTLES ---
-        const todayRes = await fetch(`${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`);
+        const todayRes = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batch/${encodeURIComponent(batchId)}/todays-schedule`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
         const todayJson = await todayRes.json();
         const todayClasses = todayJson.data || [];
         const todayScrollContainer = document.getElementById("todayScrollContainer");
@@ -2057,7 +2089,15 @@ async function loadSubjects(batchId) {
                     try {
                         // Check for Vimeo or YouTube types first
                         if (urlType === 'vimeo' || urlType === 'youtube') {
-                            const contentRes = await fetch(`${API_BASE}/api/batch/${batchId}/subject/0/schedule/${scheduleId}/content`);
+                            const contentRes = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batch/${batchId}/subject/0/schedule/${scheduleId}/content`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
                             if (!contentRes.ok) throw new Error(`Content API failed with status: ${contentRes.status}`);
 
                             const contentJson = await contentRes.json();
@@ -2092,7 +2132,15 @@ async function loadSubjects(batchId) {
 
                             // Handler for the original API
                             const fetchOriginalAPI = async () => {
-                                const res = await fetch(`${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`);
+                                const res = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/url?batch_id=${batchId}&schedule_id=${scheduleId}`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
                                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                                 const data = await res.json();
                                 if (data.success && data.signed_url && data.video_id) {
@@ -2189,7 +2237,15 @@ async function loadSubjects(batchId) {
   currentSubjectSlug = subjectSlug;
 
   try {
-  const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics`);
+  const res = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topics`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
     const result = await res.json();
 
     const chapters = result.data || [];
@@ -2256,7 +2312,9 @@ async function loadSubjects(batchId) {
       const url = `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/topic/${topicId}/all-contents?type=${contentType}`;
 
       try {
-        const res = await fetch(url);
+        const res = await fetch(url, {
+        credentials: 'include' // This tells the browser to send cookies
+    });
     const data = await res.json();
     const items = data.data || [];
 
@@ -2333,7 +2391,15 @@ else {
                     try {
                         // Check for Vimeo or YouTube types first
                         if (urlType === 'vimeo' || urlType === 'youtube') {
-                            const contentRes = await fetch(`${API_BASE}/api/batch/${currentBatchId}/subject/0/schedule/${scheduleId}/content`);
+                            const contentRes = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batch/${currentBatchId}/subject/0/schedule/${scheduleId}/content`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
                             if (!contentRes.ok) throw new Error(`Content API failed with status: ${contentRes.status}`);
 
                             const contentJson = await contentRes.json();
@@ -2368,7 +2434,9 @@ else {
                                     topic: currentTopicName || 'General',
                                     title: item.topic || (item.videoDetails || item).name || ''
                                 });
-                                const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`);
+                                const resp = await fetch(`${API_BASE}/api/video/stream-info?${params}`, {
+        credentials: 'include' // This tells the browser to send cookies
+    });
                                 if (!resp.ok) throw new Error('API 1 failed');
                                 const data = await resp.json();
                                 if (data.youtube && data.videoUrl) return { type: 'open', url: data.videoUrl };
@@ -2380,7 +2448,15 @@ else {
                             };
 
                             const fetchApi2 = async () => {
-                                const res = await fetch(`${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`);
+                                const res = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/url?batch_id=${currentBatchId}&schedule_id=${scheduleId}`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
                                 if (!res.ok) throw new Error('API 2 failed');
                                 const data = await res.json();
                                 if (data.success && data.signed_url && data.video_id) {
@@ -2446,7 +2522,15 @@ else {
 async function fetchAndOpenAttachments(batchId, subjectSlug, scheduleId) {
   try {
     showLoader(true);
-    const res = await fetch(`${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`);
+    const res = await fetch(
+    // First argument: Your dynamic URL
+    `${API_BASE}/api/batch/${batchId}/subject/${subjectSlug}/schedule/${scheduleId}/content`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
     const data = await res.json();
 
     if (!data || !data.data) {
