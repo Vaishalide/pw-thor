@@ -1122,7 +1122,15 @@ async loadVideo() {
             else {
                 console.log("No pre-loaded keys found. Attempting to fetch from OTP API.");
                 try {
-                    const otpRes = await fetch(`https://pw-api2-9bac5f87cf60.herokuapp.com/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`);
+                    const otpRes = await fetch(
+    // First argument: Your dynamic URL
+    `https://api.pwthor.site/api/otp?mpd_url=${encodeURIComponent(this.videoURL)}`,
+    
+    // Second argument: The options object
+    {
+        credentials: 'include' // This tells the browser to send cookies
+    }
+);
                     const otpData = await otpRes.json();
                     if (otpData?.success && otpData.data?.keys?.length > 0) {
                         const [kidRaw, key] = otpData.data.keys[0].split(":");
