@@ -5,7 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JINDAL4FREE - Free Education</title>
+    <!-- CryptoJS for AES Decryption -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <!-- JW Player for HLS/DASH Video Playback -->
+    <script src="https://content.jwplatform.com/libraries/KB5zFt7A.js"></script>
+    <!-- YouTube IFrame API for YouTube Playback -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root {
             --primary-bg: #1a1a1a;
@@ -68,7 +73,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 8px var(--shadow-color);
         }
-
+        
         .back-button, .theme-toggle {
             background: none;
             border: none;
@@ -97,14 +102,12 @@
             z-index: 1000;
         }
 
-        /* Grid Layouts */
         .grid-container {
             display: grid;
             gap: 1.5rem;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }
 
-        /* Card Styles */
         .card {
             background-color: var(--card-bg);
             border-radius: 12px;
@@ -125,6 +128,7 @@
             width: 100%;
             height: 180px;
             object-fit: cover;
+            background-color: var(--secondary-bg);
         }
 
         .card-content {
@@ -192,7 +196,6 @@
             background-color: var(--accent-hover);
         }
 
-        /* Topic Card Styles */
         .topic-card {
             padding: 1rem;
             display: flex;
@@ -209,7 +212,6 @@
             font-size: 0.9rem;
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             border-bottom: 2px solid var(--border-color);
@@ -233,7 +235,6 @@
             border-bottom: 2px solid var(--accent-color);
         }
 
-        /* Loader */
         .loader-container {
             position: fixed;
             top: 0;
@@ -259,7 +260,6 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Attention Message */
         .attention-message {
             text-align: center;
             padding: 0.75rem;
@@ -274,13 +274,33 @@
             font-weight: 600;
             color: var(--success-color);
         }
+        
+        .player-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            aspect-ratio: 16 / 9;
+            background-color: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        #player {
+            width: 100%;
+            height: 100%;
+        }
+        .player-title {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 
 <body>
     <div class="theme-toggle-container">
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
-            </button>
+            <!-- SVG will be injected by JS -->
+        </button>
     </div>
 
     <div id="loader" class="loader-container" style="display: none;">
@@ -290,8 +310,7 @@
     <div id="home-page" class="page active">
         <h1>Available Batches</h1>
         <p class="attention-message">This website is completely available for FREE. DO NOT BUY or SELL. <span class="highlight">Sharing is Caring!</span></p>
-        <div id="batch-grid" class="grid-container">
-            </div>
+        <div id="batch-grid" class="grid-container"></div>
     </div>
 
     <div id="batch-page" class="page">
@@ -306,8 +325,7 @@
             <button id="tab-notes" class="tab" data-type="notes">Notes</button>
             <button id="tab-dpps" class="tab" data-type="dpppdf">DPPs</button>
         </div>
-        <div id="topic-grid" class="grid-container">
-            </div>
+        <div id="topic-grid" class="grid-container"></div>
     </div>
 
     <div id="subject-page" class="page">
@@ -317,26 +335,39 @@
             </button>
             <h1 id="subject-title" class="page-title"></h1>
         </div>
-        <div id="content-grid" class="grid-container">
-            </div>
+        <div id="content-grid" class="grid-container"></div>
+    </div>
+    
+    <div id="player-page" class="page">
+         <div class="page-header">
+            <button class="back-button" onclick="goBack()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+            </button>
+            <h1 id="player-page-title" class="page-title">Video Player</h1>
+        </div>
+        <div class="player-container">
+            <div id="player">Loading player...</div>
+        </div>
+        <p id="player-title" class="player-title"></p>
     </div>
 
+
     <script>
-        // --- State Management & Constants ---
-        const API_BASE_URL = 'https://jindal4freebackend2-a5e2c5cf2dd1.herokuapp.com/api';
+        const API_BASE_URL = 'http://localhost:3001/api';
         const AES_KEY = '9d4dc061661352b5d254709de50e498a91e61b2b1b89f5d09bb048c24c227671';
         const AES_IV = '21ec05a28963cb7a7387dfd47a6ca61d';
 
+        let activePlayer = null; 
+
         const state = {
-            history: [], // To manage back navigation
+            history: [],
             currentBatch: null,
             currentSubject: null,
-            currentType: 'class' // 'class', 'notes', or 'dpppdf'
+            currentType: 'class'
         };
         
         const teacherIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L8.707 1.5z"/><path d="m12.5 12.293-.5-.5V12h-1v.5l.5.5H12v.5h-1v.5h.5l.5.5V14h1v-.293l.5-.5V13h1v-.5h-1v-.5h-.5l-.5-.5H12zM8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8m.25 1.75a.5.5 0 0 0-.5 0V16a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5v-1.75a.5.5 0 0 0-.5-.5z"/></svg>`;
         const dateIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M8.5 7.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h2.5V8a.5.5 0 0 1-.5-.5"/></svg>`;
-
 
         const batches = [
             { id: 1, name: "11th JEE - (P1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc7cd2bba_WhatsApp_Image_20250430_at_1.43.04_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", validity: "2 Years", batchId: "2927" },
@@ -370,19 +401,30 @@
 
         function goBack() {
             if (state.history.length > 1) {
-                state.history.pop(); // Pop current page
-                const previousState = state.history[state.history.length - 1]; // Get previous page
+                const currentState = state.history[state.history.length - 1];
+                if (currentState.pageId === 'player-page') {
+                    if (activePlayer && typeof activePlayer.remove === 'function') {
+                        activePlayer.remove();
+                    }
+                    if (activePlayer && typeof activePlayer.destroy === 'function') {
+                        activePlayer.destroy();
+                    }
+                    activePlayer = null;
+                }
+
+                state.history.pop();
+                const previousState = state.history[state.history.length - 1];
                 
-                // Restore state without pushing to history
                 state.currentBatch = previousState.batch;
                 state.currentSubject = previousState.subject;
                 state.currentType = previousState.type;
                 
                 showPage(previousState.pageId);
                 
-                // If we are back on the batch page, re-render its content
                 if (previousState.pageId === 'batch-page') {
                     navigateToBatch(state.currentBatch.batchId, false, state.currentType);
+                } else if (previousState.pageId === 'subject-page') {
+                    navigateToSubject(state.currentSubject.subjectId, state.currentSubject.subjectName, false);
                 }
             }
         }
@@ -441,16 +483,16 @@
 
         function renderHomePage() {
             const batchGrid = document.getElementById('batch-grid');
-            batchGrid.innerHTML = ''; // Clear existing content
+            batchGrid.innerHTML = '';
             batches.forEach(batch => {
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => navigateToBatch(batch.batchId, true);
                 card.innerHTML = `
-                    <img src="${batch.thumbnail}" alt="${batch.name}" class="card-thumbnail">
+                    <img src="${batch.thumbnail}" alt="${batch.name}" class="card-thumbnail" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x180/2c2c2c/ffffff?text=No+Image';">
                     <div class="card-content">
                         <div class="card-header">
-                            <img src="${batch.icon}" alt="${batch.name} icon" class="card-icon">
+                            <img src="${batch.icon}" alt="${batch.name} icon" class="card-icon" loading="lazy" onerror="this.onerror=null;this.src='https://via.placeholder.com/40/2c2c2c/ffffff?text=Icon';">
                             <h3 class="card-title">${batch.name}</h3>
                         </div>
                         <div class="card-details">
@@ -467,12 +509,12 @@
         }
         
         async function navigateToBatch(batchId, trackHistory = true, type = 'class') {
-            const endpoint = type === 'class' ? 'batchclass' : 'batchnotes';
+            const endpoint = type === 'class' ? 'batchclass' : (type === 'notes' ? 'batchnotes' : 'batchdpppdf');
             const url = `${API_BASE_URL}/${endpoint}?batchId=${batchId}`;
             const data = await fetchAndDecrypt(url);
 
             if (data && data.pageProps) {
-                const batchData = data.pageProps.batchClassData || data.pageProps.batchNoteData;
+                const batchData = data.pageProps.batchClassData || data.pageProps.batchNoteData || data.pageProps.batchDppPdfData;
                 state.currentBatch = { ...batchData, batchId: batchId };
                 state.currentType = type;
                 renderBatchPage(batchData, data.pageProps.topics);
@@ -513,7 +555,7 @@
             });
         }
         
-        async function navigateToSubject(subjectId, subjectName) {
+        async function navigateToSubject(subjectId, subjectName, trackHistory = true) {
             let endpoint = 'subjectlectures';
             if (state.currentType === 'notes') endpoint = 'subjectnotes';
             if (state.currentType === 'dpppdf') endpoint = 'subjectdpppdf';
@@ -530,7 +572,9 @@
                 }
                 state.currentSubject = { subjectId, subjectName, items };
                 renderSubjectPage(subjectName, items);
-                pushState('subject-page', state.currentBatch, state.currentSubject, state.currentType);
+                if (trackHistory) {
+                    pushState('subject-page', state.currentBatch, state.currentSubject, state.currentType);
+                }
                 showPage('subject-page');
             }
         }
@@ -549,9 +593,13 @@
                 items.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'card';
-                    card.onclick = () => showAlert(`This would open a video player for:\n"${item.lessonName}"\n\n(Full player replication is beyond the scope of this example.)`);
+                    card.onclick = () => navigateToPlayer(item.id, item.lessonName);
                     card.innerHTML = `
-                        <img src="${item.posterUrl || 'https://via.placeholder.com/300x180.png?text=No+Thumbnail'}" alt="${item.lessonName}" class="card-thumbnail">
+                        <img src="${item.posterUrl || 'https://via.placeholder.com/300x180.png?text=No+Thumbnail'}" 
+                             alt="${item.lessonName}" 
+                             class="card-thumbnail" 
+                             loading="lazy"
+                             onerror="this.onerror=null;this.src='https://via.placeholder.com/300x180/2c2c2c/ffffff?text=Image+Not+Found';">
                         <div class="card-content">
                             <h3 class="card-title">${item.lessonName || 'Untitled Video'}</h3>
                             <div class="card-details">
@@ -581,6 +629,70 @@
                     `;
                     contentGrid.appendChild(card);
                 });
+            }
+        }
+
+        async function navigateToPlayer(classId, lessonName) {
+            const url = `${API_BASE_URL}/videodetails?batchId=${state.currentBatch.batchId}&subjectId=${state.currentSubject.subjectId}&classId=${classId}`;
+            const data = await fetchAndDecrypt(url);
+
+            if (data && data.pageProps && data.pageProps.classDetailsData) {
+                const videoData = data.pageProps.classDetailsData;
+                renderPlayerPage(videoData);
+                pushState('player-page', state.currentBatch, state.currentSubject, state.currentType);
+                showPage('player-page');
+            }
+        }
+
+        function renderPlayerPage(videoData) {
+            document.getElementById('player-title').textContent = videoData.lessonName;
+            
+            const playerContainer = document.getElementById('player');
+            playerContainer.innerHTML = ''; 
+
+            if (activePlayer && typeof activePlayer.remove === 'function') {
+                activePlayer.remove();
+                activePlayer = null;
+            }
+            if (activePlayer && typeof activePlayer.destroy === 'function') {
+                activePlayer.destroy();
+                activePlayer = null;
+            }
+
+            if (videoData.type === 'vdocrypthls' || videoData.type === 'vdocryptdash' || videoData.type === 'brightcove') {
+                if (typeof jwplayer === 'function') {
+                    const playerConfig = {
+                        file: videoData.videoUrl,
+                        image: videoData.posterUrl || '',
+                        aspectratio: "16:9",
+                        width: "100%",
+                        autostart: true,
+                    };
+
+                    if (videoData.type === 'vdocryptdash' && videoData.token) {
+                        playerConfig.drm = {
+                            widevine: {
+                                url: `https://license.videocrypt.com/validateLicense?pallyconCustomdataV2=${videoData.token}`
+                            }
+                        };
+                    }
+                    activePlayer = jwplayer("player").setup(playerConfig);
+                } else {
+                    playerContainer.textContent = 'JW Player library is not loaded.';
+                }
+            } else if (videoData.type === 'youtube') {
+                if (typeof YT !== 'undefined' && YT.Player) {
+                    activePlayer = new YT.Player('player', {
+                        videoId: videoData.videoUrl,
+                        playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 },
+                        width: '100%',
+                        height: '100%'
+                    });
+                } else {
+                     playerContainer.textContent = 'YouTube Player API is not ready.';
+                }
+            } else {
+                playerContainer.innerHTML = `<p>Unsupported video type: ${videoData.type}</p>`;
             }
         }
         
