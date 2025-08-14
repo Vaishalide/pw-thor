@@ -599,72 +599,78 @@
         }
 
         async function navigateToPlayer(classId, lessonName) {
-            const url = `${API_BASE_URL}/videodetails?batchId=${state.currentBatch.batchId}&subjectId=${state.currentSubject.subjectId}&classId=${classId}`;
-            const data = await fetchData(url);
+    const url = `${API_BASE_URL}/videodetails?batchId=${state.currentBatch.batchId}&subjectId=${state.currentSubject.subjectId}&classId=${classId}`;
+    const data = await fetchData(url);
 
-            if (data && data.pageProps && data.pageProps.classDetailsData) {
-                const videoData = { ...data.pageProps.classDetailsData, type: data.type };
-                renderPlayerPage(videoData);
-                pushState('player-page', state.currentBatch, state.currentSubject, state.currentType);
-                showPage('player-page');
-            }
-        }
-
-        /**
-         * MODIFIED FUNCTION
-         * Handles rendering the player based on video type.
-         * - 'vdocrypthls', 'vdocryptdash', 'brightcove': Plays in the embedded JW Player.
-         * - 'youtube': Opens the video in a new tab and returns to the previous screen.
-         */
-        function renderPlayerPage(videoData) {
-            document.getElementById('player-title').textContent = videoData.lessonName;
-            const playerContainer = document.getElementById('player');
-            playerContainer.innerHTML = ''; // Clear previous player or message
-
-            // Cleanup previous JW Player instance if it exists
-            if (activePlayer && typeof activePlayer.remove === 'function') {
-                activePlayer.remove();
-                activePlayer = null;
-            }
-
-            if (videoData.type === 'vdocrypthls' || videoData.type === 'vdocryptdash' || videoData.type === 'brightcove') {
-                // Play HLS or DASH stream using JW Player
-                if (typeof jwplayer === 'function') {
-                    const playerConfig = {
-                        file: videoData.videoUrl,
-                        image: videoData.posterUrl || '',
-                        aspectratio: "16:9",
-                        width: "100%",
-                        autostart: true,
-                    };
-
-                    if (videoData.type === 'vdocryptdash' && videoData.token) {
-                        playerConfig.drm = {
-                            widevine: {
-                                url: `https://license.videocrypt.com/validateLicense?pallyconCustomdataV2=${videoData.token}`
-                            }
-                        };
-                    }
-                    activePlayer = jwplayer("player").setup(playerConfig);
-                } else {
-                    playerContainer.textContent = 'JW Player library is not loaded.';
-                }
-
-            } else if (videoData.type === 'youtube') {
-                // Open YouTube link in a new tab
-                const youtubeUrl = `https://www.youtube.com/watch?v=${videoData.videoUrl}`;
-                window.open(youtubeUrl, '_blank');
-                
-                // Display a message and go back to the list automatically
-                playerContainer.innerHTML = `<p style="padding: 1rem;">Opening YouTube video in a new tab...</p>`;
-                setTimeout(goBack, 1500); // Go back after 1.5 seconds
-
-            } else {
-                // Handle unsupported video types
-                playerContainer.innerHTML = `<p>Unsupported video type: ${videoData.type}</p>`;
-            }
-        }
+    // Check for a valid API response before proceeding
+    if (data && data.pageProps && data.pageProps.classDetailsData) {
+        // Pass the 'type' from the root of the response into the videoData object
+        const videoData = { ...data.pageProps.classDetailsData, type: data.type };
         
+        renderPlayerPage(videoData);
+        pushState('player-page', state.currentBatch, state.currentSubject, state.currentType);
+        showPage('player-page');
+    } else {
+        // Handle cases where the API might not return the expected data
+        showAlert('Could not load video details. The data format might be incorrect.');
+        console.error('Invalid data from API:', data);
+    }
+}
+
+/**
+ * MODIFIED FUNCTION
+ * Handles rendering the player based on video type.
+ * - 'vdocrypthls', 'vdocryptdash', 'brightcove': Plays in the embedded JW Player.
+ * - 'youtube': Opens the video in a new tab and returns to the previous screen.
+ */
+function renderPlayerPage(videoData) {
+    document.getElementById('player-title').textContent = videoData.lessonName;
+    const playerContainer = document.getElementById('player');
+    playerContainer.innerHTML = ''; // Clear previous player or message
+
+    // Cleanup previous JW Player instance if it exists
+    if (activePlayer && typeof activePlayer.remove === 'function') {
+        activePlayer.remove();
+        activePlayer = null;
+    }
+
+    if (videoData.type === 'vdocrypthls' || videoData.type === 'vdocryptdash' || videoData.type === 'brightcove') {
+        // Play HLS or DASH stream using JW Player
+        if (typeof jwplayer === 'function') {
+            const playerConfig = {
+                file: videoData.videoUrl,
+                image: videoData.posterUrl || '',
+                aspectratio: "16:9",
+                width: "100%",
+                autostart: true,
+            };
+
+            if (videoData.type === 'vdocryptdash' && videoData.token) {
+                playerConfig.drm = {
+                    widevine: {
+                        url: `https://license.videocrypt.com/validateLicense?pallyconCustomdataV2=${videoData.token}`
+                    }
+                };
+            }
+            activePlayer = jwplayer("player").setup(playerConfig);
+        } else {
+            playerContainer.textContent = 'JW Player library is not loaded.';
+        }
+
+    } else if (videoData.type === 'youtube') {
+        // ✅ CORRECTED LINE: Create a standard YouTube URL and open it
+        const youtubeUrl = `https://www.youtube.com/watch?v=${videoData.videoUrl}`;
+        window.open(youtubeUrl, '_blank');
+        
+        // Display a message and go back to the list automatically
+        playerContainer.innerHTML = `<p style="padding: 1rem;">Opening YouTube video in a new tab...</p>`;
+        setTimeout(goBack, 1500); // Go back after 1.5 seconds
+
+    } else {
+        // Handle unsupported or missing video types
+        playerContainer.innerHTML = `<p>Unsupported or unknown video type: ${videoData.type || 'Not specified'}</p>`;
+    }
+}
         // --- Theme Toggle ---
         function setupTheme() {
             const themeToggle = document.getElementById('theme-toggle');
