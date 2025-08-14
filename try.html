@@ -598,20 +598,22 @@
             }
         }
 
-        async function navigateToPlayer(classId, lessonName) {
+async function navigateToPlayer(classId, lessonName) {
     const url = `${API_BASE_URL}/videodetails?batchId=${state.currentBatch.batchId}&subjectId=${state.currentSubject.subjectId}&classId=${classId}`;
     const data = await fetchData(url);
 
-    // Check for a valid API response before proceeding
-    if (data && data.pageProps && data.pageProps.classDetailsData) {
-        // Pass the 'type' from the root of the response into the videoData object
-        const videoData = { ...data.pageProps.classDetailsData, type: data.type };
+    // ✅ CORRECTED: Check for 'classDetailsData' directly on the 'data' object.
+    if (data && data.classDetailsData) {
+        
+        // ✅ CORRECTED: Create 'videoData' without referencing 'pageProps'.
+        const videoData = { ...data.classDetailsData, type: data.type };
         
         renderPlayerPage(videoData);
         pushState('player-page', state.currentBatch, state.currentSubject, state.currentType);
         showPage('player-page');
+
     } else {
-        // Handle cases where the API might not return the expected data
+        // This will now only trigger if 'classDetailsData' is truly missing.
         showAlert('Could not load video details. The data format might be incorrect.');
         console.error('Invalid data from API:', data);
     }
