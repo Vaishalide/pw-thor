@@ -4,10 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduVerse - Your Learning Universe</title>
+    <title>EduGames - The Final Round</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://content.jwplatform.com/libraries/KB5zFt7A.js"></script>
     <style>
-        /* --- CORE THEME DEFINITIONS --- */
         :root {
             /* Dark Theme (Default) */
             --primary-bg: #1a1a1a;
@@ -22,7 +24,8 @@
             --shadow-color: rgba(0, 0, 0, 0.2);
             --success-color: #4CAF50;
             --warning-color: #FB8C00;
-            --text-shadow: none;
+            --card-radius: 12px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         [data-theme="light"] {
@@ -36,24 +39,26 @@
             --border-color: #e0e0e0;
             --loader-color: #1867C0;
             --shadow-color: rgba(0, 0, 0, 0.1);
-            --text-shadow: none;
+            --card-radius: 12px;
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
         
-        /* ✨ NEW CYBERPUNK THEME ✨ */
-        [data-theme="cyberpunk"] {
-            --primary-bg: #0d0221;
-            --secondary-bg: #261447;
-            --card-bg: #1a0a38;
-            --primary-text: #9efcfa;
-            --secondary-text: #b8a2d6;
-            --accent-color: #ff00f8;
-            --accent-hover: #ff69fa;
-            --border-color: #4f2170;
-            --loader-color: #ff00f8;
-            --shadow-color: rgba(255, 0, 248, 0.1);
-            --success-color: #00f8a8;
-            --warning-color: #fcee0a;
-            --text-shadow: 0 0 5px rgba(255, 0, 248, 0.7), 0 0 10px rgba(255, 0, 248, 0.5);
+        /* ✨ NEW SQUID GAME THEME ✨ */
+        [data-theme="squid"] {
+            --primary-bg: #000000;
+            --secondary-bg: #111111;
+            --card-bg: #1d1d1d;
+            --primary-text: #ffffff;
+            --secondary-text: #cccccc;
+            --accent-color: #E83F6F; /* Squid Game Pink */
+            --accent-hover: #ff7096;
+            --border-color: #E83F6F;
+            --loader-color: #E83F6F;
+            --shadow-color: rgba(232, 63, 111, 0.2);
+            --success-color: #00A896; /* Squid Game Teal */
+            --warning-color: #F9A602;
+            --card-radius: 0px;
+            --font-family: 'Roboto Mono', monospace;
         }
 
         /* --- GENERAL STYLES --- */
@@ -64,27 +69,21 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            font-family: var(--font-family);
             background-color: var(--primary-bg);
             color: var(--primary-text);
             transition: background-color 0.3s, color 0.3s;
         }
         
-        h1, h2, h3 {
-            text-shadow: var(--text-shadow);
-        }
-
         /* --- PAGE & LAYOUT --- */
         .page {
             display: none;
             padding: 1.5rem;
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
-        .page.active {
-            display: block;
-        }
+        .page.active { display: block; }
 
         .page-header {
             display: flex;
@@ -92,7 +91,7 @@
             margin-bottom: 2rem;
             padding: 0.75rem;
             background-color: var(--secondary-bg);
-            border-radius: 10px;
+            border-radius: var(--card-radius);
             box-shadow: 0 4px 15px var(--shadow-color);
             border: 1px solid var(--border-color);
         }
@@ -118,139 +117,124 @@
         }
         
         .theme-toggle-container {
-            position: fixed;
-            top: 1rem;
-            right: 1.5rem;
-            z-index: 1000;
+            position: fixed; top: 1rem; right: 1.5rem; z-index: 1000;
         }
         
-        /* --- NEW UI: LIST CONTAINER --- */
-        .list-container {
-            display: flex;
-            flex-direction: column;
+        /* --- GRID CONTAINER --- */
+        .grid-container {
+            display: grid;
             gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         }
-
-        .list-item-card {
+        
+        /* --- CARD STYLES (Grid) --- */
+        .card {
             background-color: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 5px 15px var(--shadow-color);
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--shadow-color);
             transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
+            flex-direction: column;
             cursor: pointer;
-            overflow: hidden;
             border: 1px solid var(--border-color);
         }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
+        .card-thumbnail {
+            width: 100%; height: 180px; object-fit: cover;
+            background-color: var(--secondary-bg);
+        }
+        .card-content {
+            padding: 1rem; flex-grow: 1;
+            display: flex; flex-direction: column;
+        }
+        .card-header {
+            display: flex; align-items: center;
+            gap: 0.75rem; margin-bottom: 0.75rem;
+        }
+        .card-icon {
+            width: 40px; height: 40px; border-radius: 50%;
+        }
+        .card-title {
+            font-size: 1.1rem; font-weight: 600; color: var(--primary-text);
+        }
+        .card-details {
+            font-size: 0.9rem; color: var(--secondary-text);
+            margin-bottom: 1rem; flex-grow: 1;
+        }
+        .card-details p {
+            margin-bottom: 0.25rem; display: flex; align-items: center;
+        }
+        .card-details svg { margin-right: 0.5rem; flex-shrink: 0; }
+        .card-footer { margin-top: auto; }
         
-        .list-item-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 25px var(--shadow-color);
-        }
-
-        .list-item-thumbnail {
-            width: 150px;
-            height: 100%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .list-item-content {
-            padding: 1.25rem;
-            flex-grow: 1;
-        }
-
-        .list-item-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
-        }
-        
-        .list-item-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-        }
-
-        .list-item-title {
-            font-size: 1.2rem;
+        .study-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            border: none;
+            border-radius: var(--card-radius);
+            cursor: pointer;
             font-weight: 600;
+            transition: background-color 0.2s;
+            font-family: var(--font-family);
         }
+        .study-button:hover { background-color: var(--accent-hover); }
 
-        .list-item-details {
-            font-size: 0.9rem;
-            color: var(--secondary-text);
+        .topic-card {
+            padding: 1rem; display: flex; align-items: center;
+            justify-content: space-between;
         }
-
-        .list-item-details p {
-            margin-bottom: 0.3rem;
-        }
+        .topic-card-content { color: var(--primary-text); }
+        .topic-card-content p { color: var(--secondary-text); font-size: 0.9rem; }
         
         /* --- TABS --- */
         .tabs {
             display: flex;
             border-bottom: 2px solid var(--border-color);
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
         .tab {
-            padding: 0.75rem 1.5rem;
-            cursor: pointer;
-            border: none;
-            background: none;
-            color: var(--secondary-text);
-            font-weight: 600;
-            font-size: 1rem;
-            position: relative;
-            transition: color 0.2s;
+            padding: 0.75rem 1.5rem; cursor: pointer; border: none;
+            background: none; color: var(--secondary-text);
+            font-weight: 600; position: relative; transition: color 0.2s;
         }
-        .tab:hover {
-            color: var(--primary-text);
-        }
+        .tab:hover { color: var(--primary-text); }
         .tab.active {
             color: var(--accent-color);
             border-bottom: 3px solid var(--accent-color);
         }
 
-        /* --- LOADER & MESSAGES --- */
+        /* --- MISC --- */
         .loader-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 9999;
+            display: flex; justify-content: center; align-items: center; z-index: 9999;
         }
         .spinner {
-            border: 5px solid var(--border-color);
-            border-top: 5px solid var(--loader-color);
-            border-radius: 50%;
-            width: 60px; height: 60px;
-            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border: 4px solid var(--secondary-bg); border-top: 4px solid var(--loader-color);
+            border-radius: 50%; width: 50px; height: 50px;
+            animation: spin 1s linear infinite;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .attention-message {
-            text-align: center;
-            padding: 1rem;
-            background-color: rgba(251, 140, 0, 0.1);
-            color: var(--warning-color);
-            border: 1px solid var(--warning-color);
-            border-radius: 8px;
-            margin: 1.5rem auto;
-            max-width: 800px;
+            text-align: center; padding: 1rem;
+            background-color: rgba(251, 140, 0, 0.1); color: var(--warning-color);
+            border: 1px solid var(--warning-color); border-radius: var(--card-radius);
+            margin: 1.5rem auto; max-width: 800px;
         }
-        .attention-message .highlight {
-            font-weight: 700;
-            color: var(--success-color);
-        }
-
-        /* --- PLAYER --- */
+        .attention-message .highlight { font-weight: 700; color: var(--success-color); }
+        
         .player-container {
             width: 100%; max-width: 900px; margin: 0 auto;
-            aspect-ratio: 16 / 9;
-            background-color: #000;
-            border-radius: 12px; overflow: hidden;
+            aspect-ratio: 16 / 9; background-color: #000;
+            border-radius: var(--card-radius); overflow: hidden;
+            border: 1px solid var(--border-color);
         }
         #player { width: 100%; height: 100%; }
         .player-title { font-size: 1.4rem; margin-top: 1.5rem; text-align: center; }
@@ -262,21 +246,17 @@
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme"></button>
     </div>
 
-    <div id="loader" class="loader-container" style="display: none;">
-        <div class="spinner"></div>
-    </div>
+    <div id="loader" class="loader-container" style="display: none;"><div class="spinner"></div></div>
 
     <div id="home-page" class="page active">
-        <h1>Available Courses</h1>
-        <p class="attention-message">This educational resource is completely free. <span class="highlight">Please Share!</span></p>
-        <div id="batch-list" class="list-container"></div>
+        <h1>Available Batches</h1>
+        <p class="attention-message">This website is completely available for FREE. DO NOT BUY or SELL. <span class="highlight">Sharing is Caring!</span></p>
+        <div id="batch-grid" class="grid-container"></div>
     </div>
 
     <div id="batch-page" class="page">
         <div class="page-header">
-            <button class="back-button" onclick="goBack()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-            </button>
+            <button class="back-button" onclick="goBack()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></button>
             <h1 id="batch-title" class="page-title"></h1>
         </div>
         <div class="tabs">
@@ -284,52 +264,44 @@
             <button class="tab" data-type="notes">Notes</button>
             <button class="tab" data-type="dpppdf">DPPs</button>
         </div>
-        <div id="topic-list" class="list-container"></div>
+        <div id="topic-grid" class="grid-container"></div>
     </div>
 
     <div id="subject-page" class="page">
         <div class="page-header">
-            <button class="back-button" onclick="goBack()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-            </button>
+            <button class="back-button" onclick="goBack()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></button>
             <h1 id="subject-title" class="page-title"></h1>
         </div>
-        <div id="content-list" class="list-container"></div>
+        <div id="content-grid" class="grid-container"></div>
     </div>
     
     <div id="player-page" class="page">
          <div class="page-header">
-            <button class="back-button" onclick="goBack()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
-            </button>
+            <button class="back-button" onclick="goBack()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg></button>
             <h1 id="player-page-title" class="page-title">Video Player</h1>
         </div>
-        <div class="player-container">
-            <div id="player">Loading player...</div>
-        </div>
+        <div class="player-container"><div id="player">Loading player...</div></div>
         <p id="player-title" class="player-title"></p>
     </div>
-
 
     <script>
         const API_BASE_URL = 'http://localhost:3001/api';
         let activePlayer = null; 
 
         const state = {
-            history: [],
-            currentBatch: null,
-            currentSubject: null,
-            currentType: 'class'
+            history: [], currentBatch: null, currentSubject: null, currentType: 'class'
         };
         
-        // --- Data ---
+        const teacherIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L8.707 1.5z"/><path d="m12.5 12.293-.5-.5V12h-1v.5l.5.5H12v.5h-1v.5h.5l.5.5V14h1v-.293l.5-.5V13h1v-.5h-1v-.5h-.5l-.5-.5H12zM8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8m.25 1.75a.5.5 0 0 0-.5 0V16a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5v-1.75a.5.5 0 0 0-.5-.5z"/></svg>`;
+        const dateIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M8.5 7.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h2.5V8a.5.5 0 0 1-.5-.5"/></svg>`;
+
         const batches = [
-            { id: 1, name: "11th JEE - (P1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc7cd2bba_WhatsApp_Image_20250430_at_1.43.04_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", batchId: "2927" },
-            { id: 2, name: "11th JEE - (N1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68109482bd390_WhatsApp_Image_20250429_at_2.22.02_PM.jpeg", teacher: "SKM Sir, GB Sir & Team", startDate: "28-04-2025", batchId: "2928" },
-            { id: 3, name: "12th JEE - (A1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc6640aef_WhatsApp_Image_20250430_at_1.43.03_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", batchId: "2925" },
-            { id: 4, name: "12th JEE - (E1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/680f52c3a1a32_WhatsApp_Image_20250428_at_3.30.47_PM.jpeg", teacher: "SKM Sir, GB Sir & Team", startDate: "28-04-2025", batchId: "2917" },
-            { id: 5, name: "JEE Droppers - (X1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2d9236cc2_DROPPER.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/682707979db15_WhatsApp_Image_20250516_at_3.07.33_PM.jpeg", teacher: "GB Sir, SKM Sir & Team", startDate: "28-04-2025", batchId: "2867" },
-            { id: 11, name: "JEE - Maths (Special Session)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68130eb1a8dc5_image_10.png", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68130eb1a8dc5_image_10.png", teacher: "Manoj Chauhan Sir", startDate: "29-04-2025", batchId: "2929" }
+            { id: 1, name: "11th JEE - (P1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc7cd2bba_WhatsApp_Image_20250430_at_1.43.04_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", validity: "2 Years", batchId: "2927" },
+            { id: 2, name: "11th JEE - (N1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68109482bd390_WhatsApp_Image_20250429_at_2.22.02_PM.jpeg", teacher: "SKM Sir, GB Sir & Team", startDate: "28-04-2025", validity: "2 Years", batchId: "2928" },
+            { id: 3, name: "12th JEE - (A1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc6640aef_WhatsApp_Image_20250430_at_1.43.03_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", validity: "1 Year", batchId: "2925" },
+            { id: 4, name: "12th JEE - (E1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/680f52c3a1a32_WhatsApp_Image_20250428_at_3.30.47_PM.jpeg", teacher: "SKM Sir, GB Sir & Team", startDate: "28-04-2025", validity: "1 Year", batchId: "2917" },
+            { id: 5, name: "JEE Droppers - (X1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2d9236cc2_DROPPER.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/682707979db15_WhatsApp_Image_20250516_at_3.07.33_PM.jpeg", teacher: "GB Sir, SKM Sir & Team", startDate: "28-04-2025", validity: "1 Year", batchId: "2867" },
+            { id: 11, name: "JEE - Maths (Special Session)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68130eb1a8dc5_image_10.png", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68130eb1a8dc5_image_10.png", teacher: "Manoj Chauhan Sir", startDate: "29-04-2025", validity: "1 Year", batchId: "2929" }
         ];
 
         // --- UI & State Management ---
@@ -343,30 +315,18 @@
 
         function goBack() {
             if (state.history.length <= 1) return;
-
             const currentState = state.history.pop();
             if (currentState.pageId === 'player-page' && activePlayer && typeof activePlayer.remove === 'function') {
-                activePlayer.remove();
-                activePlayer = null;
+                activePlayer.remove(); activePlayer = null;
             }
-
             const previousState = state.history[state.history.length - 1];
-            state.currentBatch = previousState.batch;
-            state.currentSubject = previousState.subject;
-            state.currentType = previousState.type;
-            
+            state.currentBatch = previousState.batch; state.currentSubject = previousState.subject; state.currentType = previousState.type;
             showPage(previousState.pageId);
-            
-            if (previousState.pageId === 'batch-page') {
-                navigateToBatch(state.currentBatch.batchId, false, state.currentType);
-            } else if (previousState.pageId === 'subject-page') {
-                navigateToSubject(state.currentSubject.subjectId, state.currentSubject.subjectName, false);
-            }
+            if (previousState.pageId === 'batch-page') navigateToBatch(state.currentBatch.batchId, false, state.currentType);
+            else if (previousState.pageId === 'subject-page') navigateToSubject(state.currentSubject.subjectId, state.currentSubject.subjectName, false);
         }
 
-        function pushState(pageId, batch = null, subject = null, type = 'class') {
-             state.history.push({ pageId, batch, subject, type });
-        }
+        function pushState(pageId, batch = null, subject = null, type = 'class') { state.history.push({ pageId, batch, subject, type }); }
 
         // --- Data Fetching ---
         async function fetchData(url) {
@@ -384,118 +344,110 @@
             }
         }
 
-        // --- Page Rendering (NEW List-Based UI) ---
-
+        // --- Page Rendering (GRID UI) ---
         function renderHomePage() {
-            const batchList = document.getElementById('batch-list');
-            batchList.innerHTML = '';
+            const batchGrid = document.getElementById('batch-grid');
+            batchGrid.innerHTML = '';
             batches.forEach(batch => {
                 const card = document.createElement('div');
-                card.className = 'list-item-card';
+                card.className = 'card';
                 card.onclick = () => navigateToBatch(batch.batchId, true);
                 card.innerHTML = `
-                    <img src="${batch.thumbnail}" alt="${batch.name}" class="list-item-thumbnail" loading="lazy" onerror="this.style.display='none'">
-                    <div class="list-item-content">
-                        <div class="list-item-header">
-                            <img src="${batch.icon}" alt="" class="list-item-icon" loading="lazy">
-                            <h3 class="list-item-title">${batch.name}</h3>
+                    <img src="${batch.thumbnail}" alt="${batch.name}" class="card-thumbnail" loading="lazy">
+                    <div class="card-content">
+                        <div class="card-header">
+                            <img src="${batch.icon}" alt="" class="card-icon" loading="lazy">
+                            <h3 class="card-title">${batch.name}</h3>
                         </div>
-                        <div class="list-item-details">
-                            <p><strong>Faculty:</strong> ${batch.teacher}</p>
-                            <p><strong>Start Date:</strong> ${batch.startDate}</p>
+                        <div class="card-details">
+                            <p>${teacherIcon} ${batch.teacher}</p>
+                            <p>${dateIcon} Starts ${batch.startDate} | Validity ${batch.validity}</p>
                         </div>
+                        <div class="card-footer"><button class="study-button">BEGIN</button></div>
                     </div>
                 `;
-                batchList.appendChild(card);
+                batchGrid.appendChild(card);
             });
         }
         
         function renderBatchPage(batchData, topics) {
             document.getElementById('batch-title').textContent = batchData.batchName || 'Batch Details';
-            const topicList = document.getElementById('topic-list');
-            topicList.innerHTML = '';
-
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.type === state.currentType);
-            });
+            const topicGrid = document.getElementById('topic-grid');
+            topicGrid.innerHTML = '';
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.type === state.currentType));
 
             if (!topics || topics.length === 0) {
-                topicList.innerHTML = '<p>No topics found for this section.</p>';
+                topicGrid.innerHTML = '<p>No topics found for this section.</p>';
                 return;
             }
-
             topics.forEach(topic => {
-                const item = document.createElement('div');
-                item.className = 'list-item-card';
-                item.onclick = () => navigateToSubject(topic.id, topic.topicName);
-                item.innerHTML = `
-                    <div class="list-item-content">
-                        <h3 class="list-item-title">${topic.topicName || 'Untitled Topic'}</h3>
-                        <p class="list-item-details">Click to view ${state.currentType}</p>
+                const card = document.createElement('div');
+                card.className = 'card topic-card';
+                card.onclick = () => navigateToSubject(topic.id, topic.topicName);
+                card.innerHTML = `
+                    <div class="topic-card-content">
+                        <h3>${topic.topicName || 'Untitled Topic'}</h3>
+                        <p>Click to view ${state.currentType}</p>
                     </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 `;
-                topicList.appendChild(item);
+                topicGrid.appendChild(card);
             });
         }
         
         function renderSubjectPage(subjectName, items) {
             document.getElementById('subject-title').textContent = subjectName;
-            const contentList = document.getElementById('content-list');
-            contentList.innerHTML = '';
-            
+            const contentGrid = document.getElementById('content-grid');
+            contentGrid.innerHTML = '';
             if (!items || items.length === 0) {
-                contentList.innerHTML = `<p>No content available in this section.</p>`;
+                contentGrid.innerHTML = `<p>No content available in this section.</p>`;
                 return;
             }
-
             if (state.currentType === 'class') { // Videos
                 items.forEach(item => {
                     const card = document.createElement('div');
-                    card.className = 'list-item-card';
+                    card.className = 'card';
                     card.onclick = () => navigateToPlayer(item.id, item.lessonName);
                     card.innerHTML = `
-                        <img src="${item.posterUrl || ''}" class="list-item-thumbnail" loading="lazy" onerror="this.style.display='none'">
-                        <div class="list-item-content">
-                            <h3 class="list-item-title">${item.lessonName || 'Untitled Video'}</h3>
-                            <p class="list-item-details">${item.startDateTime || 'No date'}</p>
+                        <img src="${item.posterUrl || ''}" alt="${item.lessonName}" class="card-thumbnail" loading="lazy" onerror="this.style.display='none'">
+                        <div class="card-content">
+                            <h3 class="card-title">${item.lessonName || 'Untitled Video'}</h3>
+                            <div class="card-details"><p>${dateIcon} ${item.startDateTime || 'No date'}</p></div>
                         </div>
                     `;
-                    contentList.appendChild(card);
+                    contentGrid.appendChild(card);
                 });
             } else { // Notes or DPPs (PDFs)
                  items.forEach(item => {
                     const card = document.createElement('div');
-                    card.className = 'list-item-card';
+                    card.className = 'card topic-card';
                     card.onclick = () => {
                         if (item.docUrl) window.open(item.docUrl, '_blank');
                         else showAlert('No document URL available.');
                     };
                     card.innerHTML = `
-                        <div class="list-item-content">
-                           <h3 class="list-item-title">${item.docTitle || 'Untitled Document'}</h3>
-                           <p class="list-item-details">Click to open PDF</p>
+                        <div class="topic-card-content">
+                            <h3>${item.docTitle || 'Untitled Document'}</h3>
+                            <p>Click to open PDF</p>
                         </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
                     `;
-                    contentList.appendChild(card);
+                    contentGrid.appendChild(card);
                 });
             }
         }
 
         // --- Navigation Logic ---
-
         async function navigateToBatch(batchId, trackHistory = true, type = 'class') {
             const endpoint = type === 'class' ? 'batchclass' : (type === 'notes' ? 'batchnotes' : 'batchdpppdf');
             const url = `${API_BASE_URL}/${endpoint}?batchId=${batchId}`;
             const data = await fetchData(url);
-
             if (data && data.pageProps) {
                 const batchData = data.pageProps.batchClassData || data.pageProps.batchNoteData || data.pageProps.batchDppPdfData;
                 state.currentBatch = { ...batchData, batchId: batchId };
                 state.currentType = type;
                 renderBatchPage(batchData, data.pageProps.topics);
-                if (trackHistory) {
-                    pushState('batch-page', state.currentBatch, null, type);
-                }
+                if (trackHistory) pushState('batch-page', state.currentBatch, null, type);
                 showPage('batch-page');
             }
         }
@@ -504,17 +456,13 @@
             let endpoint = 'subjectlectures';
             if (state.currentType === 'notes') endpoint = 'subjectnotes';
             if (state.currentType === 'dpppdf') endpoint = 'subjectdpppdf';
-
             const url = `${API_BASE_URL}/${endpoint}?batchId=${state.currentBatch.batchId}&subjectId=${subjectId}`;
             const data = await fetchData(url);
-            
             if (data && data.pageProps) {
                 let items = data.pageProps.batchClassData?.classes || data.pageProps.notesData?.notesDetails || [];
                 state.currentSubject = { subjectId, subjectName, items };
                 renderSubjectPage(subjectName, items);
-                if (trackHistory) {
-                    pushState('subject-page', state.currentBatch, state.currentSubject, state.currentType);
-                }
+                if (trackHistory) pushState('subject-page', state.currentBatch, state.currentSubject, state.currentType);
                 showPage('subject-page');
             }
         }
@@ -522,58 +470,37 @@
         async function navigateToPlayer(classId, lessonName) {
             const url = `${API_BASE_URL}/videodetails?batchId=${state.currentBatch.batchId}&subjectId=${state.currentSubject.subjectId}&classId=${classId}`;
             const data = await fetchData(url);
-
             if (data && data.classDetailsData) {
                 const videoData = { ...data.classDetailsData, type: data.type };
                 renderPlayerPage(videoData);
                 pushState('player-page', state.currentBatch, state.currentSubject, state.currentType);
                 showPage('player-page');
-            } else {
-                showAlert('Could not load video details.');
-            }
+            } else { showAlert('Could not load video details.'); }
         }
         
         function renderPlayerPage(videoData) {
             document.getElementById('player-title').textContent = videoData.lessonName;
             const playerContainer = document.getElementById('player');
             playerContainer.innerHTML = '';
-
-            if (activePlayer && typeof activePlayer.remove === 'function') {
-                activePlayer.remove();
-                activePlayer = null;
-            }
-
+            if (activePlayer && typeof activePlayer.remove === 'function') { activePlayer.remove(); activePlayer = null; }
             if (videoData.type === 'youtube') {
-                const youtubeUrl = `https://www.youtube.com/watch?v=${videoData.videoUrl}`;
-                window.open(youtubeUrl, '_blank');
-                playerContainer.innerHTML = `<p style="padding: 1rem;">Opening YouTube video in a new tab...</p>`;
+                window.open(`https://www.youtube.com/watch?v=${videoData.videoUrl}`, '_blank');
+                playerContainer.innerHTML = `<p style="padding: 1rem;">Opening YouTube video...</p>`;
                 setTimeout(goBack, 1500);
             } else if (typeof jwplayer === 'function') {
-                 const playerConfig = {
-                    file: videoData.videoUrl,
-                    image: videoData.posterUrl || '',
-                    aspectratio: "16:9",
-                    width: "100%",
-                    autostart: true,
-                 };
-                 if (videoData.type === 'vdocryptdash' && videoData.token) {
-                     playerConfig.drm = { widevine: { url: `https://license.videocrypt.com/validateLicense?pallyconCustomdataV2=${videoData.token}` } };
-                 }
+                 const playerConfig = { file: videoData.videoUrl, image: videoData.posterUrl || '', autostart: true };
+                 if (videoData.type === 'vdocryptdash' && videoData.token) playerConfig.drm = { widevine: { url: `https://license.videocrypt.com/validateLicense?pallyconCustomdataV2=${videoData.token}` } };
                  activePlayer = jwplayer("player").setup(playerConfig);
-            } else {
-                playerContainer.textContent = 'Player library not available.';
-            }
+            } else { playerContainer.textContent = 'Player library not available.'; }
         }
         
-        // --- Theme Toggle (Updated for 3 Themes) ---
+        // --- Theme Toggle (Updated for Squid Game Theme) ---
         function setupTheme() {
             const themeToggle = document.getElementById('theme-toggle');
-            const themes = ['dark', 'light', 'cyberpunk'];
+            const themes = ['dark', 'light', 'squid'];
             let currentThemeIndex = localStorage.getItem('theme-index') ? parseInt(localStorage.getItem('theme-index')) : 0;
-            
             document.documentElement.setAttribute('data-theme', themes[currentThemeIndex]);
             updateThemeIcon(themes[currentThemeIndex]);
-
             themeToggle.addEventListener('click', () => {
                 currentThemeIndex = (currentThemeIndex + 1) % themes.length;
                 const newTheme = themes[currentThemeIndex];
@@ -588,7 +515,7 @@
              const icons = {
                  dark: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`,
                  light: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`,
-                 cyberpunk: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18V6M6 12h12"/></svg>`
+                 squid: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2z"/></svg>`
              };
              themeToggle.innerHTML = icons[theme] || icons['dark'];
         }
@@ -598,13 +525,10 @@
             renderHomePage();
             setupTheme();
             pushState('home-page');
-
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.addEventListener('click', () => {
                     const type = tab.dataset.type;
-                    if (type !== state.currentType) {
-                        navigateToBatch(state.currentBatch.batchId, false, type);
-                    }
+                    if (type !== state.currentType) navigateToBatch(state.currentBatch.batchId, false, type);
                 });
             });
         });
