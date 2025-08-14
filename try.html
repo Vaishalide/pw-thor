@@ -5,12 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JINDAL4FREE - Free Education</title>
-    <!-- CryptoJS for AES Decryption -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-    <!-- JW Player for HLS/DASH Video Playback -->
     <script src="https://content.jwplatform.com/libraries/KB5zFt7A.js"></script>
-    <!-- YouTube IFrame API for YouTube Playback -->
-    <script src="https://www.youtube.com/iframe_api"></script>
     <style>
         :root {
             --primary-bg: #1a1a1a;
@@ -283,6 +278,9 @@
             background-color: #000;
             border-radius: 12px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         #player {
             width: 100%;
@@ -299,8 +297,7 @@
 <body>
     <div class="theme-toggle-container">
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
-            <!-- SVG will be injected by JS -->
-        </button>
+            </button>
     </div>
 
     <div id="loader" class="loader-container" style="display: none;">
@@ -354,8 +351,6 @@
 
     <script>
         const API_BASE_URL = 'http://localhost:3001/api';
-        const AES_KEY = '9d4dc061661352b5d254709de50e498a91e61b2b1b89f5d09bb048c24c227671';
-        const AES_IV = '21ec05a28963cb7a7387dfd47a6ca61d';
 
         let activePlayer = null; 
 
@@ -403,11 +398,9 @@
             if (state.history.length > 1) {
                 const currentState = state.history[state.history.length - 1];
                 if (currentState.pageId === 'player-page') {
+                    // Cleanup JW Player if it exists
                     if (activePlayer && typeof activePlayer.remove === 'function') {
                         activePlayer.remove();
-                    }
-                    if (activePlayer && typeof activePlayer.destroy === 'function') {
-                        activePlayer.destroy();
                     }
                     activePlayer = null;
                 }
@@ -433,42 +426,16 @@
              state.history.push({ pageId, batch, subject, type });
         }
 
-
-        // --- Decryption ---
-        function decryptData(encryptedBase64) {
-            try {
-                const key = CryptoJS.enc.Hex.parse(AES_KEY);
-                const iv = CryptoJS.enc.Hex.parse(AES_IV);
-                const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
-                    iv: iv,
-                    mode: CryptoJS.mode.CBC,
-                    padding: CryptoJS.pad.Pkcs7
-                });
-                const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
-                return JSON.parse(decryptedText);
-            } catch (error) {
-                console.error("Decryption failed:", error);
-                return null;
-            }
-        }
-
         // --- Data Fetching ---
-        async function fetchAndDecrypt(url) {
+        async function fetchData(url) {
             showLoader(true);
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                const json = await response.json();
-                if (!json.data) {
-                    throw new Error("API response missing 'data' field.");
-                }
-                const decrypted = decryptData(json.data);
-                if (!decrypted) {
-                    throw new Error("Failed to decrypt data.");
-                }
-                return decrypted;
+                const data = await response.json();
+                return data;
             } catch (error) {
                 console.error('Fetch error:', error);
                 showAlert(`Error: Could not load data. ${error.message}`);
@@ -477,7 +444,6 @@
                 showLoader(false);
             }
         }
-
 
         // --- Page Rendering ---
 
@@ -511,7 +477,7 @@
         async function navigateToBatch(batchId, trackHistory = true, type = 'class') {
             const endpoint = type === 'class' ? 'batchclass' : (type === 'notes' ? 'batchnotes' : 'batchdpppdf');
             const url = `${API_BASE_URL}/${endpoint}?batchId=${batchId}`;
-            const data = await fetchAndDecrypt(url);
+            const data = await fetchData(url);
 
             if (data && data.pageProps) {
                 const batchData = data.pageProps.batchClassData || data.pageProps.batchNoteData || data.pageProps.batchDppPdfData;
@@ -561,7 +527,7 @@
             if (state.currentType === 'dpppdf') endpoint = 'subjectdpppdf';
 
             const url = `${API_BASE_URL}/${endpoint}?batchId=${state.currentBatch.batchId}&subjectId=${subjectId}`;
-            const data = await fetchAndDecrypt(url);
+            const data = await fetchData(url);
             
             if (data && data.pageProps) {
                 let items = [];
@@ -634,32 +600,35 @@
 
         async function navigateToPlayer(classId, lessonName) {
             const url = `${API_BASE_URL}/videodetails?batchId=${state.currentBatch.batchId}&subjectId=${state.currentSubject.subjectId}&classId=${classId}`;
-            const data = await fetchAndDecrypt(url);
+            const data = await fetchData(url);
 
             if (data && data.pageProps && data.pageProps.classDetailsData) {
-                const videoData = data.pageProps.classDetailsData;
+                const videoData = { ...data.pageProps.classDetailsData, type: data.type };
                 renderPlayerPage(videoData);
                 pushState('player-page', state.currentBatch, state.currentSubject, state.currentType);
                 showPage('player-page');
             }
         }
 
+        /**
+         * MODIFIED FUNCTION
+         * Handles rendering the player based on video type.
+         * - 'vdocrypthls', 'vdocryptdash', 'brightcove': Plays in the embedded JW Player.
+         * - 'youtube': Opens the video in a new tab and returns to the previous screen.
+         */
         function renderPlayerPage(videoData) {
             document.getElementById('player-title').textContent = videoData.lessonName;
-            
             const playerContainer = document.getElementById('player');
-            playerContainer.innerHTML = ''; 
+            playerContainer.innerHTML = ''; // Clear previous player or message
 
+            // Cleanup previous JW Player instance if it exists
             if (activePlayer && typeof activePlayer.remove === 'function') {
                 activePlayer.remove();
                 activePlayer = null;
             }
-            if (activePlayer && typeof activePlayer.destroy === 'function') {
-                activePlayer.destroy();
-                activePlayer = null;
-            }
 
             if (videoData.type === 'vdocrypthls' || videoData.type === 'vdocryptdash' || videoData.type === 'brightcove') {
+                // Play HLS or DASH stream using JW Player
                 if (typeof jwplayer === 'function') {
                     const playerConfig = {
                         file: videoData.videoUrl,
@@ -680,18 +649,18 @@
                 } else {
                     playerContainer.textContent = 'JW Player library is not loaded.';
                 }
+
             } else if (videoData.type === 'youtube') {
-                if (typeof YT !== 'undefined' && YT.Player) {
-                    activePlayer = new YT.Player('player', {
-                        videoId: videoData.videoUrl,
-                        playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 },
-                        width: '100%',
-                        height: '100%'
-                    });
-                } else {
-                     playerContainer.textContent = 'YouTube Player API is not ready.';
-                }
+                // Open YouTube link in a new tab
+                const youtubeUrl = `https://www.youtube.com/watch?v=${videoData.videoUrl}`;
+                window.open(youtubeUrl, '_blank');
+                
+                // Display a message and go back to the list automatically
+                playerContainer.innerHTML = `<p style="padding: 1rem;">Opening YouTube video in a new tab...</p>`;
+                setTimeout(goBack, 1500); // Go back after 1.5 seconds
+
             } else {
+                // Handle unsupported video types
                 playerContainer.innerHTML = `<p>Unsupported video type: ${videoData.type}</p>`;
             }
         }
