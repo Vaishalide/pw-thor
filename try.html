@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JINDAL4FREE - Free Education</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <style>
+        :root {
+            --primary-bg: #1a1a1a;
+            --secondary-bg: #2c2c2c;
+            --card-bg: #333;
+            --primary-text: #ffffff;
+            --secondary-text: #b0b0b0;
+            --accent-color: #007bff;
+            --accent-hover: #0056b3;
+            --border-color: #444;
+            --loader-color: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --success-color: #4CAF50;
+            --warning-color: #FB8C00;
+        }
+
+        [data-theme="light"] {
+            --primary-bg: #f5f5f5;
+            --secondary-bg: #ffffff;
+            --card-bg: #ffffff;
+            --primary-text: #212121;
+            --secondary-text: #757575;
+            --accent-color: #1867C0;
+            --accent-hover: #1F5592;
+            --border-color: #e0e0e0;
+            --loader-color: #1867C0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--primary-text);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .page {
+            display: none;
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 0.5rem;
+            background-color: var(--secondary-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+
+        .back-button, .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--primary-text);
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        .back-button:hover, .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            margin-left: 1rem;
+            flex-grow: 1;
+        }
+        
+        .theme-toggle-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+
+        /* Grid Layouts */
+        .grid-container {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
+
+        .card-thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-text);
+        }
+
+        .card-details {
+            font-size: 0.9rem;
+            color: var(--secondary-text);
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+        
+        .card-details p {
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-details svg {
+            margin-right: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .card-footer {
+            margin-top: auto;
+        }
+
+        .study-button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+
+        .study-button:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Topic Card Styles */
+        .topic-card {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topic-card-content {
+            color: var(--primary-text);
+        }
+        
+        .topic-card-content p {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--secondary-text);
+            font-weight: 500;
+            position: relative;
+            transition: color 0.2s;
+        }
+        .tab:hover {
+            color: var(--primary-text);
+        }
+        .tab.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        /* Loader */
+        .loader-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--loader-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Attention Message */
+        .attention-message {
+            text-align: center;
+            padding: 0.75rem;
+            background-color: rgba(251, 140, 0, 0.1);
+            color: var(--warning-color);
+            border: 1px solid var(--warning-color);
+            border-radius: 8px;
+            margin: 1rem auto 1.5rem auto;
+            max-width: 800px;
+        }
+        .attention-message .highlight {
+            font-weight: 600;
+            color: var(--success-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="theme-toggle-container">
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Theme">
+            </button>
+    </div>
+
+    <div id="loader" class="loader-container" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <div id="home-page" class="page active">
+        <h1>Available Batches</h1>
+        <p class="attention-message">This website is completely available for FREE. DO NOT BUY or SELL. <span class="highlight">Sharing is Caring!</span></p>
+        <div id="batch-grid" class="grid-container">
+            </div>
+    </div>
+
+    <div id="batch-page" class="page">
+        <div class="page-header">
+            <button class="back-button" onclick="goBack()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+            </button>
+            <h1 id="batch-title" class="page-title"></h1>
+        </div>
+        <div class="tabs">
+            <button id="tab-class" class="tab active" data-type="class">Videos</button>
+            <button id="tab-notes" class="tab" data-type="notes">Notes</button>
+            <button id="tab-dpps" class="tab" data-type="dpppdf">DPPs</button>
+        </div>
+        <div id="topic-grid" class="grid-container">
+            </div>
+    </div>
+
+    <div id="subject-page" class="page">
+        <div class="page-header">
+            <button class="back-button" onclick="goBack()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"></path></svg>
+            </button>
+            <h1 id="subject-title" class="page-title"></h1>
+        </div>
+        <div id="content-grid" class="grid-container">
+            </div>
+    </div>
+
+    <script>
+        // --- State Management & Constants ---
+        const API_BASE_URL = 'https://jindal4freebackend2-a5e2c5cf2dd1.herokuapp.com/api';
+        const AES_KEY = '9d4dc061661352b5d254709de50e498a91e61b2b1b89f5d09bb048c24c227671';
+        const AES_IV = '21ec05a28963cb7a7387dfd47a6ca61d';
+
+        const state = {
+            history: [], // To manage back navigation
+            currentBatch: null,
+            currentSubject: null,
+            currentType: 'class' // 'class', 'notes', or 'dpppdf'
+        };
+        
+        const teacherIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L8.707 1.5z"/><path d="m12.5 12.293-.5-.5V12h-1v.5l.5.5H12v.5h-1v.5h.5l.5.5V14h1v-.293l.5-.5V13h1v-.5h-1v-.5h-.5l-.5-.5H12zM8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6m0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8m.25 1.75a.5.5 0 0 0-.5 0V16a.5.5 0 0 0 .5.5h.5a.5.5 0 0 0 .5-.5v-1.75a.5.5 0 0 0-.5-.5z"/></svg>`;
+        const dateIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M4 .5a.5.5 0 0 0-1 0V1H2a2 2 0 0 0-2 2v1h16V3a2 2 0 0 0-2-2h-1V.5a.5.5 0 0 0-1 0V1H4zM16 14V5H0v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2M8.5 7.5a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H6a.5.5 0 0 1 0-1h2.5V8a.5.5 0 0 1-.5-.5"/></svg>`;
+
+
+        const batches = [
+            { id: 1, name: "11th JEE - (P1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc7cd2bba_WhatsApp_Image_20250430_at_1.43.04_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", validity: "2 Years", batchId: "2927" },
+            { id: 2, name: "11th JEE - (N1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68109482bd390_WhatsApp_Image_20250429_at_2.22.02_PM.jpeg", teacher: "SKM Sir, GB Sir & Team", startDate: "28-04-2025", validity: "2 Years", batchId: "2928" },
+            { id: 3, name: "12th JEE - (A1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6811dc6640aef_WhatsApp_Image_20250430_at_1.43.03_PM.jpeg", teacher: "MS Chauhan Sir & Team", startDate: "28-04-2025", validity: "1 Year", batchId: "2925" },
+            { id: 4, name: "12th JEE - (E1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/680f52c3a1a32_WhatsApp_Image_20250428_at_3.30.47_PM.jpeg", teacher: "SKM Sir, GB Sir & Team", startDate: "28-04-2025", validity: "1 Year", batchId: "2917" },
+            { id: 5, name: "JEE Droppers - (X1 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2d9236cc2_DROPPER.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/682707979db15_WhatsApp_Image_20250516_at_3.07.33_PM.jpeg", teacher: "GB Sir, SKM Sir & Team", startDate: "28-04-2025", validity: "1 Year", batchId: "2867" },
+            { id: 6, name: "11th JEE - (P2 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", teacher: "MS Chauhan Sir & Team", startDate: "24-05-2025", validity: "2 Years", batchId: "2984" },
+            { id: 7, name: "11th JEE - (N2 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2e31c1c53_11th.jpg", teacher: "SKM Sir, GB Sir & Team", startDate: "24-05-2025", validity: "2 Years", batchId: "2985" },
+            { id: 8, name: "12th JEE - (A2 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", teacher: "MS Chauhan Sir & Team", startDate: "24-05-2025", validity: "1 Year", batchId: "2987" },
+            { id: 9, name: "12th JEE - (E2 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2dd5e6b9b_12th.jpg", teacher: "SKM Sir, GB Sir & Team", startDate: "24-05-2025", validity: "1 Year", batchId: "2988" },
+            { id: 10, name: "JEE Droppers - (X2 Batch)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/67fa2d9236cc2_DROPPER.jpg", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/6838567b28dcc_WhatsApp_Image_20250529_at_5.47.53_PM.jpeg", teacher: "GB Sir, SKM Sir & Team", startDate: "24-05-2025", validity: "1 Year", batchId: "2989" },
+            { id: 11, name: "JEE - Maths (Special Session)", icon: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68130eb1a8dc5_image_10.png", thumbnail: "https://ik.imagekit.io/prep4free/JINDAL4FREE/68130eb1a8dc5_image_10.png", teacher: "Manoj Chauhan Sir", startDate: "29-04-2025", validity: "1 Year", batchId: "2929" }
+        ];
+
+        // --- UI Functions ---
+
+        function showLoader(show) {
+            document.getElementById('loader').style.display = show ? 'flex' : 'none';
+        }
+
+        function showAlert(message) {
+            alert(message);
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function goBack() {
+            if (state.history.length > 1) {
+                state.history.pop(); // Pop current page
+                const previousState = state.history[state.history.length - 1]; // Get previous page
+                
+                // Restore state without pushing to history
+                state.currentBatch = previousState.batch;
+                state.currentSubject = previousState.subject;
+                state.currentType = previousState.type;
+                
+                showPage(previousState.pageId);
+                
+                // If we are back on the batch page, re-render its content
+                if (previousState.pageId === 'batch-page') {
+                    navigateToBatch(state.currentBatch.batchId, false, state.currentType);
+                }
+            }
+        }
+
+        function pushState(pageId, batch = null, subject = null, type = 'class') {
+             state.history.push({ pageId, batch, subject, type });
+        }
+
+
+        // --- Decryption ---
+        function decryptData(encryptedBase64) {
+            try {
+                const key = CryptoJS.enc.Hex.parse(AES_KEY);
+                const iv = CryptoJS.enc.Hex.parse(AES_IV);
+                const decrypted = CryptoJS.AES.decrypt(encryptedBase64, key, {
+                    iv: iv,
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                const decryptedText = decrypted.toString(CryptoJS.enc.Utf8);
+                return JSON.parse(decryptedText);
+            } catch (error) {
+                console.error("Decryption failed:", error);
+                return null;
+            }
+        }
+
+        // --- Data Fetching ---
+        async function fetchAndDecrypt(url) {
+            showLoader(true);
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const json = await response.json();
+                if (!json.data) {
+                    throw new Error("API response missing 'data' field.");
+                }
+                const decrypted = decryptData(json.data);
+                if (!decrypted) {
+                    throw new Error("Failed to decrypt data.");
+                }
+                return decrypted;
+            } catch (error) {
+                console.error('Fetch error:', error);
+                showAlert(`Error: Could not load data. ${error.message}`);
+                return null;
+            } finally {
+                showLoader(false);
+            }
+        }
+
+
+        // --- Page Rendering ---
+
+        function renderHomePage() {
+            const batchGrid = document.getElementById('batch-grid');
+            batchGrid.innerHTML = ''; // Clear existing content
+            batches.forEach(batch => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => navigateToBatch(batch.batchId, true);
+                card.innerHTML = `
+                    <img src="${batch.thumbnail}" alt="${batch.name}" class="card-thumbnail">
+                    <div class="card-content">
+                        <div class="card-header">
+                            <img src="${batch.icon}" alt="${batch.name} icon" class="card-icon">
+                            <h3 class="card-title">${batch.name}</h3>
+                        </div>
+                        <div class="card-details">
+                            <p>${teacherIcon} ${batch.teacher}</p>
+                            <p>${dateIcon} Starts ${batch.startDate} | Validity ${batch.validity}</p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="study-button">LET'S STUDY</button>
+                        </div>
+                    </div>
+                `;
+                batchGrid.appendChild(card);
+            });
+        }
+        
+        async function navigateToBatch(batchId, trackHistory = true, type = 'class') {
+            const endpoint = type === 'class' ? 'batchclass' : 'batchnotes';
+            const url = `${API_BASE_URL}/${endpoint}?batchId=${batchId}`;
+            const data = await fetchAndDecrypt(url);
+
+            if (data && data.pageProps) {
+                const batchData = data.pageProps.batchClassData || data.pageProps.batchNoteData;
+                state.currentBatch = { ...batchData, batchId: batchId };
+                state.currentType = type;
+                renderBatchPage(batchData, data.pageProps.topics);
+                if (trackHistory) {
+                    pushState('batch-page', state.currentBatch, null, type);
+                }
+                showPage('batch-page');
+            }
+        }
+
+
+        function renderBatchPage(batchData, topics) {
+            document.getElementById('batch-title').textContent = batchData.batchName || 'Batch Details';
+            const topicGrid = document.getElementById('topic-grid');
+            topicGrid.innerHTML = '';
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.type === state.currentType);
+            });
+
+            if (!topics || topics.length === 0) {
+                topicGrid.innerHTML = '<p>No topics found for this section.</p>';
+                return;
+            }
+
+            topics.forEach(topic => {
+                const card = document.createElement('div');
+                card.className = 'card topic-card';
+                card.onclick = () => navigateToSubject(topic.id, topic.topicName);
+                card.innerHTML = `
+                    <div class="topic-card-content">
+                        <h3>${topic.topicName || 'Untitled Topic'}</h3>
+                        <p>Click to view ${state.currentType === 'class' ? 'videos' : (state.currentType === 'notes' ? 'notes' : 'DPPs')}</p>
+                    </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                `;
+                topicGrid.appendChild(card);
+            });
+        }
+        
+        async function navigateToSubject(subjectId, subjectName) {
+            let endpoint = 'subjectlectures';
+            if (state.currentType === 'notes') endpoint = 'subjectnotes';
+            if (state.currentType === 'dpppdf') endpoint = 'subjectdpppdf';
+
+            const url = `${API_BASE_URL}/${endpoint}?batchId=${state.currentBatch.batchId}&subjectId=${subjectId}`;
+            const data = await fetchAndDecrypt(url);
+            
+            if (data && data.pageProps) {
+                let items = [];
+                if (state.currentType === 'class') {
+                    items = data.pageProps.batchClassData.classes;
+                } else {
+                    items = data.pageProps.notesData.notesDetails;
+                }
+                state.currentSubject = { subjectId, subjectName, items };
+                renderSubjectPage(subjectName, items);
+                pushState('subject-page', state.currentBatch, state.currentSubject, state.currentType);
+                showPage('subject-page');
+            }
+        }
+        
+        function renderSubjectPage(subjectName, items) {
+             document.getElementById('subject-title').textContent = subjectName;
+            const contentGrid = document.getElementById('content-grid');
+            contentGrid.innerHTML = '';
+            
+            if (!items || items.length === 0) {
+                contentGrid.innerHTML = `<p>No content available in this section.</p>`;
+                return;
+            }
+
+            if (state.currentType === 'class') { // Videos
+                items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.onclick = () => showAlert(`This would open a video player for:\n"${item.lessonName}"\n\n(Full player replication is beyond the scope of this example.)`);
+                    card.innerHTML = `
+                        <img src="${item.posterUrl || 'https://via.placeholder.com/300x180.png?text=No+Thumbnail'}" alt="${item.lessonName}" class="card-thumbnail">
+                        <div class="card-content">
+                            <h3 class="card-title">${item.lessonName || 'Untitled Video'}</h3>
+                            <div class="card-details">
+                                <p>${dateIcon} ${item.startDateTime || 'No date'}</p>
+                            </div>
+                        </div>
+                    `;
+                    contentGrid.appendChild(card);
+                });
+            } else { // Notes or DPPs (PDFs)
+                 items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'card topic-card';
+                    card.onclick = () => {
+                        if (item.docUrl) {
+                            window.open(item.docUrl, '_blank');
+                        } else {
+                            showAlert('No document URL available for this item.');
+                        }
+                    };
+                    card.innerHTML = `
+                        <div class="topic-card-content">
+                           <h3>${item.docTitle || 'Untitled Document'}</h3>
+                           <p>Click to open PDF</p>
+                        </div>
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>
+                    `;
+                    contentGrid.appendChild(card);
+                });
+            }
+        }
+        
+        // --- Theme Toggle ---
+        function setupTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const currentTheme = localStorage.getItem('jindal4free-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            updateThemeIcon(currentTheme);
+
+            themeToggle.addEventListener('click', () => {
+                let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('jindal4free-theme', theme);
+                updateThemeIcon(theme);
+            });
+        }
+        
+        function updateThemeIcon(theme) {
+             const themeToggle = document.getElementById('theme-toggle');
+             if(theme === 'dark') {
+                 themeToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>`;
+             } else {
+                 themeToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`;
+             }
+        }
+
+        // --- Event Listeners & Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHomePage();
+            setupTheme();
+            pushState('home-page');
+
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const type = tab.dataset.type;
+                    if (type !== state.currentType) {
+                        navigateToBatch(state.currentBatch.batchId, false, type);
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
