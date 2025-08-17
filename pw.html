@@ -15,33 +15,37 @@
   <meta http-equiv="Expires" content="0">
      <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script type="module">
+ <script type="module">
   import * as FingerprintJS from 'https://fpjscdn.net/v3/rzpS4a5sarcM3p7P29Q2';
   
   async function initializeFingerprintAndLoad() {
-    // 1. First, try to get the fingerprint from LOCAL storage
     let storedFingerprint = localStorage.getItem('deviceFingerprint');
 
     if (storedFingerprint) {
       window.deviceFingerprint = storedFingerprint;
       console.log('Retrieved Fingerprint from Local Storage:', window.deviceFingerprint);
     } else {
-      // 2. If not found, generate a new one
       try {
         const fp = await FingerprintJS.load();
         const result = await fp.get();
         window.deviceFingerprint = result.visitorId;
         console.log('Secure Device Fingerprint Initialized:', window.deviceFingerprint);
       } catch (error) {
-        console.warn("Secure fingerprinting failed, using a temporary fallback ID.", error);
+        // --- START: MODIFIED CATCH BLOCK ---
+        console.warn("Secure fingerprinting failed. Clearing session and using a temporary fallback ID.", error);
+        
+        // Clear any potentially mismatched old data
+        localStorage.clear();
+        document.cookie.split(";").forEach(function(c) { document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); });
+        
+        // Now, create a new fallback ID
         window.deviceFingerprint = 'fallback-' + Date.now() + Math.random().toString(36).substring(2);
-        console.log('Using Fallback ID:', window.deviceFingerprint);
+        console.log('Using new Fallback ID:', window.deviceFingerprint);
+        // --- END: MODIFIED CATCH BLOCK ---
       }
-      // 3. Save the newly generated fingerprint to LOCAL storage
       localStorage.setItem('deviceFingerprint', window.deviceFingerprint);
     }
-
-    // 4. Now, start the application with the consistent fingerprint
+    
     window.startApp();
   }
 
