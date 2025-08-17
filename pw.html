@@ -19,12 +19,12 @@
   import * as FingerprintJS from 'https://fpjscdn.net/v3/rzpS4a5sarcM3p7P29Q2';
   
   async function initializeFingerprintAndLoad() {
-    // 1. First, try to get the fingerprint from session storage
-    let storedFingerprint = sessionStorage.getItem('deviceFingerprint');
+    // 1. First, try to get the fingerprint from LOCAL storage
+    let storedFingerprint = localStorage.getItem('deviceFingerprint');
 
     if (storedFingerprint) {
       window.deviceFingerprint = storedFingerprint;
-      console.log('Retrieved Fingerprint from Session:', window.deviceFingerprint);
+      console.log('Retrieved Fingerprint from Local Storage:', window.deviceFingerprint);
     } else {
       // 2. If not found, generate a new one
       try {
@@ -37,8 +37,8 @@
         window.deviceFingerprint = 'fallback-' + Date.now() + Math.random().toString(36).substring(2);
         console.log('Using Fallback ID:', window.deviceFingerprint);
       }
-      // 3. Save the newly generated fingerprint to session storage for the next reload
-      sessionStorage.setItem('deviceFingerprint', window.deviceFingerprint);
+      // 3. Save the newly generated fingerprint to LOCAL storage
+      localStorage.setItem('deviceFingerprint', window.deviceFingerprint);
     }
 
     // 4. Now, start the application with the consistent fingerprint
