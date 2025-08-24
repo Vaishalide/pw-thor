@@ -4,7 +4,7 @@ session_start();
 
 // API key aur destination URL define kar lete hain
 $apiKey = 'be1be8f8f3c02db2e943cc7199c5641971d86283';
-$alias = 'PW_thor'; // Optional alias
+$alias = 'pww_thor'; // Optional alias
 
 // 1. Generate a secure, random token
 // This token will be used to verify the user came from the correct link
