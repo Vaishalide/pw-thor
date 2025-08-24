@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login Success</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <script>
     // Function to get cookie by name
     function getCookie(name) {
@@ -24,10 +25,20 @@
   <p>Aap ab 24 ghante ke liye logged in hain.</p>
 
   <script>
-    // 24 ghante ke liye login cookie set yaha se hogi
+    // Define a secret key for AES encryption. 
+    // IMPORTANT: In a real application, this key should be managed securely and not hardcoded.
+    const secretKey = 'your-super-secret-key-for-aes';
+
+    // 1. Calculate the expiration timestamp (24 hours from now)
     const now = new Date();
-    const expirationTime = now.getTime() + 24 * 60 * 60 * 1000; // 24 hours
-    document.cookie = "login=success; expires=" + new Date(expirationTime).toUTCString() + "; path=/";
+    const expirationTimestamp = now.getTime() + 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    // 2. Encrypt the timestamp using AES
+    const encryptedTimestamp = CryptoJS.AES.encrypt(expirationTimestamp.toString(), secretKey).toString();
+
+    // 3. Set the encrypted timestamp as a new cookie named 'session_token'
+    const expirationDate = new Date(expirationTimestamp);
+    document.cookie = `session_token=${encryptedTimestamp}; expires=${expirationDate.toUTCString()}; path=/`;
 
     // Remove the temporary keyGenerated cookie
     document.cookie = "keyGenerated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -35,6 +46,5 @@
     // Redirect to index.html
     window.location.href = 'index.html';
   </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"947e1dc74ae8fd96","version":"2025.4.0-1-g37f21b1","r":1,"token":"807bd724f4d0478fa02fb75831663179","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
 </body>
 </html>
