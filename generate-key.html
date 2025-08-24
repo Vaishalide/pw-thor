@@ -95,14 +95,9 @@
     .then(data => {
         console.log('Response:', data);
         if (data.shortenedUrl) {
-            // Set a 10-minute temporary cookie indicating key generation
-          const now = new Date();
-          const tempExpirationTime = now.getTime() + 10 * 60 * 1000; // 10 minutes temporary cookie
-          document.cookie = "keyGenerated=true; expires=" + new Date(tempExpirationTime).toUTCString() + "; path=/";
-
-          // Redirect to shortened URL
-            window.location.href = data.shortenedUrl;
-        } else {
+    // Redirect to shortened URL
+    window.location.href = data.shortenedUrl;
+} else {
             alert('Error in generating URL: ' + (data.error || 'Unknown error'));
         }
     })
