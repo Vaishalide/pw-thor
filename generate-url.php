@@ -1,11 +1,11 @@
 <?php
 // API key aur destination URL define kar lete hain
-$apiKey = 'd65b72e5f21fc77f6a1d4218f4c1c60c7c3dba07';
+$apiKey = 'be1be8f8f3c02db2e943cc7199c5641971d86283';
 $destinationUrl = 'https://pwthor.site/login-success.html';
 $alias = 'PW_thor'; // Optional alias
 
 // API URL ko prepare karte hain
-$apiUrl = "https://getlinks.in/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
+$apiUrl = "https://api.gplinks.com/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
 
 // cURL se API call karte hain
 $ch = curl_init();
