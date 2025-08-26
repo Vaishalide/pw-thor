@@ -38,15 +38,15 @@
             const statusMessage = document.getElementById('status_message');
             
             // --- Hardcoded Stream Information ---
-            const M3U8_URL = 'https://sec-prod-mediacdn.pw.live/6814f036-66ba-481d-b1ae-7e9eef3d4ce8/master.m3u8?URLPrefix=aHR0cHM6Ly9zZWMtcHJvZC1tZWRpYWNkbi5wdy5saXZlLzY4MTRmMDM2LTY2YmEtNDgxZC1iMWFlLTdlOWVlZjNkNGNlOA&Expires=1754834051&KeyName=pw-prod-key&Signature=zxDe0aajxoHp4RyWtD634xWr9YG6UQmzeDnczPcfHsWWN_9v4sR_uUnYy_ZEpJ-Guz4FpjCLRTeZx33G__IhBQ';
+            const M3U8_URL = 'https://pwplayer2-8edb00b87f57.herokuapp.com/stream/eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..rYnwNThIAvFXf_VL.jD7W9eU8tsJMOdo0eSXx5Yhcnem0Phugrw4XExcFYIP9Z2BtsftDyxWIEPa_pHdSt4SNCSFY6bz5a9qXJ409ccIYcHfC4g-jSmr_riCvzehx_vGJsnm2Sj0V0cH579hIcDU9DgrzHFNeUBY7XrhL24fYl2q5UcxTNGV25pB2tePsM9Jw_YVXlVlVwpizd0o7GtvEB82jY5nQvJNJKNwV2hTlrkxehdT6JHY1l1r4VKJHOh979KmgtNDo1iV6SsFwF8hrY_FwjUpZYCfal7p6OgsHvMNoGcC518EUQgZMmmgEsZ-vrh11LunPt0-DqoBeUnPg2XmCSiZFkoIJ0XI1gxudFmF4Cjw.10KU7Tyl-mCMTAlM-DCKFw/master.m3u8';
             
-            // The decryption key b'\xde\xb2\xa9...' converted to a JavaScript ArrayBuffer
-            const DECRYPTION_KEY_BYTES = new Uint8Array([
-                0xde, 0xb2, 0xa9, 0xec, 0x9c, 0xec, 0xe5, 0x74,
-                0xf6, 0x4d, 0xdd, 0x8e, 0xa9, 0xa2, 0x3b, 0x09
-            ]);
-            const DECRYPTION_KEY_BUFFER = DECRYPTION_KEY_BYTES.buffer;
-            // --- End of Hardcoded Information ---
+// The decryption key b'\xd5\xd5\x0e...' converted to a JavaScript ArrayBuffer
+const DECRYPTION_KEY_BYTES = new Uint8Array([
+    0xd5, 0xd5, 0x0e, 0x79, 0xba, 0x98, 0xc0, 0x29,
+    0xfd, 0xe5, 0x39, 0x95, 0x40, 0xc3, 0x18, 0x1c
+]);
+const DECRYPTION_KEY_BUFFER = DECRYPTION_KEY_BYTES.buffer;
+// --- End of Hardcoded Information ---
 
             function updateStatus(message, colorClass) {
                 statusMessage.textContent = message;
