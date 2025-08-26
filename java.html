@@ -141,7 +141,7 @@
     
     /* --- STYLES ADDED FROM 1.html FOR STORMBREAKER ANIMATION --- */
     :root {
-      --zoom: 1.2; /* Increased size for background */
+      --zoom: 0.7; /* Decreased size to fit on screen */
       --color: #a0f;
       --blade-mask: conic-gradient(from 0deg at 70% 45%, transparent 0 60%, #fff 60% 80%, transparent 80% 100%);;
       --metal-color: #9D9DAA;
@@ -179,6 +179,7 @@
       align-items: center;
       z-index: 0; /* Behind content, same level as rain */
       opacity: 0.2; /* Make it subtle */
+      pointer-events: none; /* Make sure it's not clickable */
     }
 
     .stormbreaker {
