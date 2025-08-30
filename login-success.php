@@ -35,16 +35,21 @@ unset($_SESSION['validation_token']);
   <h2>Login Successful!</h2>
   <p>Aap ab 24 ghante ke liye logged in hain.</p>
 
-  <script>
-// This part remains the same as it's for setting the final session cookie
+<script>
     const secretKey = '$YgSaj3OmNEt/PL';
     const now = new Date();
-    const expirationTimestamp = now.getTime() + 24 * 60 * 60 * 1000;
+    const expirationTimestamp = now.getTime() + 24 * 60 * 60 * 1000; // 24 hours
     const encryptedTimestamp = CryptoJS.AES.encrypt(expirationTimestamp.toString(), secretKey).toString();
     const expirationDate = new Date(expirationTimestamp);
+
+    // Set the cookie
     document.cookie = `session_token=${encryptedTimestamp}; expires=${expirationDate.toUTCString()}; path=/`;
 
-    // Redirect to the main page
-    window.location.href = 'pw.html';  </script>
+    // --- FIX IS HERE ---
+    // Wrap the redirection in a short delay to ensure the cookie is set first.
+    setTimeout(() => {
+        window.location.href = 'pw.html';
+    }, 100); // A 100ms delay is more than enough.
+</script>
 </body>
 </html>
