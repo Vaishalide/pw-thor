@@ -42,14 +42,17 @@ unset($_SESSION['validation_token']);
     const encryptedTimestamp = CryptoJS.AES.encrypt(expirationTimestamp.toString(), secretKey).toString();
     const expirationDate = new Date(expirationTimestamp);
 
-    // Set the cookie
-    document.cookie = `session_token=${encryptedTimestamp}; expires=${expirationDate.toUTCString()}; path=/`;
-
     // --- FIX IS HERE ---
-    // Wrap the redirection in a short delay to ensure the cookie is set first.
+    // 1. URL-encode the encrypted string to make it cookie-safe.
+    const safeEncryptedValue = encodeURIComponent(encryptedTimestamp);
+
+    // 2. Set the cookie with the safe value and add modern security attributes.
+    document.cookie = `session_token=${safeEncryptedValue}; expires=${expirationDate.toUTCString()}; path=/; Secure; SameSite=Lax`;
+
+    // 3. Keep the delay to ensure the browser has time to save the cookie.
     setTimeout(() => {
         window.location.href = 'pw.html';
-    }, 100); // A 100ms delay is more than enough.
+    }, 100);
 </script>
 </body>
 </html>
