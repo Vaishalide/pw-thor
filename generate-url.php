@@ -18,7 +18,7 @@ if (isset($_SESSION['shortened_url'])) {
 // API key is defined
 $apiKey = 'be1be8f8f3c02db2e943cc7199c5641971d86283';
 // By leaving the alias empty, the API will generate a unique one
-$alias = 'pwthor';
+$alias = '';
 
 // 2. Generate a secure, random token for validation
 $token = bin2hex(random_bytes(16));
