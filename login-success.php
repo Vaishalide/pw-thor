@@ -51,7 +51,7 @@ unset($_SESSION['validation_token']);
 
     // 3. Keep the delay to ensure the browser has time to save the cookie.
     setTimeout(() => {
-        window.location.href = 'pw.html';
+        window.location.href = 'index.html';
     }, 100);
 </script>
 </body>
