@@ -8,13 +8,8 @@
     rel="stylesheet" />
   <link href="https://www.pw.live/favicon.ico" rel="icon" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
-    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
-<script>
-    // This MUST be the same secret key used in your login-success.html file
+  <script>
+    // This MUST be the same secret key used in your login-success.php file
     const secretKey = '$YgSaj3OmNEt/PL';
 
     // This function to get a cookie by name is correct and remains unchanged
@@ -27,16 +22,20 @@
 
     // --- New Session Validation Logic ---
     function validateSession() {
-        const token = getCookie('session_token');
+        const encodedToken = getCookie('session_token');
 
         // 1. Check if the cookie exists at all
-        if (!token) {
+        if (!encodedToken) {
             window.location.href = 'https://pwthor.site/generate-key.html';
             return;
         }
 
         try {
-            // 2. Decrypt the token to get the timestamp
+            // --- FIX IS HERE ---
+            // 2. Decode the token retrieved from the cookie.
+            const token = decodeURIComponent(encodedToken);
+
+            // 3. Decrypt the *decoded* token to get the timestamp
             const decryptedBytes = CryptoJS.AES.decrypt(token, secretKey);
             const decryptedTimestampStr = decryptedBytes.toString(CryptoJS.enc.Utf8);
 
@@ -48,7 +47,7 @@
             const expirationTimestamp = parseInt(decryptedTimestampStr, 10);
             const now = new Date().getTime();
 
-            // 3. Check if the timestamp is expired
+            // 4. Check if the timestamp is expired
             if (now > expirationTimestamp) {
                 // Session is expired
                 window.location.href = 'https://pwthor.site/generate-key.html';
@@ -65,6 +64,11 @@
     // Run the validation check as soon as the page loads
     validateSession();
 </script>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+<script disable-devtool-auto="true" src="https://cdn.jsdelivr.net/npm/disable-devtool" clear-log="true"
+    disable-select="true" disable-copy="true" disable-cut="true" disable-paste="true"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <title>PW THOR - Enter the Arena</title>
