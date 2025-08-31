@@ -25,14 +25,28 @@ $apiUrl = "https://api.gplinks.com/api?api=$apiKey&url=" . urlencode($destinatio
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $apiUrl);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-// --- FIX FOR HEROKU RESOURCE LEAK ---
-// 💡 Add a header to explicitly close the connection after the API call.
-// This prevents idle connections from building up and causing application errors.
 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: close'));
 
+// --- FIX FOR H12 TIMEOUT ERRORS ---
+// 💡 Set a connection timeout of 10 seconds.
+curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+// 💡 Set a total timeout of 15 seconds for the API call.
+// This is less than Heroku's 30-second limit, preventing H12 errors.
+curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+
 $response = curl_exec($ch);
-curl_close($ch); // This is also important and correctly closes the cURL handle.
+
+// --- IMPROVED ERROR HANDLING ---
+// Check if the cURL request failed (e.g., due to a timeout).
+if ($response === false) {
+    $error_message = 'URL generation failed: ' . curl_error($ch);
+    curl_close($ch);
+    http_response_code(504); // Gateway Timeout
+    echo json_encode(['error' => 'The link generation service is not responding.', 'details' => $error_message]);
+    exit(); // Stop the script
+}
+
+curl_close($ch);
 
 $data = json_decode($response, true);
 
