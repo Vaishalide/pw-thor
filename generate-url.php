@@ -16,7 +16,7 @@ $destinationUrl = 'https://pwthor.site/login-success.php?token=' . $token;
 $apiKey = 'be1be8f8f3c02db2e943cc7199c5641971d86283';
 
 // 3. Generate a random alias with the prefix 'pwthor'.
-$alias = 'pwthor' . bin2hex(random_bytes(3));
+$alias = '' . bin2hex(random_bytes(3));
 
 // 4. Prepare the API call URL
 $apiUrl = "https://api.gplinks.com/api?api=$apiKey&url=" . urlencode($destinationUrl) . "&alias=$alias&format=json";
