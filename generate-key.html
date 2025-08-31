@@ -77,39 +77,43 @@
     <p class="loading" id="loadingMessage" style="display: none;">Generating URL, please wait...</p>
   </div>
 
-  <script>
-    document.getElementById('generateKey').addEventListener('click', function () {
-    const destinationUrl = '/login-success.php';
-    const alias = 'customAlias';
+<script>
+document.getElementById('generateKey').addEventListener('click', function () {
+    const generateButton = this;
+    const loadingMessage = document.getElementById('loadingMessage');
+    
+    // --- ⬇️ IMPORTANT ⬇️ ---
+    // --- Replace this URL with the one static short link you created manually ---
+    const staticShortUrl = 'https://gplinks.co/0FSI3D';
 
-    document.getElementById('loadingMessage').style.display = 'block';
+    // Disable the button and update the UI to prevent multiple clicks
+    generateButton.disabled = true;
+    loadingMessage.innerText = 'Preparing your session...';
+    loadingMessage.style.display = 'block';
 
-    const data = { destinationUrl, alias };
-
-    fetch('/generate-url.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+    // Step 1: Call our server to create the secure token. This is instant.
+    fetch('/prepare-token.php', {
+        method: 'POST'
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Response:', data);
-        if (data.shortenedUrl) {
-    // Redirect to shortened URL
-    window.location.href = data.shortenedUrl;
-} else {
-            alert('Error in generating URL: ' + (data.error || 'Unknown error'));
+        if (data.status === 'success') {
+            // Step 2: The token is ready. Now send the user to the short link.
+            loadingMessage.innerText = 'Redirecting...';
+            window.location.href = staticShortUrl;
+        } else {
+            // Handle any unexpected errors from our server
+            alert('Error preparing session. Please try again.');
+            generateButton.disabled = false; // Re-enable on error
         }
     })
     .catch(error => {
         console.error('Fetch Error:', error);
-        alert('URL generate karne me problem aayi: ' + error.message);
-    })
-    .finally(() => {
-        document.getElementById('loadingMessage').style.display = 'none';
+        alert('Could not prepare your session. Please check your connection and try again.');
+        generateButton.disabled = false; // Re-enable on error so the user can retry
     });
 });
-  </script>
+</script>
   <!-- Advanced Three.js animation with optimized pattern and book animation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
