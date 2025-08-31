@@ -16,6 +16,7 @@ if (empty($received_token) || empty($session_token) || !hash_equals($session_tok
     exit();
 }
 
+
 // 3. IMPORTANT: Unset the token after successful validation
 // This ensures the token can only be used ONCE.
 unset($_SESSION['validation_token']);
