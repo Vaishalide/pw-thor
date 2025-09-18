@@ -500,7 +500,6 @@
             return urlParams.get(name);
         }
 
-        // Function to get configuration from URL parameters
         function getConfigFromUrl() {
             const type = getUrlParameter('type');
             const url = getUrlParameter('url');
@@ -514,20 +513,31 @@
                 throw new Error('Missing required parameter: url is required!');
             }
 
-            // List of potential signing parameters for CloudFront, Google Media CDN, etc.
+            // List of all possible signing parameters
             const signingParams = ['URLPrefix', 'Expires', 'KeyName', 'Signature', 'Key-Pair-Id', 'Policy'];
+            
+            const urlObject = new URL(url);
+            const extractedParams = {};
+
+            // 1. Grab any params that were correctly part of the 'url' parameter's value
+            urlObject.searchParams.forEach((value, name) => {
+                if (signingParams.includes(name)) {
+                    extractedParams[name] = value;
+                }
+            });
+
+            // 2. Grab any signing params that were mistakenly parsed as separate parameters of the main window URL
+            signingParams.forEach(param => {
+                const paramValue = getUrlParameter(param);
+                // Add it only if it exists and wasn't already captured in step 1
+                if (paramValue && !extractedParams.hasOwnProperty(param)) { 
+                    extractedParams[param] = paramValue;
+                }
+            });
 
             // Handle HLS live streams
             if (type === 'live') {
-                const liveUrl = new URL(url);
-                const extractedParams = {};
-                signingParams.forEach(param => {
-                    if (liveUrl.searchParams.has(param)) {
-                        extractedParams[param] = liveUrl.searchParams.get(param);
-                    }
-                });
-                const cleanLiveUrl = new URL(liveUrl.origin + liveUrl.pathname);
-
+                const cleanLiveUrl = new URL(urlObject.origin + urlObject.pathname);
                 return {
                     streamType: 'live',
                     videoData: {
@@ -542,15 +552,7 @@
                 throw new Error('Missing parameters. For DRM, `keyid` and `key` are required. For live streams, add `?type=live` to the URL.');
             }
 
-            const mpdUrl = new URL(url);
-            const extractedParams = {};
-            signingParams.forEach(param => {
-                if (mpdUrl.searchParams.has(param)) {
-                    extractedParams[param] = mpdUrl.searchParams.get(param);
-                }
-            });
-
-            const cleanMpdUrl = new URL(mpdUrl.origin + mpdUrl.pathname);
+            const cleanMpdUrl = new URL(urlObject.origin + urlObject.pathname);
 
             return {
                 streamType: 'drm',
@@ -564,7 +566,6 @@
                 signedParams: extractedParams
             };
         }
-
 
         function initializeConfig() {
             try {
