@@ -1,6 +1,8 @@
 <?php
-
 session_start();
+
+// --- NEW: Start by assuming access is denied ---
+$access_granted = false;
 
 $user_id = '';
 if (isset($_COOKIE['permanent_user_id'])) {
@@ -10,29 +12,26 @@ if (isset($_COOKIE['permanent_user_id'])) {
     setcookie('permanent_user_id', $user_id, time() + (10 * 365 * 24 * 60 * 60), "/");
 }
 
-
 if (isset($_COOKIE['user_key'])) {
     $stored_key = $_COOKIE['user_key'];
-    
+
     $api_url = "https://key-db-eb5d0a77a827.herokuapp.com/api/check?key=" . urlencode($stored_key) . "&id=" . urlencode($user_id);
     $response = @file_get_contents($api_url);
-    
+
     if ($response !== false) {
         $data = json_decode($response, true);
-        
-        if (isset($data['status'])) {
-            if ($data['status'] === 'success') {
-                
-                $access_granted = true;
-            } elseif ($data['status'] === 'unauthorized') {
-                
-                setcookie('user_key', '', time() - 3600, "/");
-                header("Location: key.php");
-                exit();
-            }
+
+        // --- MODIFIED: Only grant access on explicit success ---
+        if (isset($data['status']) && $data['status'] === 'success') {
+            $access_granted = true;
         }
     }
-} else {
+}
+
+// --- NEW: Final check. If access was not granted for ANY reason, redirect. ---
+if (!$access_granted) {
+    // Clear the bad cookie just in case
+    setcookie('user_key', '', time() - 3600, "/");
     header("Location: key.php");
     exit();
 }
